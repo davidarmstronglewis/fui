@@ -10,7 +10,7 @@ use std::rc::Rc;
 /// Makes data querable.
 pub trait Feeder: 'static {
     /// Returns data filtered by `text`, `position` limited to `items_count`.
-    fn query(&self, text: &str, position: isize, items_count: usize) -> Vec<String>;
+    fn query(&self, text: &str, position: usize, items_count: usize) -> Vec<String>;
 }
 
 #[derive(Clone, Debug)]
@@ -85,7 +85,7 @@ fn add_glob<P: AsRef<str>>(path: P) -> String {
 }
 
 impl Feeder for DirItems {
-    fn query(&self, text: &str, _position: isize, items_count: usize) -> Vec<String> {
+    fn query(&self, text: &str, position: usize, items_count: usize) -> Vec<String> {
         let path = if text == "" {
             format!("./")
         } else if text.starts_with('~') {
@@ -127,7 +127,7 @@ impl Feeder for DirItems {
                     let text = format!("{}", path.display());
                     text
                 })
-                .skip(_position as usize)
+                .skip(position)
                 .take(items_count)
                 .collect()
         } else {
@@ -262,17 +262,18 @@ mod tests {
 }
 
 impl<T: Display + 'static> Feeder for Vec<T> {
-    fn query(&self, text: &str, _position: isize, items_count: usize) -> Vec<String> {
+    fn query(&self, text: &str, position: usize, items_count: usize) -> Vec<String> {
         self.iter()
             .map(|x| format!("{}", x))
             .filter(|x| x.to_lowercase().contains(text))
+            .skip(position)
             .take(items_count)
             .collect()
     }
 }
 
 impl Feeder for Rc<Feeder> {
-    fn query(&self, text: &str, position: isize, items_count: usize) -> Vec<String> {
+    fn query(&self, text: &str, position: usize, items_count: usize) -> Vec<String> {
         (**self).query(text, position, items_count)
     }
 }
