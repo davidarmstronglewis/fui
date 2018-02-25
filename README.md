@@ -73,7 +73,6 @@ fn main() {
 
 ## TODO:
 
-* select in autocomplete load values while scrolling
 * support user's history!
     * make fill-error-correct flow pleasent
 * support for piping!
