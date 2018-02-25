@@ -168,8 +168,8 @@ impl ViewWrapper for FormView {
     fn wrap_on_event(&mut self, event: Event) -> EventResult {
         match event {
             Event::Mouse {
-                offset,
-                position,
+                offset: _,
+                position: _,
                 event: MouseEvent::Press(btn),
             } => {
                 if btn == MouseButton::Left {

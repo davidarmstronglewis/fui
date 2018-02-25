@@ -11,5 +11,7 @@ pub fn cwd() -> String {
 
 /// Returns home-dir path.
 pub fn home_dir() -> String {
-    env::home_dir().map(|p| p.into_os_string().into_string().unwrap()).unwrap()
+    env::home_dir()
+        .map(|p| p.into_os_string().into_string().unwrap())
+        .unwrap()
 }
