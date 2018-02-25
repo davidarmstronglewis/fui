@@ -166,6 +166,13 @@ mod tests {
     }
 
     #[test]
+    fn test_dir_items_position_works_ok() {
+        let di = DirItems::new();
+        assert_eq!(di.query("", 0, 1), vec!["CHANGELOG.md"]);
+        assert_eq!(di.query("", 1, 1), vec!["Cargo.lock"]);
+    }
+
+    #[test]
     fn test_glob_is_added_ok() {
         assert_eq!(add_glob(""), "*");
         assert_eq!(add_glob("/"), "/*");

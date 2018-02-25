@@ -10,7 +10,6 @@ use cursive::views::{EditView, LinearLayout, SelectView};
 use feeders::Feeder;
 use super::is_value_from_select;
 
-// TODO:: selecting should auto load next/prev items
 // TODO: better performance while typing
 
 pub type OnSubmit = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;
@@ -22,6 +21,10 @@ pub struct Autocomplete {
     feeder: Rc<Feeder>,
     shown_count: u8,
     submit_anything: bool,
+    //TODO::: isize? rename offset
+    suggestion_index: isize,
+    // User typed text handled manually (EditView content is changing by selection)
+    typed_value: Rc<String>,
 
     on_submit: OnSubmit,
 }
@@ -50,6 +53,8 @@ impl Autocomplete {
             feeder: Rc::new(feeder),
             shown_count: shown_count as u8,
             submit_anything: false,
+            suggestion_index: 0isize,
+            typed_value: Rc::new("".to_string()),
 
             on_submit: None,
         };
@@ -87,8 +92,10 @@ impl Autocomplete {
 
     /// Copy selected text to edit view
     fn selection_to_edit(&mut self) {
-        let selection = self.get_select_view_mut().selection();
-        self.get_edit_view_mut().set_content((&*selection).clone());
+        if !self.get_select_view().is_empty() {
+            let selection = self.get_select_view_mut().selection();
+            self.get_edit_view_mut().set_content((&*selection).clone());
+        }
     }
 
     /// Checks if value comes from suggestions
@@ -133,6 +140,48 @@ impl Autocomplete {
             .unwrap()
     }
 
+    fn scroll_up(&mut self) {
+        let is_top = self.get_select_view().selected_id().unwrap() == 0;
+        self.get_select_view_mut().select_up(1);
+        if is_top {
+            if self.suggestion_index > 0 {
+                self.suggestion_index -= 1;
+            }
+            let feeder = Rc::clone(&self.feeder);
+            let typed_value = &*self.typed_value.clone();
+            let shown_count = self.shown_count.clone() as usize;
+            let suggestion_index = self.suggestion_index.clone();
+            let data = (*feeder).query(typed_value, suggestion_index, shown_count);
+            if data.len() == shown_count {
+                let select = self.get_select_view_mut();
+                select.clear();
+                select.add_all_str(data.into_iter());
+            }
+        }
+        self.selection_to_edit();
+    }
+
+    fn scroll_down(&mut self) {
+        let shown_count = self.shown_count as usize;
+        let is_bottom = self.get_select_view().selected_id().unwrap() == shown_count - 1;
+        self.get_select_view_mut().select_down(1);
+        if is_bottom {
+            self.suggestion_index += 1;
+            let feeder = Rc::clone(&self.feeder);
+            let typed_value = &*self.typed_value.clone();
+            let data = (*feeder).query(typed_value, self.suggestion_index, shown_count);
+            if data.len() == shown_count {
+                let select = self.get_select_view_mut();
+                select.clear();
+                select.add_all_str(data.into_iter());
+                select.set_selection(shown_count - 1);
+            } else {
+                self.suggestion_index -= 1;
+            }
+        }
+        self.selection_to_edit();
+    }
+
     /// Sets the function to be called when submit is triggered.
     pub fn set_on_submit<F>(&mut self, callback: F)
     where
@@ -156,42 +205,32 @@ impl ViewWrapper for Autocomplete {
     wrap_impl!(self.view: LinearLayout);
 
     fn wrap_on_event(&mut self, event: Event) -> EventResult {
+        //TODO::: disable mouse
         match event {
             Event::Char(_) | Event::Key(Key::Backspace) | Event::Key(Key::Del) => {
                 // typing
                 self.with_view_mut(|v| v.on_event(event))
                     .unwrap_or(EventResult::Ignored);
+                self.typed_value = self.get_edit_view().get_content();
+                self.suggestion_index = 0;
                 self.refresh_listing();
                 EventResult::Consumed(None)
             }
             Event::CtrlChar('u') => {
                 self.get_edit_view_mut().set_content("");
+                self.typed_value = Rc::new("".to_string());
+                self.suggestion_index = 0;
                 self.refresh_listing();
                 EventResult::Consumed(None)
             }
-            Event::Key(Key::Down) | Event::Key(Key::Up) => {
-                // handle up/down selection
-                self.with_view_mut(|v| v.on_event(event))
-                    .unwrap_or(EventResult::Ignored);
-                self.selection_to_edit();
-                EventResult::Consumed(None)
-            }
-            Event::CtrlChar('p') => {
-                // move selection up
-                {
-                    let select = self.get_select_view_mut();
-                    select.select_up(1);
-                }
-                self.selection_to_edit();
-                EventResult::Consumed(None)
-            }
-            Event::CtrlChar('n') => {
+            Event::Key(Key::Down) | Event::CtrlChar('n') => {
                 // move selection down
-                {
-                    let select = self.get_select_view_mut();
-                    select.select_down(1);
-                }
-                self.selection_to_edit();
+                self.scroll_down();
+                EventResult::Consumed(None)
+            }
+            Event::Key(Key::Up) | Event::CtrlChar('p') => {
+                // move selection up
+                self.scroll_up();
                 EventResult::Consumed(None)
             }
             Event::Key(Key::Enter) => {
