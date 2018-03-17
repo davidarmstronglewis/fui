@@ -1,9 +1,10 @@
 //! Includes `form's` building blocks, `fields`.
+use clap;
 use cursive::view::AnyView;
 use cursive::views;
 use serde_json::value::Value;
 use std::rc::Rc;
-use validators::Validator;
+use validators::{Required, Validator};
 
 mod autocomplete;
 mod checkbox;
@@ -14,6 +15,10 @@ pub use self::autocomplete::Autocomplete;
 pub use self::checkbox::Checkbox;
 pub use self::multiselect::Multiselect;
 pub use self::text::Text;
+
+//TODO:: valid are alphanumerics + '-'
+//struct Label
+// Field.label is Label
 
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
@@ -58,6 +63,12 @@ impl<W: WidgetManager, T> Field<W, T> {
         self.validators.push(Rc::new(validator));
         self
     }
+    /// Checks if Field is required
+    pub fn is_required(&self) -> bool {
+        self.validators
+            .iter()
+            .any(|&ref x| (**x).as_any().downcast_ref::<Required>().is_some())
+    }
 }
 
 /// Covers communication from `Form` to `Field`.
@@ -70,6 +81,15 @@ pub trait FormField {
     fn get_label(&self) -> &str;
     /// Gets manager which controlls `widget`.
     fn get_widget_manager(&self) -> &WidgetManager;
+    /// Builds [clap::Arg] needed by automatically generated [clap::App].
+    ///
+    /// [clap::Arg]: ../../clap/struct.Arg.html
+    /// [clap::App]: ../../clap/struct.App.html
+    fn clap_arg(&self) -> clap::Arg;
+    /// Extracts field's data from [clap::ArgMatches] and converts it to str.
+    ///
+    /// [clap::App]: ../../clap/struct.ArgMatches.html
+    fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
 }
 
 fn format_annotation(label: &str, help: &str) -> String {

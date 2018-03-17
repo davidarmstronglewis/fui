@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use std::rc::Rc;
 
+use clap;
 use cursive::view::AnyView;
 use cursive::views::{LinearLayout, TextView};
 use serde_json::value::Value;
@@ -109,9 +110,25 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
         &self.label
     }
     fn build_widget(&self) -> Box<AnyView> {
+        // TODO:: make it const
         let initial = self.initial.join(",");
         self.widget_manager
             .build_widget(&self.label, &self.help, &initial)
+    }
+
+    fn clap_arg(&self) -> clap::Arg {
+        clap::Arg::with_name(&self.label)
+            .long(&self.label)
+            .help(&self.help)
+            .required(self.is_required())
+            .multiple(true)
+            .takes_value(true)
+    }
+
+    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
+        let values = args.values_of(&self.label)
+            .unwrap_or(clap::Values::default());
+        values.collect::<Vec<&str>>().join(",")
     }
 }
 

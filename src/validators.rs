@@ -1,13 +1,16 @@
 //! Provides data validators used by `fields`.
-//TODO:: Simplify examples here
 use regex::Regex;
+use std::any::Any;
+use std::fmt::Debug;
 use std::ops::Deref;
 use std::path::Path;
 
 /// Adds behaviour of validation.
-pub trait Validator {
+pub trait Validator: Debug {
     /// Validates data returning None (when Ok) or String with error.
     fn validate(&self, data: &str) -> Option<String>;
+    /// Allows downcasting `self` to a `Any`.
+    fn as_any(&self) -> &Any;
 }
 
 /// Ensures data is included.
@@ -31,6 +34,10 @@ impl Validator for Required {
         } else {
             None
         }
+    }
+
+    fn as_any(&self) -> &Any {
+        self
     }
 }
 
@@ -61,6 +68,10 @@ impl Validator for PathFree {
         } else {
             None
         }
+    }
+
+    fn as_any(&self) -> &Any {
+        self
     }
 }
 
@@ -96,6 +107,10 @@ impl Validator for DirExists {
             Some("Dir doesn't exist".to_string())
         }
     }
+
+    fn as_any(&self) -> &Any {
+        self
+    }
 }
 
 /// Ensures data is file path which exists.
@@ -130,6 +145,10 @@ impl Validator for FileExists {
             Some("File doesn't exist".to_string())
         }
     }
+
+    fn as_any(&self) -> &Any {
+        self
+    }
 }
 
 /// Ensures value is one of provided options.
@@ -147,7 +166,7 @@ impl Validator for FileExists {
 #[derive(Clone, Debug)]
 pub struct OneOf<T>(pub T);
 
-impl<T> Validator for OneOf<Vec<T>>
+impl<T: Debug + 'static> Validator for OneOf<Vec<T>>
 where
     T: Deref<Target = str>,
 {
@@ -157,6 +176,10 @@ where
         } else {
             None
         }
+    }
+
+    fn as_any(&self) -> &Any {
+        self
     }
 }
 
@@ -170,5 +193,9 @@ impl Validator for Regex {
                 data, self
             ))
         }
+    }
+
+    fn as_any(&self) -> &Any {
+        self
     }
 }

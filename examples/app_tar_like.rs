@@ -18,7 +18,7 @@ fn hdlr(v: Value) {
 
 fn main() {
     let formats = vec!["none", "gzip", "bzip2"];
-    let compression = Autocomplete::new("file_to_archive", formats.clone())
+    let compression = Autocomplete::new("compression-type", formats.clone())
         .initial("gzip")
         .validator(Required)
         .validator(OneOf(formats))

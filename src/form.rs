@@ -2,6 +2,7 @@
 use std::rc::Rc;
 use std::collections::HashMap;
 
+use clap;
 use cursive::Cursive;
 use cursive::event::{Callback, Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{View, ViewWrapper};
@@ -86,6 +87,39 @@ impl FormView {
     {
         self.set_on_cancel(callback);
         self
+    }
+
+    /// Translates form's fields to [clap::Arg]
+    ///
+    /// [clap::Arg]: ../../clap/struct.Arg.html
+    pub fn fields2clap_args(&self) -> Vec<clap::Arg> {
+        let mut args = Vec::with_capacity(self.fields.len());
+        for field in &self.fields {
+            let arg = field.clap_arg();
+            args.push(arg);
+        }
+        return args;
+    }
+
+    /// Translates [clap::ArgMatches] to [serde_json::Value] based on fields.
+    ///
+    /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
+    /// [serde_json::Value]: ../../serde_json/enum.Value.html
+    pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> Value {
+        let mut form_data = Map::with_capacity(self.fields.len());
+        for field in self.fields.iter() {
+            let data = field.clap_args2str(&arg_matches);
+            match field.validate(data.as_ref()) {
+                Ok(v) => {
+                    form_data.insert(field.get_label().to_string(), v);
+                }
+                Err(e) => {
+                    let msg = format!("ERROR: {:?}", e);
+                    eprintln!("{}", msg);
+                }
+            }
+        }
+        Value::Object(form_data)
     }
 
     fn validate(&self) -> Result<Value, HashMap<String, String>> {
