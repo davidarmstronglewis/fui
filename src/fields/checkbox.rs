@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use clap;
 use cursive::view::AnyView;
 use cursive::views;
 use serde_json::value::Value;
@@ -72,6 +73,21 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
             .map(|v| Value::Bool(v))
             .map_err(|_| "Value can't be converterd to bool".to_string());
         value
+    }
+
+    fn clap_arg(&self) -> clap::Arg {
+        clap::Arg::with_name(&self.label)
+            .help(&self.help)
+            .long(&self.label)
+    }
+
+    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
+        let v = if args.is_present(&self.label) {
+            "true"
+        } else {
+            "false"
+        };
+        v.to_string()
     }
 }
 

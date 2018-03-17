@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use clap;
 use cursive::view::AnyView;
 use cursive::views::{LinearLayout, TextView};
 use serde_json::value::Value;
@@ -90,5 +91,17 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
     /// Gets label of the field
     fn get_label(&self) -> &str {
         &self.label
+    }
+
+    fn clap_arg(&self) -> clap::Arg {
+        clap::Arg::with_name(&self.label)
+            .help(&self.help)
+            .long(&self.label)
+            .required(self.is_required())
+            .takes_value(true)
+    }
+
+    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
+        args.value_of(&self.label).unwrap_or("").to_string()
     }
 }

@@ -1,5 +1,6 @@
 // Example showing imagined CLI app. with two actions
 
+extern crate clap;
 extern crate fui;
 
 use fui::{Fui, Value};
@@ -14,14 +15,16 @@ fn main() {
     Fui::new()
         .action(
             "ACTION1: description",
-            FormView::new().field(Text::new("action1 data").help("help for action1 data")),
+            // TODO:: validate label
+            FormView::new().field(Text::new("action1-data").help("help for action1 data")),
             |v| {
                 println!("user input (from callback) {:?}", v);
             },
         )
         .action(
             "ACTION2: description",
-            FormView::new().field(Text::new("action2 data").help("help for action2 data")),
+            // TODO:: validate label
+            FormView::new().field(Text::new("action2-data").help("help for action2 data")),
             hdlr,
         )
         .run();
