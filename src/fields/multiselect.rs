@@ -10,6 +10,8 @@ use feeders::Feeder;
 use fields::{label_with_help_layout, Field, FormField, WidgetManager};
 use views;
 
+const VALUE_SEP: &'static str = ",";
+
 /// Convienient wrapper around `Field<MultiselectManager, Vec<String>>`.
 pub struct Multiselect;
 
@@ -36,7 +38,7 @@ impl WidgetManager for MultiselectManager {
         let mut widget = views::Multiselect::new(Rc::clone(&self.feeder));
         if initial.trim() != "" {
             let items = initial
-                .split(",")
+                .split(VALUE_SEP)
                 .map(|x| x.to_owned())
                 .collect::<Vec<String>>();
             widget.select_items(items);
@@ -68,7 +70,7 @@ impl WidgetManager for MultiselectManager {
             .iter()
             .map(|x| (*x).to_owned())
             .collect();
-        result.join(",")
+        result.join(VALUE_SEP)
     }
     fn set_error(&self, view: &mut AnyView, error: &str) {
         let boxed_widget = (*view).as_any_mut().downcast_mut::<Box<AnyView>>().unwrap();
@@ -91,7 +93,7 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
         &self.widget_manager
     }
     fn validate(&self, data: &str) -> Result<Value, String> {
-        let items = data.split(",").collect::<Vec<&str>>();
+        let items = data.split(VALUE_SEP).collect::<Vec<&str>>();
         for item in items.iter() {
             for v in &self.validators {
                 if let Some(e) = v.validate(item) {
@@ -110,8 +112,7 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
         &self.label
     }
     fn build_widget(&self) -> Box<AnyView> {
-        // TODO:: make it const
-        let initial = self.initial.join(",");
+        let initial = self.initial.join(VALUE_SEP);
         self.widget_manager
             .build_widget(&self.label, &self.help, &initial)
     }
@@ -128,7 +129,7 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
         let values = args.values_of(&self.label)
             .unwrap_or(clap::Values::default());
-        values.collect::<Vec<&str>>().join(",")
+        values.collect::<Vec<&str>>().join(VALUE_SEP)
     }
 }
 
