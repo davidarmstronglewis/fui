@@ -114,6 +114,7 @@
 //!
 #![deny(missing_docs)]
 
+#[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate cursive as _cursive;
@@ -242,8 +243,8 @@ impl Fui {
             sub_cmds.push(sub_cmd);
         }
         let app = clap::App::new(user_args[0].as_os_str().to_str().unwrap())
-            // TODO:: .version(version)
-            // TODO:: .author(author)
+            .version(crate_version!())
+            .author(crate_authors!())
             // TODO:: .about(about)
             .subcommands(sub_cmds);
         let matches = app.get_matches_from(user_args);
