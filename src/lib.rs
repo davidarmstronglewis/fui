@@ -156,6 +156,7 @@ pub struct Fui {
 
     forms: Vec<FormView>,
     hdlrs: Vec<Box<Fn(Value) + 'static>>,
+    about: Option<String>
 }
 impl Fui {
     /// Creates a new `Fui` with empty actions
@@ -165,6 +166,7 @@ impl Fui {
             descs: Vec::new(),
             forms: Vec::new(),
             hdlrs: Vec::new(),
+            about: None,
         }
     }
     /// Defines action by providing `desc`, `form`, `hdlr`
@@ -245,7 +247,7 @@ impl Fui {
         let app = clap::App::new(user_args[0].as_os_str().to_str().unwrap())
             .version(crate_version!())
             .author(crate_authors!())
-            // TODO:: .about(about)
+            .about(self.safe_about())
             .subcommands(sub_cmds);
         let matches = app.get_matches_from(user_args);
         let cmd_name = matches.subcommand_name().unwrap();
@@ -305,6 +307,21 @@ impl Fui {
         c.run();
         let form_data = form_data.borrow().clone();
         (form_data, selected_idx)
+    }
+
+    /// Sets `about` for `CLI` app (which is [Clap::App::about])
+    ///
+    /// [clap::App::about]: ../clap/struct.App.html#method.about
+    pub fn about<V: Into<String>>(mut self, about: V) -> Self {
+        self.about = Some(about.into());
+        self
+    }
+
+    fn safe_about(&self) -> &str {
+        match self.about {
+            Some(ref v) => v.as_ref(),
+            None => "",
+        }
     }
 }
 

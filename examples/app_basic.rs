@@ -27,5 +27,6 @@ fn main() {
             FormView::new().field(Text::new("action2-data").help("help for action2 data")),
             hdlr,
         )
+        .about("Example program which has CLI & form interface (TUI)")
         .run();
 }
