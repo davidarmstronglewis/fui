@@ -201,22 +201,24 @@ impl Fui {
     }
 
     /// Coordinates flow from action picking to handler running
+    // This must be moving, until FormView implements copy or FormViews are added to cursive once
+    // then top layer are switched (instead of current inserting/popping)
     pub fn run(mut self) {
         let args = env::args_os();
-        if args.len() > 1 {
+        let (value, selected_idx) = if args.len() > 1 {
             // input from CLI
             let (value, selected_idx) = self.run_cli(args);
-            // TODO:: refactor it with cli version below
-            let hdlr = self.hdlrs.remove(selected_idx);
-            hdlr(value)
+            let value = Some(value);
+            (value, selected_idx)
         } else {
             // input from TUI
-            let (form_data, selected_idx) = self.run_tui();
-            // run handler
-            if let Some(data) = form_data {
-                let hdlr = self.hdlrs.remove(selected_idx);
-                hdlr(data)
-            }
+            let (value, selected_idx) = self.run_tui();
+            (value, selected_idx)
+        };
+        // run handler
+        if let Some(data) = value {
+            let hdlr = self.hdlrs.remove(selected_idx);
+            hdlr(data);
         }
     }
 
