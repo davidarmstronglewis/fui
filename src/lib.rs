@@ -31,14 +31,16 @@
 //! fn main() {
 //!     Fui::new()
 //!         .action(
-//!             "ACTION1: description",
+//!             "action1",
+//!             "description",
 //!             FormView::new().field(Text::new("action1 data").help("help for action1 data")),
 //!             |v| {
 //!                 println!("user input (from callback) {:?}", v);
 //!             },
 //!         )
 //!         .action(
-//!             "ACTION2: description",
+//!             "action2",
+//!             "description",
 //!             FormView::new().field(Text::new("action2 data").help("help for action2 data")),
 //!             hdlr,
 //!         )
@@ -147,21 +149,19 @@ use validators::OneOf;
 struct Action {
     //TODO::: use &str instead of String?
     name: String,
-    //TODO:: validate desc includes at least on :
-    desc: String,
+    help: String,
     form: Option<FormView>,
     handler: Rc<Fn(Value)>,
 }
 
 impl Action {
     fn cmd_with_desc(&self) -> String {
-        format!("{}: {}", self.name, self.desc)
+        format!("{}: {}", self.name, self.help)
     }
 }
 
 /// Top level building block of `fui` crate
 pub struct Fui {
-    //TODO:: no Strings
     actions: BTreeMap<String, Action>,
     about: Option<String>,
 }
@@ -173,32 +173,27 @@ impl Fui {
             about: None,
         }
     }
-    /// Defines action by providing `desc`, `form`, `hdlr`
-    pub fn action<IS, F>(mut self, desc: IS, form: FormView, hdlr: F) -> Self
+    /// Defines action by providing `name`, `help`, `form`, `hdlr`
+    ///
+    /// NOTE:
+    ///
+    /// `name` is also translated into CLI argument, so:
+    ///
+    /// * "my-arg" is ok (only `"a..z"` & `"-"`)
+    /// * "my arg" is bad (becuase in shell space (`" "`) needs to be escaped)
+    ///
+    pub fn action<IS, F>(mut self, name: IS, help: IS, form: FormView, hdlr: F) -> Self
     where
         IS: Into<String>,
         F: Fn(Value) + 'static,
     {
-        let desc = desc.into();
-
-        let action_details = {
-            //TODO:: char validation for action-name
-            let action_data: Vec<&str> = desc.splitn(2, ": ").collect();
-            let (name, help) = if action_data.len() == 1 {
-                (action_data[0].to_string(), "".to_string())
-            } else {
-                (action_data[0].to_string(), action_data[1].to_string())
-            };
-
-            // TODO::: mv it from this scope
-            Action {
-                name: name,
-                desc: help,
-                form: Some(form),
-                handler: Rc::new(hdlr),
-            }
+        let action_details = Action {
+            name: name.into(),
+            help: help.into(),
+            form: Some(form),
+            handler: Rc::new(hdlr),
         };
-        self.actions.insert(desc, action_details);
+        self.actions.insert(action_details.cmd_with_desc(), action_details);
         self
     }
 
@@ -226,7 +221,7 @@ impl Fui {
         for action in self.actions.values() {
             let args = action.form.as_ref().unwrap().fields2clap_args();
             let sub_cmd = clap::SubCommand::with_name(action.name.as_ref())
-                .about(action.desc.as_ref())
+                .about(action.help.as_ref())
                 .args(args.as_slice());
             sub_cmds.push(sub_cmd);
         }
@@ -349,7 +344,8 @@ mod tests {
     fn cli_checkbox_is_serialized_ok_when_value_preset() {
         let value = Fui::new()
             .action(
-                "action1: desc",
+                "action1",
+                "desc",
                 FormView::new().field(fields::Checkbox::new("ch1")),
                 |_| {},
             )
@@ -363,7 +359,8 @@ mod tests {
     fn cli_checkbox_is_serialized_ok_when_value_missing() {
         let value = Fui::new()
             .action(
-                "action1: desc",
+                "action1",
+                "desc",
                 FormView::new().field(fields::Checkbox::new("ch1")),
                 |_| {},
             )
@@ -377,7 +374,8 @@ mod tests {
     fn cli_text_is_serialized_ok_when_value_preset() {
         let value = Fui::new()
             .action(
-                "action1: desc",
+                "action1",
+                "desc",
                 FormView::new().field(fields::Text::new("t1")),
                 |_| {},
             )
@@ -396,7 +394,8 @@ mod tests {
     fn cli_autocomplete_is_serialized_ok_when_value_preset() {
         let value = Fui::new()
             .action(
-                "action1: desc",
+                "action1",
+                "desc",
                 FormView::new().field(fields::Autocomplete::new("ac", vec!["v1", "v2", "v3"])),
                 |_| {},
             )
@@ -415,7 +414,8 @@ mod tests {
     fn cli_multiselect_is_serialized_ok_when_value_preset() {
         let value = Fui::new()
             .action(
-                "action1: desc",
+                "action1",
+                "desc",
                 FormView::new().field(fields::Multiselect::new("mf", vec!["v1", "v2", "v3"])),
                 |_| {},
             )

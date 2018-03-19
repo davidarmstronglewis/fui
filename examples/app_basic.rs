@@ -14,19 +14,19 @@ fn hdlr(v: Value) {
 fn main() {
     Fui::new()
         .action(
-            "ACTION1: description",
-            // TODO:: validate label
+            "action1",
+            "help for action1",
             FormView::new().field(Text::new("action1-data").help("help for action1 data")),
             |v| {
                 println!("user input (from callback) {:?}", v);
             },
         )
         .action(
-            "ACTION2: description",
-            // TODO:: validate label
+            "action2",
+            "help for action2",
             FormView::new().field(Text::new("action2-data").help("help for action2 data")),
             hdlr,
         )
-        .about("Example program which has CLI & form interface (TUI)")
+        .about("An Example program which has CLI & form interface (TUI)")
         .run();
 }
