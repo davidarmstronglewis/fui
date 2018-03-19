@@ -21,7 +21,7 @@ fn main() {
         Checkbox::new("make_symbolic").help("make symbolic links instead of hard links");
     Fui::new()
         .action(
-            "basic link",
+            "basic-link",
             "create a link to TARGET with the name LINK_NAME",
             FormView::new()
                 .field(
@@ -38,7 +38,7 @@ fn main() {
             hdlr,
         )
         .action(
-            "many files, single dir",
+            "many-files-single-dir",
             "create links to each TARGET in DIRECTORY",
             FormView::new()
                 .field(

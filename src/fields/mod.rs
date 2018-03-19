@@ -16,10 +16,6 @@ pub use self::checkbox::Checkbox;
 pub use self::multiselect::Multiselect;
 pub use self::text::Text;
 
-//TODO:: valid are alphanumerics + '-'
-//struct Label
-// Field.label is Label
-
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
     /// Builds container `view` with placeholders for `help`, `value`, `error`.
@@ -44,6 +40,10 @@ pub struct Field<W: WidgetManager, T> {
 
 impl<W: WidgetManager, T> Field<W, T> {
     /// Creates a new `Field` with given `label`, `widget_manager`, `initial`.
+    ///
+    /// `label` should match NOTE from [Fui::action]
+    ///
+    /// [Fui::action]: ../struct.Fui.html#method.action
     pub fn new<IS: Into<String>>(label: IS, widget_manager: W, initial: T) -> Self {
         Field {
             label: label.into(),

@@ -174,6 +174,14 @@ impl Fui {
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`
+    ///
+    /// NOTE:
+    ///
+    /// `name` is also translated into CLI argument, so:
+    ///
+    /// * "my-arg" is ok (only `"a..z"` & `"-"`)
+    /// * "my arg" is bad (becuase in shell space (`" "`) needs to be escaped)
+    ///
     pub fn action<IS, F>(mut self, name: IS, help: IS, form: FormView, hdlr: F) -> Self
     where
         IS: Into<String>,
