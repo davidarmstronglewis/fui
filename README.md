@@ -36,14 +36,16 @@ fn hdlr(v: Value) {
 fn main() {
     Fui::new()
         .action(
-            "ACTION1: description",
+            "action1",
+            "description",
             FormView::new().field(Text::new("action1 data").help("help for action1 data")),
             |v| {
                 println!("user input (from callback) {:?}", v);
             },
         )
         .action(
-            "ACTION2: description",
+            "action2",
+            "description",
             FormView::new().field(Text::new("action2 data").help("help for action2 data")),
             hdlr,
         )

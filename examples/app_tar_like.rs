@@ -26,7 +26,8 @@ fn main() {
 
     Fui::new()
         .action(
-            "ARCHIVE-FILES: Create an archive from files",
+            "archive-files",
+            "Create an archive from files",
             FormView::new()
                 .field(
                     Multiselect::new("file-to-archive", DirItems::new())
@@ -44,7 +45,8 @@ fn main() {
             hdlr,
         )
         .action(
-            "EXTRACT-TO-DIR: Extract an archive in a target folder",
+            "extract-to-dir",
+            "Extract an archive in a target folder",
             FormView::new()
                 .field(
                     Autocomplete::new("archive-path", DirItems::new())
@@ -62,7 +64,8 @@ fn main() {
             hdlr,
         )
         .action(
-            "LIST-ARCHIVE: List the contents of a tar file",
+            "list-archive",
+            "List the contents of a tar file",
             FormView::new()
                 .field(
                     Autocomplete::new("archive-file", DirItems::new())
