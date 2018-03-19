@@ -25,7 +25,7 @@
 //! use fui::fields::Text;
 //!
 //! fn hdlr(v: Value) {
-//!     println!("user input (from hdlr) {:?}", v);
+//!     println!("user input (from fn) {:?}", v);
 //! }
 //!
 //! fn main() {
@@ -35,7 +35,7 @@
 //!             "description",
 //!             FormView::new().field(Text::new("action1 data").help("help for action1 data")),
 //!             |v| {
-//!                 println!("user input (from callback) {:?}", v);
+//!                 println!("user input (from closure) {:?}", v);
 //!             },
 //!         )
 //!         .action(

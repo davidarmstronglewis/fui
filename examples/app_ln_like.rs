@@ -13,7 +13,7 @@ use fui::validators::{DirExists, Required};
 use fui::{Fui, Value};
 
 fn hdlr(v: Value) {
-    println!("user input (from hdlr) {:?}", v);
+    println!("user input (from fn) {:?}", v);
 }
 
 fn main() {
