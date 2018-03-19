@@ -138,34 +138,38 @@ use cursive::Cursive;
 use cursive::traits::Boxable;
 use form::FormView;
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::env;
 use std::ffi::OsString;
 use std::rc::Rc;
 use validators::OneOf;
 
+struct Action {
+    //TODO::: use &str instead of String?
+    name: String,
+    //TODO:: validate desc includes at least on :
+    desc: String,
+    form: Option<FormView>,
+    handler: Rc<Fn(Value)>,
+}
+
+impl Action {
+    fn cmd_with_desc(&self) -> String {
+        format!("{}: {}", self.name, self.desc)
+    }
+}
+
 /// Top level building block of `fui` crate
 pub struct Fui {
     //TODO:: no Strings
-    actions: Vec<(String, String)>,
-    // TODO:: new structure should allows:
-    // action-name should be stored as lower-case and upper-case only in picker
-    // action-name 2 form
-    // action-name 2 desc
-    // action-name 2 handler
-    descs: Vec<String>,
-
-    forms: Vec<FormView>,
-    hdlrs: Vec<Box<Fn(Value) + 'static>>,
-    about: Option<String>
+    actions: BTreeMap<String, Action>,
+    about: Option<String>,
 }
 impl Fui {
     /// Creates a new `Fui` with empty actions
     pub fn new() -> Self {
         Fui {
-            actions: Vec::new(),
-            descs: Vec::new(),
-            forms: Vec::new(),
-            hdlrs: Vec::new(),
+            actions: BTreeMap::new(),
             about: None,
         }
     }
@@ -177,29 +181,24 @@ impl Fui {
     {
         let desc = desc.into();
 
-        {
+        let action_details = {
             //TODO:: char validation for action-name
             let action_data: Vec<&str> = desc.splitn(2, ": ").collect();
-            if action_data.len() == 1 {
-                self.actions
-                    .push((action_data[0].to_string(), "".to_string()));
+            let (name, help) = if action_data.len() == 1 {
+                (action_data[0].to_string(), "".to_string())
             } else {
-                self.actions
-                    .push((action_data[0].to_string(), action_data[1].to_string()));
+                (action_data[0].to_string(), action_data[1].to_string())
             };
-        }
 
-        //TODO:: validate desc includes at least on :
-        //let data = {
-        //    "archive-files": {
-        //        desc: "",
-        //        form_idx: usize,
-        //        handler: rc<fn>
-        //    }
-        //}
-        self.descs.push(desc);
-        self.forms.push(form);
-        self.hdlrs.push(Box::new(hdlr));
+            // TODO::: mv it from this scope
+            Action {
+                name: name,
+                desc: help,
+                form: Some(form),
+                handler: Rc::new(hdlr),
+            }
+        };
+        self.actions.insert(desc, action_details);
         self
     }
 
@@ -208,24 +207,37 @@ impl Fui {
     // then top layer are switched (instead of current inserting/popping)
     pub fn run(mut self) {
         let args = env::args_os();
-        let (value, selected_idx) = if args.len() > 1 {
+        let input_data = if args.len() > 1 {
             // input from CLI
-            let (value, selected_idx) = self.run_cli(args);
-            let value = Some(value);
-            (value, selected_idx)
+            self.input_from_cli(args)
         } else {
             // input from TUI
-            let (value, selected_idx) = self.run_tui();
-            (value, selected_idx)
+            self.input_from_tui()
         };
         // run handler
-        if let Some(data) = value {
-            let hdlr = self.hdlrs.remove(selected_idx);
+        if let Some((action, data)) = input_data {
+            let hdlr = self.actions.get(&action).unwrap().handler.clone();
             hdlr(data);
         }
     }
 
-    fn run_cli<I, T>(&self, user_args: I) -> (Value, usize)
+    fn build_cli_app(&self, user_args: &[OsString]) -> clap::App {
+        let mut sub_cmds: Vec<clap::App> = Vec::new();
+        for action in self.actions.values() {
+            let args = action.form.as_ref().unwrap().fields2clap_args();
+            let sub_cmd = clap::SubCommand::with_name(action.name.as_ref())
+                .about(action.desc.as_ref())
+                .args(args.as_slice());
+            sub_cmds.push(sub_cmd);
+        }
+        clap::App::new(user_args[0].as_os_str().to_str().unwrap())
+            .version(crate_version!())
+            .author(crate_authors!())
+            .about(self.safe_about())
+            .subcommands(sub_cmds)
+    }
+
+    fn input_from_cli<I, T>(&self, user_args: I) -> Option<(String, Value)>
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
@@ -235,43 +247,37 @@ impl Fui {
             .map(|x| x.into())
             .collect::<Vec<OsString>>();
 
-        let mut sub_cmds: Vec<clap::App> = Vec::new();
-        for (idx, form) in self.forms.iter().enumerate() {
-            let args = form.fields2clap_args();
-            let (ref name, ref help) = self.actions[idx];
-            let sub_cmd = clap::SubCommand::with_name(&name)
-                .about(help.as_ref())
-                .args(args.as_slice());
-            sub_cmds.push(sub_cmd);
-        }
-        let app = clap::App::new(user_args[0].as_os_str().to_str().unwrap())
-            .version(crate_version!())
-            .author(crate_authors!())
-            .about(self.safe_about())
-            .subcommands(sub_cmds);
+        let app = self.build_cli_app(&user_args);
+
         let matches = app.get_matches_from(user_args);
         let cmd_name = matches.subcommand_name().unwrap();
-        let selected_idx = self.actions.iter().position(|x| x.0 == cmd_name).unwrap();
         let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
-        let idx = self.actions.iter().position(|x| x.0 == cmd_name).unwrap();
-        let form = &self.forms[idx];
-        let value = form.clap_arg_matches2value(cmd_matches);
-        (value, selected_idx)
+        let action = self.actions
+            .values()
+            .find(|action| action.name == cmd_name)
+            .unwrap();
+        let value = action
+            .form
+            .as_ref()
+            .unwrap()
+            .clap_arg_matches2value(cmd_matches);
+        Some((action.cmd_with_desc(), value))
     }
 
-    fn run_tui(&mut self) -> (Option<Value>, usize) {
-        // cursive instance breaks println!, enclose it with scope to fix printing
-        let mut c = cursive::Cursive::new();
-
-        // cmd picker
+    fn run_tui_cmd_picker(&self, c: &mut Cursive) -> Rc<RefCell<Option<String>>> {
         let cmd: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
         let cmd_clone = Rc::clone(&cmd);
+        // TODO::: rm cloning for it
+        let actions = self.actions
+            .keys()
+            .map(|x| x.to_owned())
+            .collect::<Vec<String>>();
         c.add_layer(
             FormView::new()
                 .field(
-                    fields::Autocomplete::new("action", self.descs.clone())
+                    fields::Autocomplete::new("action", actions.clone())
                         .help("Pick action")
-                        .validator(OneOf(self.descs.clone())),
+                        .validator(OneOf(actions)),
                 )
                 .on_submit(move |c, data| {
                     let value = data.get("action").unwrap().clone();
@@ -282,16 +288,26 @@ impl Fui {
                 .full_screen(),
         );
         c.run();
-        let selected_idx = cmd.borrow()
-            .clone()
-            .and_then(|v| self.descs.iter().position(|item| item == v.as_str()));
-        let selected_idx = match selected_idx {
-            None => return (None, 1000),
-            Some(idx) => idx,
+        cmd
+    }
+
+    fn input_from_tui(&mut self) -> Option<(String, Value)> {
+        let mut c = cursive::Cursive::new();
+
+        let cmd = self.run_tui_cmd_picker(&mut c);
+        let selection = match cmd.borrow().clone() {
+            Some(v) => v,
+            None => return None,
         };
 
         // form
-        let mut form_view = self.forms.remove(selected_idx);
+        // TODO: use find_layer_from_id when available
+        // https://github.com/
+        // gyscos/Cursive/commit/06305c89a9223ffa0b041c94df4a51a177b1c99a
+        // #diff-bbe86c39b8f295bd78f682413bd99e5aR247
+        let action = self.actions.get_mut(&selection).unwrap();
+        let mut form_view = (*action).form.take().unwrap();
+
         let form_data: Rc<RefCell<Option<Value>>> = Rc::new(RefCell::new(None));
         let form_data_submit = Rc::clone(&form_data);
         form_view.set_on_submit(move |c: &mut Cursive, data: Value| {
@@ -300,13 +316,13 @@ impl Fui {
         });
         form_view.set_on_cancel(move |c: &mut Cursive| {
             //TODO: this should return to action picker
-            //TODO: self.forms are drained so can't be done now
+            //TODO: forms are drained so can't be done now
             c.quit();
         });
         c.add_layer(form_view.full_width());
         c.run();
-        let form_data = form_data.borrow().clone();
-        (form_data, selected_idx)
+        let form_data = form_data.borrow().clone().unwrap();
+        Some((selection, form_data))
     }
 
     /// Sets `about` for `CLI` app (which is [Clap::App::about])
@@ -337,10 +353,10 @@ mod tests {
                 FormView::new().field(fields::Checkbox::new("ch1")),
                 |_| {},
             )
-            .run_cli(vec!["my_app", "action1", "--ch1"]);
+            .input_from_cli(vec!["my_app", "action1", "--ch1"]);
 
         let exp: Value = serde_json::from_str(r#"{ "ch1": true }"#).unwrap();
-        assert_eq!(value.0, exp);
+        assert_eq!(value, Some(("action1: desc".to_string(), exp)));
     }
 
     #[test]
@@ -351,10 +367,10 @@ mod tests {
                 FormView::new().field(fields::Checkbox::new("ch1")),
                 |_| {},
             )
-            .run_cli(vec!["my_app", "action1"]);
+            .input_from_cli(vec!["my_app", "action1"]);
 
         let exp: Value = serde_json::from_str(r#"{ "ch1": false }"#).unwrap();
-        assert_eq!(value.0, exp);
+        assert_eq!(value, Some(("action1: desc".to_string(), exp)));
     }
 
     #[test]
@@ -365,10 +381,10 @@ mod tests {
                 FormView::new().field(fields::Text::new("t1")),
                 |_| {},
             )
-            .run_cli(vec!["my_app", "action1", "--t1", "v1"]);
+            .input_from_cli(vec!["my_app", "action1", "--t1", "v1"]);
 
         let exp: Value = serde_json::from_str(r#"{ "t1": "v1" }"#).unwrap();
-        assert_eq!(value.0, exp);
+        assert_eq!(value, Some(("action1: desc".to_string(), exp)));
     }
 
     //#[test]
@@ -384,10 +400,10 @@ mod tests {
                 FormView::new().field(fields::Autocomplete::new("ac", vec!["v1", "v2", "v3"])),
                 |_| {},
             )
-            .run_cli(vec!["my_app", "action1", "--ac", "v1"]);
+            .input_from_cli(vec!["my_app", "action1", "--ac", "v1"]);
 
         let exp: Value = serde_json::from_str(r#"{ "ac": "v1" }"#).unwrap();
-        assert_eq!(value.0, exp);
+        assert_eq!(value, Some(("action1: desc".to_string(), exp)));
     }
 
     //#[test]
@@ -403,9 +419,9 @@ mod tests {
                 FormView::new().field(fields::Multiselect::new("mf", vec!["v1", "v2", "v3"])),
                 |_| {},
             )
-            .run_cli(vec!["my_app", "action1", "--mf", "v1"]);
+            .input_from_cli(vec!["my_app", "action1", "--mf", "v1"]);
         let exp: Value = serde_json::from_str(r#"{ "mf": ["v1"] }"#).unwrap();
-        assert_eq!(value.0, exp);
+        assert_eq!(value, Some(("action1: desc".to_string(), exp)));
     }
 
     //#[test]
