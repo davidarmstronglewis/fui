@@ -52,6 +52,51 @@ fn main() {
         .run();
 }
 ```
+
+This will make the program automatically working in 2 modes:
+
+1. ready for parsing CLI arguments, like here:
+
+    ```bash
+    $ app_basic -h
+    target/debug/examples/app_basic 0.7.1
+    xliiv <tymoteusz.jankowski@gmail.com>
+    An Example program which has CLI & form interface (TUI)
+
+    USAGE:
+        app_basic [SUBCOMMAND]
+
+    FLAGS:
+        -h, --help       Prints help information
+        -V, --version    Prints version information
+
+    SUBCOMMANDS:
+        action1    help for action1
+        action2    help for action2
+        help       Prints this message or the help of the given subcommand(s)
+    ```
+
+    or
+
+    ```bash
+    $ app_basic action1 -h
+    app_basic-action1 
+    help for action1
+
+    USAGE:
+        app_basic action1 [OPTIONS]
+
+    FLAGS:
+        -h, --help       Prints help information
+        -V, --version    Prints version information
+
+    OPTIONS:
+            --action1-data <action1-data>    help for action1 data
+    ```
+
+2. ready for getting user input from easy and discoverably TUI interface, like image below:
+
+
 ### More examples
 
 [Here](https://github.com/xliiv/fui/tree/master/examples)
