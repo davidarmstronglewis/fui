@@ -23,6 +23,8 @@ fui = "0.8"
 ```rust
 // Example showing imagined CLI app. with two actions
 
+#[macro_use]
+extern crate clap;
 extern crate fui;
 
 use fui::{Fui, Value};
@@ -37,18 +39,22 @@ fn main() {
     Fui::new()
         .action(
             "action1",
-            "description",
-            FormView::new().field(Text::new("action1 data").help("help for action1 data")),
+            "help for action1",
+            FormView::new().field(Text::new("action1-data").help("help for action1 data")),
             |v| {
                 println!("user input (from closure) {:?}", v);
             },
         )
         .action(
             "action2",
-            "description",
-            FormView::new().field(Text::new("action2 data").help("help for action2 data")),
+            "help for action2",
+            FormView::new().field(Text::new("action2-data").help("help for action2 data")),
             hdlr,
         )
+        .name(crate_name!())
+        .version(crate_version!())
+        .about(crate_description!())
+        .author(crate_authors!())
         .run();
 }
 ```
