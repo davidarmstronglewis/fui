@@ -16,7 +16,7 @@ Add CLI & form interface to your program.
 ### Cargo.toml
 ```toml
 [dependencies]
-fui = "0.7"
+fui = "0.8"
 ```
 
 ### main.rs
@@ -59,7 +59,7 @@ This will make the program automatically working in 2 modes:
 
     ```bash
     $ ./app_basic -h
-    target/debug/examples/app_basic 0.7.1
+    app_basic 1.0.0
     xliiv <tymoteusz.jankowski@gmail.com>
     An Example program which has CLI & form interface (TUI)
 

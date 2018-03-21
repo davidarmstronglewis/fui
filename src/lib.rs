@@ -7,7 +7,7 @@
 //! ### Cargo.toml
 //! ```toml, no_run
 //! [dependencies]
-//! fui = "0.7"
+//! fui = "0.8"
 //! ```
 //!
 //! ### main.rs

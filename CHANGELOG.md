@@ -1,6 +1,6 @@
 # Changelog
 
-## Changed
+## 0.8.0
 
 * `Fui` takes optionally 4 attributes: name, version, description, authors
 * `FormView` has an option of setting title
