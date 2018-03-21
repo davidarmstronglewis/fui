@@ -145,29 +145,28 @@ use std::ffi::OsString;
 use std::rc::Rc;
 use validators::OneOf;
 
-struct Action {
-    //TODO::: use &str instead of String?
-    name: String,
-    help: String,
+struct Action<'action> {
+    name: &'action str,
+    help: &'action str,
     form: Option<FormView>,
     handler: Rc<Fn(Value)>,
 }
 
-impl Action {
+impl<'action> Action<'action> {
     fn cmd_with_desc(&self) -> String {
         format!("{}: {}", self.name, self.help)
     }
 }
 
 /// Top level building block of `fui` crate
-pub struct Fui<'attrs> {
-    actions: BTreeMap<String, Action>,
+pub struct Fui<'attrs, 'action> {
+    actions: BTreeMap<String, Action<'action>>,
     name: &'attrs str,
     version: &'attrs str,
     about: &'attrs str,
     author: &'attrs str,
 }
-impl<'attrs> Fui<'attrs> {
+impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions
     pub fn new() -> Self {
         Fui {
@@ -187,14 +186,13 @@ impl<'attrs> Fui<'attrs> {
     /// * "my-arg" is ok (only `"a..z"` & `"-"`)
     /// * "my arg" is bad (becuase in shell space (`" "`) needs to be escaped)
     ///
-    pub fn action<IS, F>(mut self, name: IS, help: IS, form: FormView, hdlr: F) -> Self
+    pub fn action<F>(mut self, name: &'action str, help: &'action str, form: FormView, hdlr: F) -> Self
     where
-        IS: Into<String>,
         F: Fn(Value) + 'static,
     {
         let action_details = Action {
-            name: name.into(),
-            help: help.into(),
+            name: name,
+            help: help,
             form: Some(form),
             handler: Rc::new(hdlr),
         };
