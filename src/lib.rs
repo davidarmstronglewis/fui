@@ -287,6 +287,7 @@ impl Fui {
             .collect::<Vec<String>>();
         c.add_layer(
             FormView::new()
+                .title(&self.header())
                 .field(
                     fields::Autocomplete::new("action", actions.clone())
                         .help("Pick action")
