@@ -160,23 +160,22 @@ impl Action {
 }
 
 /// Top level building block of `fui` crate
-pub struct Fui {
+pub struct Fui<'attrs> {
     actions: BTreeMap<String, Action>,
-    //TODO::: &str?
-    name: String,
-    version: String,
-    about: String,
-    author: String,
+    name: &'attrs str,
+    version: &'attrs str,
+    about: &'attrs str,
+    author: &'attrs str,
 }
-impl Fui {
+impl<'attrs> Fui<'attrs> {
     /// Creates a new `Fui` with empty actions
     pub fn new() -> Self {
         Fui {
             actions: BTreeMap::new(),
-            name: "".to_string(),
-            version: "".to_string(),
-            about: "".to_string(),
-            author: "".to_string(),
+            name: "",
+            version: "",
+            about: "",
+            author: "",
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`
@@ -344,8 +343,8 @@ impl Fui {
     /// For CLI means [Clap::App::name]
     ///
     /// [clap::App::name]: ../clap/struct.App.html#method.name
-    pub fn name<V: Into<String>>(mut self, name: V) -> Self {
-        self.name = name.into();
+    pub fn name(mut self, name: &'attrs str) -> Self {
+        self.name = name;
         self
     }
 
@@ -354,7 +353,7 @@ impl Fui {
     /// For CLI means [Clap::App::version]
     ///
     /// [clap::App::version]: ../clap/struct.App.html#method.version
-    pub fn version<V: Into<String>>(mut self, version: V) -> Self {
+    pub fn version(mut self, version: &'attrs str) -> Self {
         self.version = version.into();
         self
     }
@@ -364,7 +363,7 @@ impl Fui {
     /// For CLI means [Clap::App::about]
     ///
     /// [clap::App::about]: ../clap/struct.App.html#method.about
-    pub fn about<V: Into<String>>(mut self, about: V) -> Self {
+    pub fn about(mut self, about: &'attrs str) -> Self {
         self.about = about.into();
         self
     }
@@ -374,7 +373,7 @@ impl Fui {
     /// For CLI means [Clap::App::author]
     ///
     /// [clap::App::author]: ../clap/struct.App.html#method.author
-    pub fn author<V: Into<String>>(mut self, author: V) -> Self {
+    pub fn author(mut self, author: &'attrs str) -> Self {
         self.author = author.into();
         self
     }
