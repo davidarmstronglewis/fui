@@ -194,6 +194,12 @@ impl FormView {
             .map(|cb| Callback::from_fn(move |c| cb(c)));
         EventResult::Consumed(cb)
     }
+
+    /// Sets `title` of the form on the top of it
+    pub fn title(mut self, title: &str) -> Self {
+        self.view.set_title(title);
+        self
+    }
 }
 
 impl ViewWrapper for FormView {

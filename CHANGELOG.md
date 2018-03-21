@@ -2,6 +2,8 @@
 
 ## Changed
 
+* `Fui` takes optionally 4 attributes: name, version, description, authors
+* `FormView` has an option of setting title
 * `Fui` automatically adds `CLI` feature
     * `Fui::action`'s now takes 4 arguments (previous `desc` is splited to `name` & `help`) - Breaking change
 * Autocomplete/Multiselect:

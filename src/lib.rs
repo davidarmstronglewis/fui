@@ -116,7 +116,6 @@
 //!
 #![deny(missing_docs)]
 
-#[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate cursive as _cursive;
@@ -163,14 +162,21 @@ impl Action {
 /// Top level building block of `fui` crate
 pub struct Fui {
     actions: BTreeMap<String, Action>,
-    about: Option<String>,
+    //TODO::: &str?
+    name: String,
+    version: String,
+    about: String,
+    author: String,
 }
 impl Fui {
     /// Creates a new `Fui` with empty actions
     pub fn new() -> Self {
         Fui {
             actions: BTreeMap::new(),
-            about: None,
+            name: "".to_string(),
+            version: "".to_string(),
+            about: "".to_string(),
+            author: "".to_string(),
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`
@@ -193,7 +199,8 @@ impl Fui {
             form: Some(form),
             handler: Rc::new(hdlr),
         };
-        self.actions.insert(action_details.cmd_with_desc(), action_details);
+        self.actions
+            .insert(action_details.cmd_with_desc(), action_details);
         self
     }
 
@@ -216,7 +223,7 @@ impl Fui {
         }
     }
 
-    fn build_cli_app(&self, user_args: &[OsString]) -> clap::App {
+    fn build_cli_app(&self) -> clap::App {
         let mut sub_cmds: Vec<clap::App> = Vec::new();
         for action in self.actions.values() {
             let args = action.form.as_ref().unwrap().fields2clap_args();
@@ -225,10 +232,10 @@ impl Fui {
                 .args(args.as_slice());
             sub_cmds.push(sub_cmd);
         }
-        clap::App::new(user_args[0].as_os_str().to_str().unwrap())
-            .version(crate_version!())
-            .author(crate_authors!())
-            .about(self.safe_about())
+        clap::App::new(self.name.as_ref())
+            .version(self.version.as_ref())
+            .about(self.about.as_ref())
+            .author(self.author.as_ref())
             .subcommands(sub_cmds)
     }
 
@@ -242,7 +249,7 @@ impl Fui {
             .map(|x| x.into())
             .collect::<Vec<OsString>>();
 
-        let app = self.build_cli_app(&user_args);
+        let app = self.build_cli_app();
 
         let matches = app.get_matches_from(user_args);
         let cmd_name = matches.subcommand_name().unwrap();
@@ -259,6 +266,17 @@ impl Fui {
         Some((action.cmd_with_desc(), value))
     }
 
+    fn header(&self) -> String {
+        let header = if (self.name.len() > 0) & (self.version.len() > 0) {
+            format!("{} ({})", self.name, self.version)
+        } else if self.name.len() > 0 {
+            format!("{}", self.name)
+        } else {
+            format!("")
+        };
+        return header;
+    }
+
     fn run_tui_cmd_picker(&self, c: &mut Cursive) -> Rc<RefCell<Option<String>>> {
         let cmd: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
         let cmd_clone = Rc::clone(&cmd);
@@ -269,6 +287,7 @@ impl Fui {
             .collect::<Vec<String>>();
         c.add_layer(
             FormView::new()
+                .title(&self.header())
                 .field(
                     fields::Autocomplete::new("action", actions.clone())
                         .help("Pick action")
@@ -320,19 +339,44 @@ impl Fui {
         Some((selection, form_data))
     }
 
-    /// Sets `about` for `CLI` app (which is [Clap::App::about])
+    /// Sets program's `name.
     ///
-    /// [clap::App::about]: ../clap/struct.App.html#method.about
-    pub fn about<V: Into<String>>(mut self, about: V) -> Self {
-        self.about = Some(about.into());
+    /// For CLI means [Clap::App::name]
+    ///
+    /// [clap::App::name]: ../clap/struct.App.html#method.name
+    pub fn name<V: Into<String>>(mut self, name: V) -> Self {
+        self.name = name.into();
         self
     }
 
-    fn safe_about(&self) -> &str {
-        match self.about {
-            Some(ref v) => v.as_ref(),
-            None => "",
-        }
+    /// Sets program's `version`.
+    ///
+    /// For CLI means [Clap::App::version]
+    ///
+    /// [clap::App::version]: ../clap/struct.App.html#method.version
+    pub fn version<V: Into<String>>(mut self, version: V) -> Self {
+        self.version = version.into();
+        self
+    }
+
+    /// Sets program's `about`.
+    ///
+    /// For CLI means [Clap::App::about]
+    ///
+    /// [clap::App::about]: ../clap/struct.App.html#method.about
+    pub fn about<V: Into<String>>(mut self, about: V) -> Self {
+        self.about = about.into();
+        self
+    }
+
+    /// Sets program's `author`.
+    ///
+    /// For CLI means [Clap::App::author]
+    ///
+    /// [clap::App::author]: ../clap/struct.App.html#method.author
+    pub fn author<V: Into<String>>(mut self, author: V) -> Self {
+        self.author = author.into();
+        self
     }
 }
 
