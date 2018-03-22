@@ -140,6 +140,6 @@ This will make the program automatically working in 2 modes:
 * more tests
 * error handling & unwraps
 * magic stuff:
-    * -add magic which renders form for clap (or structopt) if args missing-
+    * ~~add magic which renders form for clap (or structopt) if args missing~~
         * `clap` should distinguish data types: file, dir, other
     * add magic which works with current programs like: ls, grep, etc.
