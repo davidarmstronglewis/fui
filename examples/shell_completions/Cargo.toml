@@ -1,0 +1,17 @@
+[package]
+name = "shell_completions"
+version = "1.0.0"
+authors = ["Tymoteusz Jankowski <tymoteusz.jankowski@gmail.com>"]
+# set build script
+build = "build.rs"
+
+# set build dependencies
+[build-dependencies]
+# TODO: fix version
+fui = {"path" = "../../"}
+clap = "2"
+
+[dependencies]
+clap = "2"
+# TODO: fix version
+fui = {"path" = "../../"}
