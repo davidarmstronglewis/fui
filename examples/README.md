@@ -58,3 +58,13 @@ More `Views` are already defined in `fui` dependency crate [Cursive](http://docs
 ## Misc examples
 
 * [`feeders`](feeders.rs) building block for `Fields` with completition, like `Autocomplete` and `Multiselect`
+
+* shell completions (based on [clap example](https://kbknapp.github.io/clap-rs/clap/struct.App.html#method.gen_completions))
+
+    Generating:
+
+    ```bash
+    cd examples/shell_completions
+    cargo build
+    cat clap_completition.bash
+    ```

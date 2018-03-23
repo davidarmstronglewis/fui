@@ -186,7 +186,13 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// * "my-arg" is ok (only `"a..z"` & `"-"`)
     /// * "my arg" is bad (becuase in shell space (`" "`) needs to be escaped)
     ///
-    pub fn action<F>(mut self, name: &'action str, help: &'action str, form: FormView, hdlr: F) -> Self
+    pub fn action<F>(
+        mut self,
+        name: &'action str,
+        help: &'action str,
+        form: FormView,
+        hdlr: F,
+    ) -> Self
     where
         F: Fn(Value) + 'static,
     {
@@ -220,7 +226,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         }
     }
 
-    fn build_cli_app(&self) -> clap::App {
+    /// Returns automatiacally generated [clap::App]
+    ///
+    /// [clap::App]: ../clap/struct.App.html
+    pub fn build_cli_app(&self) -> clap::App {
         let mut sub_cmds: Vec<clap::App> = Vec::new();
         for action in self.actions.values() {
             let args = action.form.as_ref().unwrap().fields2clap_args();
