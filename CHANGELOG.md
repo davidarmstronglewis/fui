@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+* `Fui` theme is now configurable (through `Fui::theme` setter)
+
 ## 0.8.0
 
 * `Fui` takes optionally 4 attributes: name, version, description, authors

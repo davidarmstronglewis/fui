@@ -145,6 +145,11 @@ use std::ffi::OsString;
 use std::rc::Rc;
 use validators::OneOf;
 
+const DEFAULT_THEME: &'static str = "
+[colors]
+    highlight_inactive = \"light black\"
+";
+
 struct Action<'action> {
     name: &'action str,
     help: &'action str,
@@ -165,6 +170,7 @@ pub struct Fui<'attrs, 'action> {
     version: &'attrs str,
     about: &'attrs str,
     author: &'attrs str,
+    theme: &'attrs str,
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions
@@ -175,6 +181,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             version: "",
             about: "",
             author: "",
+            theme: &DEFAULT_THEME,
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`
@@ -313,6 +320,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     fn input_from_tui(&mut self) -> Option<(String, Value)> {
         let mut c = cursive::Cursive::new();
+        c.load_theme(self.theme);
 
         let cmd = self.run_tui_cmd_picker(&mut c);
         let selection = match cmd.borrow().clone() {
@@ -361,6 +369,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     ///
     /// [clap::App::version]: ../clap/struct.App.html#method.version
     pub fn version(mut self, version: &'attrs str) -> Self {
+        //TODO:::
         self.version = version.into();
         self
     }
@@ -382,6 +391,41 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// [clap::App::author]: ../clap/struct.App.html#method.author
     pub fn author(mut self, author: &'attrs str) -> Self {
         self.author = author.into();
+        self
+    }
+
+    /// Sets `theme` for `Fui`.
+    ///
+    /// For details see [Cursive's themes]
+    ///
+    /// # Example:
+    ///
+    /// ```
+    /// use fui::Fui;
+    /// use fui::form::FormView;
+    /// use fui::fields::Text;
+    ///
+    /// let my_theme = "
+    /// shadow = false
+    /// borders = \"simple\"
+    /// [colors]
+    ///     background = \"yellow\"
+    /// ";
+    ///
+    /// let app = Fui::new()
+    ///     .action(
+    ///         "action1",
+    ///         "desc",
+    ///         FormView::new().field(Text::new("action1-data")),
+    ///         |v| { println!("{:?}", v); }
+    ///     )
+    ///     .theme(my_theme);
+    /// ```
+    ///
+    ///
+    /// [Cursive's themes]: ../cursive/theme/index.html#themes
+    pub fn theme(mut self, theme: &'attrs str) -> Self {
+        self.theme = theme;
         self
     }
 }
