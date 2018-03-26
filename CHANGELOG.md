@@ -4,6 +4,9 @@
 
 * `Autoselect` highlight color changed to light black
 * `Fui` theme is now configurable (through `Fui::theme` setter)
+* Add shell completion example
+* Make `Fui::build_cli_app` public for generating shell completion
+
 
 ## 0.8.0
 
