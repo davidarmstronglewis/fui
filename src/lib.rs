@@ -293,7 +293,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     fn run_tui_cmd_picker(&self, c: &mut Cursive) -> Rc<RefCell<Option<String>>> {
         let cmd: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
         let cmd_clone = Rc::clone(&cmd);
-        // TODO::: rm cloning for it
+        // TODO: rm cloning for it
         let actions = self.actions
             .keys()
             .map(|x| x.to_owned())
@@ -320,7 +320,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     fn input_from_tui(&mut self) -> Option<(String, Value)> {
         let mut c = cursive::Cursive::new();
-        c.load_theme(self.theme);
+        c.load_theme(self.theme).expect("Can't load theme");
 
         let cmd = self.run_tui_cmd_picker(&mut c);
         let selection = match cmd.borrow().clone() {
@@ -369,8 +369,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     ///
     /// [clap::App::version]: ../clap/struct.App.html#method.version
     pub fn version(mut self, version: &'attrs str) -> Self {
-        //TODO:::
-        self.version = version.into();
+        self.version = version;
         self
     }
 
@@ -380,7 +379,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     ///
     /// [clap::App::about]: ../clap/struct.App.html#method.about
     pub fn about(mut self, about: &'attrs str) -> Self {
-        self.about = about.into();
+        self.about = about;
         self
     }
 
@@ -390,7 +389,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     ///
     /// [clap::App::author]: ../clap/struct.App.html#method.author
     pub fn author(mut self, author: &'attrs str) -> Self {
-        self.author = author.into();
+        self.author = author;
         self
     }
 

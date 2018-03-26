@@ -2,6 +2,7 @@
 
 ## Next
 
+* `Autoselect` highlight color changed to light black
 * `Fui` theme is now configurable (through `Fui::theme` setter)
 
 ## 0.8.0
