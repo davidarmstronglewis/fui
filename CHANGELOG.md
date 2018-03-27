@@ -3,7 +3,7 @@
 ## Next
 
 * Improved selecting first item in `Autocomplete`
-* Fix scrolling view Autocomplete when list empty
+* Fix scrolling view `Autocomplete` when list empty
 * Improved focus change between `edit` and `select` in `Autocomplete`
 * `Autoselect` highlight color changed to light black
 * `Fui` theme is now configurable (through `Fui::theme` setter)

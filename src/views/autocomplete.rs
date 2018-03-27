@@ -163,13 +163,13 @@ impl Autocomplete {
         self.get_select_view().selected_id().unwrap() == last_idx
     }
 
-    fn select_up_top_check(&mut self) -> bool {
+    fn select_up_was_top(&mut self) -> bool {
         let is_top_before_select = self.is_top();
         self.get_select_view_mut().select_up(1);
         return is_top_before_select
     }
 
-    fn select_down_bottom_check(&mut self) -> bool {
+    fn select_down_was_bottom(&mut self) -> bool {
         let is_bottom_before_selected = self.is_bottom();
         self.get_select_view_mut().select_down(1);
         is_bottom_before_selected
@@ -179,8 +179,8 @@ impl Autocomplete {
         if self.get_select_view().is_empty() {
             return
         }
-        let is_top = self.select_up_top_check();
-        if is_top {
+        let was_top = self.select_up_was_top();
+        if was_top {
             self.suggestion_offset = self.suggestion_offset.saturating_sub(1);
             self.load_data();
         }
@@ -192,8 +192,8 @@ impl Autocomplete {
             return
         }
         let last_idx = self.shown_count as usize - 1;
-        let is_bottom = self.select_down_bottom_check();
-        if is_bottom {
+        let was_bottom = self.select_down_was_bottom();
+        if was_bottom {
             self.suggestion_offset += 1;
             if self.load_data() {
                 self.get_select_view_mut().set_selection(last_idx);
