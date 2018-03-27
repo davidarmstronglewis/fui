@@ -268,30 +268,20 @@ impl ViewWrapper for Autocomplete {
                 self.refresh_listing();
                 EventResult::Consumed(None)
             }
-            Event::Key(Key::Down) => {
-                if self.is_edit_focused() {
-                    self.with_view_mut(|v| v.on_event(event))
-                        .unwrap_or(EventResult::Ignored);
+            Event::Key(Key::Down) | Event::CtrlChar('n') => {
+                if self.is_edit_focused() && self.is_top() {
+                    // allow to select first element
+                    self.selection_to_edit();
+                } else {
+                    self.scroll_down();
                 }
-                // move selection down
-                self.scroll_down();
-                EventResult::Consumed(None)
-            }
-            Event::CtrlChar('n') => {
-                // move selection down
                 self.focus_select();
-                self.scroll_down();
                 EventResult::Consumed(None)
             }
-            Event::Key(Key::Up) => {
+            Event::Key(Key::Up) | Event::CtrlChar('p') => {
                 // move selection up
                 self.scroll_up();
-                EventResult::Consumed(None)
-            }
-            Event::CtrlChar('p') => {
-                // move selection up
                 self.focus_select();
-                self.scroll_up();
                 EventResult::Consumed(None)
             }
             Event::Key(Key::Enter) => {
