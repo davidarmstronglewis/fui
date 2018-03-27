@@ -154,10 +154,33 @@ impl Autocomplete {
         }
     }
 
-    fn scroll_up(&mut self) {
-        let is_top = self.get_select_view().selected_id().unwrap() == 0;
+    fn is_top(&mut self) -> bool {
+        self.get_select_view().selected_id().unwrap() == 0
+    }
+
+    fn is_bottom(&mut self) -> bool {
+        let last_idx = self.shown_count as usize - 1;
+        self.get_select_view().selected_id().unwrap() == last_idx
+    }
+
+    fn select_up_was_top(&mut self) -> bool {
+        let is_top_before_select = self.is_top();
         self.get_select_view_mut().select_up(1);
-        if is_top {
+        return is_top_before_select
+    }
+
+    fn select_down_was_bottom(&mut self) -> bool {
+        let is_bottom_before_selected = self.is_bottom();
+        self.get_select_view_mut().select_down(1);
+        is_bottom_before_selected
+    }
+
+    fn scroll_up(&mut self) {
+        if self.get_select_view().is_empty() {
+            return
+        }
+        let was_top = self.select_up_was_top();
+        if was_top {
             self.suggestion_offset = self.suggestion_offset.saturating_sub(1);
             self.load_data();
         }
@@ -165,10 +188,12 @@ impl Autocomplete {
     }
 
     fn scroll_down(&mut self) {
+        if self.get_select_view().is_empty() {
+            return
+        }
         let last_idx = self.shown_count as usize - 1;
-        let is_bottom = self.get_select_view().selected_id().unwrap() == last_idx;
-        self.get_select_view_mut().select_down(1);
-        if is_bottom {
+        let was_bottom = self.select_down_was_bottom();
+        if was_bottom {
             self.suggestion_offset += 1;
             if self.load_data() {
                 self.get_select_view_mut().set_selection(last_idx);
@@ -196,6 +221,28 @@ impl Autocomplete {
     {
         self.with(|v| v.set_on_submit(callback))
     }
+
+    fn is_edit_focused(&self) -> bool {
+        self.view.get_focus_index() == 0
+    }
+
+    fn is_select_focused(&self) -> bool {
+        self.view.get_focus_index() == 1
+    }
+
+    fn focus_edit(&mut self) {
+        if !self.is_edit_focused() {
+            let tab_event = Event::Shift(Key::Tab);
+            self.with_view_mut(|v| v.on_event(tab_event));
+        }
+    }
+
+    fn focus_select(&mut self) {
+        if !self.is_select_focused() {
+            let tab_event = Event::Key(Key::Tab);
+            self.with_view_mut(|v| v.on_event(tab_event));
+        }
+    }
 }
 
 impl ViewWrapper for Autocomplete {
@@ -205,6 +252,7 @@ impl ViewWrapper for Autocomplete {
         match event {
             Event::Char(_) | Event::Key(Key::Backspace) | Event::Key(Key::Del) => {
                 // typing
+                self.focus_edit();
                 self.with_view_mut(|v| v.on_event(event))
                     .unwrap_or(EventResult::Ignored);
                 self.typed_value = self.get_edit_view().get_content();
@@ -213,6 +261,7 @@ impl ViewWrapper for Autocomplete {
                 EventResult::Consumed(None)
             }
             Event::CtrlChar('u') => {
+                self.focus_edit();
                 self.get_edit_view_mut().set_content("");
                 self.typed_value = Rc::new("".to_string());
                 self.suggestion_offset = 0;
@@ -220,13 +269,19 @@ impl ViewWrapper for Autocomplete {
                 EventResult::Consumed(None)
             }
             Event::Key(Key::Down) | Event::CtrlChar('n') => {
-                // move selection down
-                self.scroll_down();
+                if self.is_edit_focused() && self.is_top() {
+                    // allow to select first element
+                    self.selection_to_edit();
+                } else {
+                    self.scroll_down();
+                }
+                self.focus_select();
                 EventResult::Consumed(None)
             }
             Event::Key(Key::Up) | Event::CtrlChar('p') => {
                 // move selection up
                 self.scroll_up();
+                self.focus_select();
                 EventResult::Consumed(None)
             }
             Event::Key(Key::Enter) => {
