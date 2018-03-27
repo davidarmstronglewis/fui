@@ -176,7 +176,9 @@ impl Autocomplete {
     }
 
     fn scroll_up(&mut self) {
-        // TODO::: fix when empty
+        if self.get_select_view().is_empty() {
+            return
+        }
         let is_top = self.select_up_top_check();
         if is_top {
             self.suggestion_offset = self.suggestion_offset.saturating_sub(1);
@@ -186,7 +188,9 @@ impl Autocomplete {
     }
 
     fn scroll_down(&mut self) {
-        // TODO::: fix when empty
+        if self.get_select_view().is_empty() {
+            return
+        }
         let last_idx = self.shown_count as usize - 1;
         let is_bottom = self.select_down_bottom_check();
         if is_bottom {
