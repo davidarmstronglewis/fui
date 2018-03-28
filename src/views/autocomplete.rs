@@ -154,13 +154,20 @@ impl Autocomplete {
         }
     }
 
+    fn is_nth(&mut self, nth: usize) -> bool {
+        match self.get_select_view().selected_id() {
+            Some(v) => v == nth,
+            None => false,
+        }
+    }
+
     fn is_top(&mut self) -> bool {
-        self.get_select_view().selected_id().unwrap() == 0
+        self.is_nth(0)
     }
 
     fn is_bottom(&mut self) -> bool {
         let last_idx = self.shown_count as usize - 1;
-        self.get_select_view().selected_id().unwrap() == last_idx
+        self.is_nth(last_idx)
     }
 
     fn select_up_was_top(&mut self) -> bool {
