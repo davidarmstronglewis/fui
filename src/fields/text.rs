@@ -1,5 +1,4 @@
 use clap;
-use cursive::view::AnyView;
 use cursive::views;
 use serde_json::value::Value;
 
@@ -20,46 +19,18 @@ impl Text {
 pub struct TextManager;
 
 impl WidgetManager for TextManager {
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView> {
+    fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox {
         let view = self.build_value_view(initial);
         fields::label_with_help_layout(view, label, help)
     }
-    fn get_value(&self, view: &AnyView) -> String {
-        // fuck yea!
-        let boxed_widget: &Box<AnyView> = (*view.as_any()).downcast_ref::<Box<AnyView>>().unwrap();
-        let widget: &views::LinearLayout = (**boxed_widget)
-            .as_any()
-            .downcast_ref::<views::LinearLayout>()
-            .unwrap();
-        let boxed_widget: &Box<AnyView> = widget
-            .get_child(1)
-            .unwrap()
-            .as_any()
-            .downcast_ref::<Box<AnyView>>()
-            .unwrap();
-        let edit: &views::EditView = (**boxed_widget)
-            .as_any()
-            .downcast_ref::<views::EditView>()
-            .unwrap();
+    fn get_value(&self, view_box: &views::ViewBox) -> String {
+        let view_box = fields::value_view_from_layout(view_box);
+        let edit: &views::EditView = (**view_box).as_any().downcast_ref().unwrap();
         let value: String = (&*edit.get_content()).clone();
         value
     }
-    fn set_error(&self, view: &mut AnyView, error: &str) {
-        let view: &mut Box<AnyView> = (*view.as_any_mut()).downcast_mut::<Box<AnyView>>().unwrap();
-        let layout: &mut views::LinearLayout = (**view)
-            .as_any_mut()
-            .downcast_mut::<views::LinearLayout>()
-            .unwrap();
-        let text: &mut views::TextView = layout
-            .get_child_mut(2)
-            .unwrap()
-            .as_any_mut()
-            .downcast_mut::<views::TextView>()
-            .unwrap();
-        text.set_content(error);
-    }
-    fn build_value_view(&self, value: &str) -> Box<AnyView> {
-        Box::new(views::EditView::new().content(value))
+    fn build_value_view(&self, value: &str) -> views::ViewBox {
+        views::ViewBox::new(Box::new(views::EditView::new().content(value)))
     }
 }
 
@@ -67,7 +38,7 @@ impl fields::FormField for fields::Field<TextManager, String> {
     fn get_widget_manager(&self) -> &WidgetManager {
         &self.widget_manager
     }
-    fn build_widget(&self) -> Box<AnyView> {
+    fn build_widget(&self) -> views::ViewBox {
         self.widget_manager
             .build_widget(&self.label, &self.help, &self.initial)
     }

@@ -6,7 +6,7 @@ use clap;
 use cursive::Cursive;
 use cursive::event::{Callback, Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{View, ViewWrapper};
-use cursive::views::{Dialog, DialogFocus, LinearLayout};
+use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
 use serde_json::map::Map;
 use serde_json::value::Value;
 
@@ -134,7 +134,8 @@ impl FormView {
                 .unwrap()
                 .get_child(idx)
                 .unwrap();
-            let value = field.get_widget_manager().get_value(view);
+            let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
+            let value = field.get_widget_manager().get_value(view_box);
             let label = field.get_label();
             match field.validate(value.as_ref()) {
                 Ok(v) => {
@@ -181,7 +182,8 @@ impl FormView {
                         .unwrap()
                         .get_child_mut(idx)
                         .unwrap();
-                    field.get_widget_manager().set_error(view, e);
+                    let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
+                    field.get_widget_manager().set_error(viewbox, e);
                 }
                 EventResult::Consumed(None)
             }

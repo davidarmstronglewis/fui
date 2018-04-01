@@ -2,11 +2,11 @@ use std::ops::Deref;
 use std::rc::Rc;
 
 use clap;
-use cursive::view::AnyView;
-use cursive::views::{LinearLayout, TextView};
+use cursive::views::ViewBox;
 use serde_json::value::Value;
 
 use feeders::Feeder;
+use fields;
 use fields::{label_with_help_layout, Field, FormField, WidgetManager};
 use views;
 
@@ -34,7 +34,7 @@ pub struct MultiselectManager {
 }
 
 impl WidgetManager for MultiselectManager {
-    fn build_value_view(&self, initial: &str) -> Box<AnyView> {
+    fn build_value_view(&self, initial: &str) -> ViewBox {
         let mut widget = views::Multiselect::new(Rc::clone(&self.feeder));
         if initial.trim() != "" {
             let items = initial
@@ -43,48 +43,21 @@ impl WidgetManager for MultiselectManager {
                 .collect::<Vec<String>>();
             widget.select_items(items);
         }
-        Box::new(widget)
+        ViewBox::new(Box::new(widget))
     }
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView> {
+    fn build_widget(&self, label: &str, help: &str, initial: &str) -> ViewBox {
         let view = self.build_value_view(initial);
         label_with_help_layout(view, label, help)
     }
-    fn get_value(&self, view: &AnyView) -> String {
-        let boxed_widget = (*view).as_any().downcast_ref::<Box<AnyView>>().unwrap();
-        let widget = (**boxed_widget)
-            .as_any()
-            .downcast_ref::<LinearLayout>()
-            .unwrap();
-        let boxed_field = (*widget)
-            .get_child(1)
-            .unwrap()
-            .as_any()
-            .downcast_ref::<Box<AnyView>>()
-            .unwrap();
-        let ms = (**boxed_field)
-            .as_any()
-            .downcast_ref::<views::Multiselect>()
-            .unwrap();
+    fn get_value(&self, view_box: &ViewBox) -> String {
+        let view_box = fields::value_view_from_layout(view_box);
+        let ms: &views::Multiselect = (**view_box).as_any().downcast_ref().unwrap();
 
         let result: Vec<String> = ms.get_selected_items()
             .iter()
             .map(|x| (*x).to_owned())
             .collect();
         result.join(VALUE_SEP)
-    }
-    fn set_error(&self, view: &mut AnyView, error: &str) {
-        let boxed_widget = (*view).as_any_mut().downcast_mut::<Box<AnyView>>().unwrap();
-        let widget = (**boxed_widget)
-            .as_any_mut()
-            .downcast_mut::<LinearLayout>()
-            .unwrap();
-        let error_field = (*widget)
-            .get_child_mut(2)
-            .unwrap()
-            .as_any_mut()
-            .downcast_mut::<TextView>()
-            .unwrap();
-        error_field.set_content(error);
     }
 }
 
@@ -111,7 +84,7 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
     fn get_label(&self) -> &str {
         &self.label
     }
-    fn build_widget(&self) -> Box<AnyView> {
+    fn build_widget(&self) -> ViewBox {
         let initial = self.initial.join(VALUE_SEP);
         self.widget_manager
             .build_widget(&self.label, &self.help, &initial)
