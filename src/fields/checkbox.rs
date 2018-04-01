@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use clap;
-use cursive::view::AnyView;
 use cursive::views;
 use serde_json::value::Value;
 
@@ -22,37 +21,24 @@ impl Checkbox {
 pub struct CheckboxManager;
 
 impl fields::WidgetManager for CheckboxManager {
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView> {
+    fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox {
         let checkbox = self.build_value_view(&initial);
         fields::label_with_help_layout(checkbox, &label, &help)
     }
-    fn get_value(&self, view: &AnyView) -> String {
-        let boxed_widget = view.as_any().downcast_ref::<Box<AnyView>>().unwrap();
-        let widget = (**boxed_widget)
-            .as_any()
-            .downcast_ref::<views::LinearLayout>()
-            .unwrap();
-        let boxed_field = widget
-            .get_child(1)
-            .unwrap()
-            .as_any()
-            .downcast_ref::<Box<AnyView>>()
-            .unwrap();
-        let checkbox = (**boxed_field)
-            .as_any()
-            .downcast_ref::<views::Checkbox>()
-            .unwrap();
+    fn get_value(&self, view_box: &views::ViewBox) -> String {
+        let view_box = fields::value_view_from_layout(view_box);
+        let checkbox: &views::Checkbox = (**view_box).as_any().downcast_ref().unwrap();
         let value = checkbox.is_checked();
         format!("{}", value)
     }
-    fn set_error(&self, _view: &mut AnyView, _error: &str) {
+    fn set_error(&self, _view: &mut views::ViewBox, _error: &str) {
         // no operation, checkbox is always valid
     }
-    fn build_value_view(&self, value: &str) -> Box<AnyView> {
+    fn build_value_view(&self, value: &str) -> views::ViewBox {
         let value = FromStr::from_str(value).unwrap();
         let mut checkbox = views::Checkbox::new();
         checkbox.set_checked(value);
-        Box::new(checkbox)
+        views::ViewBox::new(Box::new(checkbox))
     }
 }
 
@@ -60,7 +46,7 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
     fn get_widget_manager(&self) -> &WidgetManager {
         &self.widget_manager
     }
-    fn build_widget(&self) -> Box<AnyView> {
+    fn build_widget(&self) -> views::ViewBox {
         let initial = format!("{}", self.initial);
         self.widget_manager
             .build_widget(&self.label, &self.help, &initial)

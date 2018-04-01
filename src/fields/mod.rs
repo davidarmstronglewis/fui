@@ -1,6 +1,6 @@
 //! Includes `form's` building blocks, `fields`.
 use clap;
-use cursive::view::AnyView;
+use cursive::view::View;
 use cursive::views;
 use serde_json::value::Value;
 use std::rc::Rc;
@@ -19,13 +19,18 @@ pub use self::text::Text;
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
     /// Builds container `view` with placeholders for `help`, `value`, `error`.
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView>;
+    fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox;
     /// Gets `value` from widget.
-    fn get_value(&self, view: &AnyView) -> String;
+    fn get_value(&self, view: &views::ViewBox) -> String;
     /// Sets `error` on widget.
-    fn set_error(&self, view: &mut AnyView, error: &str);
+    fn set_error(&self, viewbox: &mut views::ViewBox, error: &str) {
+        let layout: &mut views::LinearLayout = (**viewbox).as_any_mut().downcast_mut().unwrap();
+        let child: &mut View = (*layout).get_child_mut(2).unwrap();
+        let text: &mut views::TextView = (*child).as_any_mut().downcast_mut().unwrap();
+        text.set_content(error);
+    }
     /// Builds a `value` view
-    fn build_value_view(&self, value: &str) -> Box<AnyView>;
+    fn build_value_view(&self, value: &str) -> views::ViewBox;
 }
 
 /// Building block for `Form`s which stores `data` and `Widget`.
@@ -74,7 +79,7 @@ impl<W: WidgetManager, T> Field<W, T> {
 /// Covers communication from `Form` to `Field`.
 pub trait FormField {
     /// Builds `widget` representing this `field`.
-    fn build_widget(&self) -> Box<AnyView>;
+    fn build_widget(&self) -> views::ViewBox;
     /// Validates `data`.
     fn validate(&self, data: &str) -> Result<Value, String>;
     /// Gets `field`'s label.
@@ -101,13 +106,20 @@ fn format_annotation(label: &str, help: &str) -> String {
 }
 
 /// Widget layout where `label` and `help` are in the same line.
-pub fn label_with_help_layout(view: Box<AnyView>, label: &str, help: &str) -> Box<AnyView> {
+pub fn label_with_help_layout(view_box: views::ViewBox, label: &str, help: &str) -> views::ViewBox {
     let text = format_annotation(label, help);
     let widget = views::LinearLayout::vertical()
         .child(views::TextView::new(text))
-        .child(view)
+        .child(view_box)
         .child(views::TextView::new(""))
         .child(views::DummyView);
 
-    Box::new(widget)
+    views::ViewBox::new(Box::new(widget))
+}
+
+/// Finds view storing value in widget layout
+pub fn value_view_from_layout(layout: &views::ViewBox) -> &views::ViewBox {
+    let layout: &views::LinearLayout = (**layout).as_any().downcast_ref().unwrap();
+    let value_view: &View = layout.get_child(1).unwrap();
+    (*value_view).as_any().downcast_ref().unwrap()
 }

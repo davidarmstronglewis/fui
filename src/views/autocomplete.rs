@@ -166,7 +166,7 @@ impl Autocomplete {
     fn select_up_was_top(&mut self) -> bool {
         let is_top_before_select = self.is_top();
         self.get_select_view_mut().select_up(1);
-        return is_top_before_select
+        return is_top_before_select;
     }
 
     fn select_down_was_bottom(&mut self) -> bool {
@@ -177,7 +177,7 @@ impl Autocomplete {
 
     fn scroll_up(&mut self) {
         if self.get_select_view().is_empty() {
-            return
+            return;
         }
         let was_top = self.select_up_was_top();
         if was_top {
@@ -189,7 +189,7 @@ impl Autocomplete {
 
     fn scroll_down(&mut self) {
         if self.get_select_view().is_empty() {
-            return
+            return;
         }
         let last_idx = self.shown_count as usize - 1;
         let was_bottom = self.select_down_was_bottom();

@@ -1,8 +1,7 @@
 use std::rc::Rc;
 
 use clap;
-use cursive::view::AnyView;
-use cursive::views::{LinearLayout, TextView};
+use cursive::views::ViewBox;
 use serde_json::value::Value;
 
 use feeders::Feeder;
@@ -27,46 +26,21 @@ impl Autocomplete {
 pub struct AutocompleteManager(Rc<Feeder>);
 
 impl WidgetManager for AutocompleteManager {
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView> {
-        let view = self.build_value_view(&initial);
-        fields::label_with_help_layout(view, &label, &help)
+    fn build_widget(&self, label: &str, help: &str, initial: &str) -> ViewBox {
+        let viewbox = self.build_value_view(&initial);
+        fields::label_with_help_layout(viewbox, &label, &help)
     }
-    fn get_value(&self, view: &AnyView) -> String {
-        let boxed_widget = (*view).as_any().downcast_ref::<Box<AnyView>>().unwrap();
-        let widget = (**boxed_widget)
-            .as_any()
-            .downcast_ref::<LinearLayout>()
-            .unwrap();
-        let boxed_field = (*widget)
-            .get_child(1)
-            .unwrap()
-            .as_any()
-            .downcast_ref::<Box<AnyView>>()
-            .unwrap();
-        let ac = (**boxed_field)
-            .as_any()
-            .downcast_ref::<views::Autocomplete>()
-            .unwrap();
-        let value = (*ac).get_value();
-
-        (&*value).clone()
+    fn get_value(&self, view_box: &ViewBox) -> String {
+        let view_box = fields::value_view_from_layout(view_box);
+        let autocomplete: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
+        let value = (&*(*autocomplete).get_value()).clone();
+        value
     }
-    fn set_error(&self, view: &mut AnyView, error: &str) {
-        let boxed_widget = (*view).as_any_mut().downcast_mut::<Box<AnyView>>().unwrap();
-        let widget = (**boxed_widget)
-            .as_any_mut()
-            .downcast_mut::<LinearLayout>()
-            .unwrap();
-        let error_field = (*widget)
-            .get_child_mut(2)
-            .unwrap()
-            .as_any_mut()
-            .downcast_mut::<TextView>()
-            .unwrap();
-        error_field.set_content(error);
-    }
-    fn build_value_view(&self, value: &str) -> Box<AnyView> {
-        Box::new(views::Autocomplete::new(Rc::clone(&self.0)).value(value))
+    fn build_value_view(&self, value: &str) -> ViewBox {
+        let view = ViewBox::new(Box::new(
+            views::Autocomplete::new(Rc::clone(&self.0)).value(value),
+        ));
+        view
     }
 }
 
@@ -74,7 +48,7 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
     fn get_widget_manager(&self) -> &WidgetManager {
         &self.widget_manager
     }
-    fn build_widget(&self) -> Box<AnyView> {
+    fn build_widget(&self) -> ViewBox {
         self.widget_manager
             .build_widget(&self.label, &self.help, &self.initial)
     }
