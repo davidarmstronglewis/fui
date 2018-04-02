@@ -2,6 +2,7 @@
 
 ## Next
 
+* Cancel `Fui`'s form shows back action picker
 * Update to new `Cursive` `API` - Breaking change
     * Replace all `Box<AnyView>` with `ViewBox`
 * Improved selecting first item in `Autocomplete`

@@ -18,7 +18,7 @@ fn show_data(c: &mut Cursive, data: Value) {
 }
 
 fn main() {
-    let mut siv = Cursive::new();
+    let mut siv = Cursive::default();
 
     let options = vec!["option1", "option2", "option3", ".."];
 

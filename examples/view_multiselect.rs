@@ -19,7 +19,7 @@ fn handler(_c: &mut Cursive, kind: &str, value: Rc<String>) {
 }
 
 fn main() {
-    let mut c = Cursive::new();
+    let mut c = Cursive::default();
 
     let widget = LinearLayout::vertical()
         .child(
