@@ -5,10 +5,10 @@
 * Cancel `Fui`'s form shows back action picker
 * Update to new `Cursive` `API` - Breaking change
     * Replace all `Box<AnyView>` with `ViewBox`
-* Improved selecting first item in `Autocomplete`
-* Fix scrolling view `Autocomplete` when list empty
-* Improved focus change between `edit` and `select` in `Autocomplete`
-* `Autoselect` highlight color changed to light black
+* First item selection improved in `Autocomplete`
+* Fix empty list scrolling in view `Autocomplete`
+* Improved `Autocomplete` focus change between `edit` and `select`
+* `Autoselect`'s highlight color changed to light black
 * `Fui` theme is now configurable (through `Fui::theme` setter)
 * Add shell completion example
 * Make `Fui::build_cli_app` public for generating shell completion
