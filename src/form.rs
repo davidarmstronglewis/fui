@@ -25,6 +25,7 @@ pub struct FormView {
 }
 impl FormView {
     /// Creates a new `FormView` with two buttons `submit` and `cancel`.
+    //TODO: take name & desc + name exposed as title
     pub fn new() -> Self {
         let layout = Dialog::new()
             .content(LinearLayout::vertical())

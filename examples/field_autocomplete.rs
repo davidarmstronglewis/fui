@@ -18,7 +18,7 @@ fn show_data(c: &mut Cursive, data: Value) {
 }
 
 fn main() {
-    let mut siv = Cursive::new();
+    let mut siv = Cursive::default();
 
     // see examples/feeders.rs for more completion options
     let options = vec!["op1", "op2", "op3"];

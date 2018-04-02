@@ -136,7 +136,8 @@ pub mod validators;
 pub mod views;
 
 use cursive::Cursive;
-use cursive::traits::Boxable;
+use cursive::traits::{Boxable, Identifiable};
+use cursive::views::LayerPosition;
 use form::FormView;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -171,6 +172,8 @@ pub struct Fui<'attrs, 'action> {
     about: &'attrs str,
     author: &'attrs str,
     theme: &'attrs str,
+    picked_action: Rc<RefCell<Option<String>>>,
+    form_data: Rc<RefCell<Option<Value>>>,
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions
@@ -182,6 +185,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             about: "",
             author: "",
             theme: &DEFAULT_THEME,
+            picked_action: Rc::new(RefCell::new(None)),
+            form_data: Rc::new(RefCell::new(None)),
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`
@@ -210,6 +215,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             handler: Rc::new(hdlr),
         };
         self.actions
+            //TODO:: validate if names are unique
             .insert(action_details.cmd_with_desc(), action_details);
         self
     }
@@ -290,9 +296,23 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         return header;
     }
 
-    fn run_tui_cmd_picker(&self, c: &mut Cursive) -> Rc<RefCell<Option<String>>> {
-        let cmd: Rc<RefCell<Option<String>>> = Rc::new(RefCell::new(None));
-        let cmd_clone = Rc::clone(&cmd);
+    fn add_forms(&mut self, c: &mut Cursive) {
+        for (_, action) in self.actions.iter_mut() {
+            let mut form = action.form.take().unwrap();
+            let form_data = Rc::clone(&self.form_data);
+            form.set_on_submit(move |c: &mut Cursive, data: Value| {
+                *form_data.borrow_mut() = Some(data);
+                c.quit();
+            });
+            form.set_on_cancel(move |c: &mut Cursive| {
+                c.screen_mut().move_to_front(LayerPosition::FromFront(1))
+            });
+            c.add_layer(form.with_id(action.name).full_width());
+        }
+    }
+
+    fn add_cmd_picker(&mut self, c: &mut Cursive) {
+        let cmd_clone = Rc::clone(&self.picked_action);
         // TODO: rm cloning for it
         let actions = self.actions
             .keys()
@@ -314,43 +334,34 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 .on_cancel(|c| c.quit())
                 .full_screen(),
         );
-        c.run();
-        cmd
+    }
+
+    fn top_form_by_action_name(&self, cursive: &mut Cursive, action_name: &str) {
+        let stack = cursive.screen_mut();
+        let from = stack.find_layer_from_id(action_name).unwrap();
+        stack.move_layer(from, LayerPosition::FromFront(0));
     }
 
     fn input_from_tui(&mut self) -> Option<(String, Value)> {
-        let mut c = cursive::Cursive::new();
+        // Cursive blocks stdout, unless it's dropped, so
+        // deattached cursive here to allow destroying it at the end of this fn
+        let mut c = Cursive::default();
         c.load_theme(self.theme).expect("Can't load theme");
+        self.add_forms(&mut c);
+        self.add_cmd_picker(&mut c);
 
-        let cmd = self.run_tui_cmd_picker(&mut c);
-        let selection = match cmd.borrow().clone() {
-            Some(v) => v,
-            None => return None,
-        };
-
-        // form
-        // TODO: use find_layer_from_id when available
-        // https://github.com/
-        // gyscos/Cursive/commit/06305c89a9223ffa0b041c94df4a51a177b1c99a
-        // #diff-bbe86c39b8f295bd78f682413bd99e5aR247
-        let action = self.actions.get_mut(&selection).unwrap();
-        let mut form_view = (*action).form.take().unwrap();
-
-        let form_data: Rc<RefCell<Option<Value>>> = Rc::new(RefCell::new(None));
-        let form_data_submit = Rc::clone(&form_data);
-        form_view.set_on_submit(move |c: &mut Cursive, data: Value| {
-            *form_data_submit.borrow_mut() = Some(data);
-            c.quit();
-        });
-        form_view.set_on_cancel(move |c: &mut Cursive| {
-            //TODO: this should return to action picker
-            //TODO: forms are drained so can't be done now
-            c.quit();
-        });
-        c.add_layer(form_view.full_width());
-        c.run();
-        let form_data = form_data.borrow().clone().unwrap();
-        Some((selection, form_data))
+        while *self.form_data.borrow() == None {
+            c.run();
+            let picked_action = match self.picked_action.borrow().clone() {
+                Some(v) => v,
+                None => return None,
+            };
+            self.top_form_by_action_name(&mut c, self.actions.get(&picked_action).unwrap().name);
+        }
+        Some((
+            self.picked_action.borrow().clone().unwrap(),
+            self.form_data.borrow().clone().unwrap(),
+        ))
     }
 
     /// Sets program's `name.

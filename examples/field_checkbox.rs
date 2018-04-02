@@ -16,7 +16,7 @@ fn show_data(c: &mut Cursive, data: Value) {
 }
 
 fn main() {
-    let mut siv = Cursive::new();
+    let mut siv = Cursive::default();
 
     let form = FormView::new()
         .field(Checkbox::new("basic-field"))
