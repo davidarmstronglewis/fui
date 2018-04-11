@@ -236,6 +236,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// * "my-arg" is ok (only `"a..z"` & `"-"`)
     /// * "my arg" is bad (becuase in shell space (`" "`) needs to be escaped)
     ///
+    /// # Panics:
+    ///
+    /// Panics if action name is duplicated.
+    ///
     pub fn action<F>(
         mut self,
         name: &'action str,
@@ -252,10 +256,16 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             form: Some(form),
             handler: Rc::new(hdlr),
         };
-        self.actions
-            //TODO:: validate if names are unique
-            .insert(action_details.cmd_with_desc(), action_details);
+
+        if let Some(item) = self.action_by_name(&name) {
+            panic!("Action name must be unique, but it's already defined ({:?})", item.cmd_with_desc());
+        }
+        self.actions.insert(action_details.cmd_with_desc(), action_details);
         self
+    }
+
+    fn action_by_name(&self, name: &str) -> Option<&Action> {
+        self.actions.values().find(|a| a.name == name)
     }
 
     /// Coordinates flow from action picking to handler running
