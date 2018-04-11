@@ -90,7 +90,7 @@ impl FormView {
         self
     }
 
-    /// Translates form's fields to [clap::Arg]
+    /// Translates form's fields to [clap::Arg].
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     pub fn fields2clap_args(&self) -> Vec<clap::Arg> {
@@ -123,7 +123,8 @@ impl FormView {
         Value::Object(form_data)
     }
 
-    fn validate(&self) -> Result<Value, HashMap<String, String>> {
+    /// Validates form.
+    pub fn validate(&mut self) -> Result<Value, HashMap<String, String>> {
         let mut data = Map::with_capacity(self.fields.len());
         let mut errors = HashMap::with_capacity(self.fields.len());
 
@@ -151,7 +152,32 @@ impl FormView {
         if errors.is_empty() {
             Ok(Value::Object(data))
         } else {
+            self.show_errors(&errors);
             Err(errors)
+        }
+    }
+
+    fn show_errors(&mut self, errors: &HashMap<String, String>) {
+        for (idx, field) in self.fields.iter().enumerate() {
+            let label = field.get_label();
+            let e = errors.get(label).map(|x| x.as_ref()).unwrap_or("");
+            // can't call method which returns suitable view because of ownership
+            //  * such method would get &mut self
+            //  * self.field gets &self
+            //  so this clash of &mut and &, illegal
+            //  possible solution is to use clone on WidgetManager (needs implementation)
+            //  or
+            //  form should only call field.validate and rest would be handled by field
+            //  which should solve this issue?
+            let mut view = self.view
+                .get_content_mut()
+                .as_any_mut()
+                .downcast_mut::<LinearLayout>()
+                .unwrap()
+                .get_child_mut(idx)
+                .unwrap();
+            let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
+            field.get_widget_manager().set_error(viewbox, e);
         }
     }
 
@@ -163,29 +189,8 @@ impl FormView {
                     .map(|cb| Callback::from_fn(move |c| cb(c, data_map.clone())));
                 EventResult::Consumed(opt_cb)
             }
-            Err(errors) => {
+            Err(_) => {
                 // TODO: the event focus next required/invalid field?
-                for (idx, field) in self.fields.iter().enumerate() {
-                    let label = field.get_label();
-                    let e = errors.get(label).map(|x| x.as_ref()).unwrap_or("");
-                    // can't call method which returns suitable view because of ownership
-                    //  * such method would get &mut self
-                    //  * self.field gets &self
-                    //  so this clash of &mut and &, illegal
-                    //  possible solution is to use clone on WidgetManager (needs implementation)
-                    //  or
-                    //  form should only call field.validate and rest would be handled by field
-                    //  which should solve this issue?
-                    let mut view = self.view
-                        .get_content_mut()
-                        .as_any_mut()
-                        .downcast_mut::<LinearLayout>()
-                        .unwrap()
-                        .get_child_mut(idx)
-                        .unwrap();
-                    let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
-                    field.get_widget_manager().set_error(viewbox, e);
-                }
                 EventResult::Consumed(None)
             }
         }
@@ -198,7 +203,7 @@ impl FormView {
         EventResult::Consumed(cb)
     }
 
-    /// Sets `title` of the form on the top of it
+    /// Sets `title` of the form on the top of it.
     pub fn title(mut self, title: &str) -> Self {
         self.view.set_title(title);
         self
