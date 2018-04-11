@@ -3,7 +3,7 @@ use fui::fields::Text;
 use fui::form::FormView;
 
 pub fn build_app() -> Fui<'static, 'static> {
-    Fui::new()
+    Fui::new(crate_name!())
         .action(
             "action1",
             "help for action1",
@@ -12,7 +12,6 @@ pub fn build_app() -> Fui<'static, 'static> {
                 println!("user input (from closure) {:?}", v);
             },
         )
-        .name(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
         .author(crate_authors!())

@@ -36,7 +36,7 @@ fn hdlr(v: Value) {
 }
 
 fn main() {
-    Fui::new()
+    Fui::new(crate_name!())
         .action(
             "action1",
             "help for action1",
@@ -51,7 +51,6 @@ fn main() {
             FormView::new().field(Text::new("action2-data").help("help for action2 data")),
             hdlr,
         )
-        .name(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
         .author(crate_authors!())

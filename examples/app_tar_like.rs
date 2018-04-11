@@ -24,7 +24,7 @@ fn main() {
         .validator(OneOf(formats))
         .help("Archive format");
 
-    Fui::new()
+    Fui::new("app_tar_like")
         .action(
             "archive-files",
             "Create an archive from files",

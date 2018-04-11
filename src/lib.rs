@@ -29,7 +29,7 @@
 //! }
 //!
 //! fn main() {
-//!     Fui::new()
+//!     Fui::new("program_name")
 //!         .action(
 //!             "action1",
 //!             "description",
@@ -181,7 +181,7 @@ impl DumpAsCli for Value {
                 .map({
                     |(k, v)| match *v {
                         Value::Bool(_) => format!("--{}", k),
-                        Value::String(ref s) => format!("--{} {}", k, s),
+                        Value::String(ref s) => format!("--{} \"{}\"", k, s),
                         Value::Number(ref n) => format!("--{} {}", k, n),
                         Value::Array(ref v) => {
                             let args = v.iter()
@@ -215,10 +215,10 @@ pub struct Fui<'attrs, 'action> {
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions
-    pub fn new() -> Self {
+    pub fn new(program_name: &'attrs str) -> Self {
         Fui {
             actions: BTreeMap::new(),
-            name: "",
+            name: program_name,
             version: "",
             about: "",
             author: "",
@@ -236,6 +236,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// * "my-arg" is ok (only `"a..z"` & `"-"`)
     /// * "my arg" is bad (becuase in shell space (`" "`) needs to be escaped)
     ///
+    /// # Panics:
+    ///
+    /// Panics if action name is duplicated.
+    ///
     pub fn action<F>(
         mut self,
         name: &'action str,
@@ -252,10 +256,16 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             form: Some(form),
             handler: Rc::new(hdlr),
         };
-        self.actions
-            //TODO:: validate if names are unique
-            .insert(action_details.cmd_with_desc(), action_details);
+
+        if let Some(item) = self.action_by_name(&name) {
+            panic!("Action name must be unique, but it's already defined ({:?})", item.cmd_with_desc());
+        }
+        self.actions.insert(action_details.cmd_with_desc(), action_details);
         self
+    }
+
+    fn action_by_name(&self, name: &str) -> Option<&Action> {
+        self.actions.values().find(|a| a.name == name)
     }
 
     /// Coordinates flow from action picking to handler running
@@ -349,7 +359,6 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     fn add_form(&self, c: &mut Cursive, form: FormView, form_id: &str) {
         // `with_id` must be before `OnEventView`
         let form = form.with_id(form_id).full_width();
-        //TODO:: ensure prog name is valid
         let prog_name = self.name.to_owned();
         let form_id = form_id.to_owned();
         let form = OnEventView::new(form).on_event(Event::CtrlChar('k'), move |c| {
@@ -385,7 +394,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     }
 
     fn add_cmd_picker(&mut self, c: &mut Cursive) {
-        let cmd_clone = Rc::clone(&self.picked_action);
+        let cmd_submit = Rc::clone(&self.picked_action);
+        let cmd_cancel = Rc::clone(&self.picked_action);
         // TODO: rm cloning for it
         let actions = self.actions
             .keys()
@@ -401,10 +411,13 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 )
                 .on_submit(move |c, data| {
                     let value = data.get("action").unwrap().clone();
-                    *cmd_clone.borrow_mut() = Some(value.as_str().unwrap().to_string());
+                    *cmd_submit.borrow_mut() = Some(value.as_str().unwrap().to_string());
                     c.quit();
                 })
-                .on_cancel(|c| c.quit())
+                .on_cancel(move |c| {
+                    *cmd_cancel.borrow_mut() = None;
+                    c.quit()
+                })
                 .full_screen(),
         );
     }
@@ -495,7 +508,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     ///     background = \"yellow\"
     /// ";
     ///
-    /// let app = Fui::new()
+    /// let app = Fui::new("program_name")
     ///     .action(
     ///         "action1",
     ///         "desc",
@@ -519,7 +532,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_checkbox_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -534,7 +547,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_checkbox_is_serialized_ok_when_value_missing() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -549,7 +562,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_text_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -569,7 +582,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_autocomplete_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -589,7 +602,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_multiselect_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -611,7 +624,11 @@ mod test_date_getting_from_program_args {
 mod test_dumping_value_to_cli_command {
     use super::*;
 
-    //TODO:: ensure string has double-quotes
+    #[test]
+    fn test_value_is_converted_to_cmd_ok_when_is_string() {
+        let v: Value = serde_json::from_str(r#"{ "arg": "abc" }"#).unwrap();
+        assert_eq!(v.dump_as_cli(), r#"--arg "abc""#);
+    }
 
     #[test]
     fn test_value_is_converted_to_cmd_ok_when_is_array() {

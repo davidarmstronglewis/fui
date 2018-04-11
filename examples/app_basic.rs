@@ -13,7 +13,7 @@ fn hdlr(v: Value) {
 }
 
 fn main() {
-    Fui::new()
+    Fui::new(crate_name!())
         .action(
             "action1",
             "help for action1",
@@ -33,7 +33,6 @@ fn main() {
         // NOTE:
         // Running this example will show program name as "fui" (instead of "app_basic")
         // because that's the value in Cargo.toml (similar to rest of attrs)
-        .name(crate_name!())
         .version(crate_version!())
         .about(crate_description!())
         .author(crate_authors!())

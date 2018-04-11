@@ -19,7 +19,7 @@ fn hdlr(v: Value) {
 fn main() {
     let make_symbolic =
         Checkbox::new("make_symbolic").help("make symbolic links instead of hard links");
-    Fui::new()
+    Fui::new("app_ln_like")
         .action(
             "basic-link",
             "create a link to TARGET with the name LINK_NAME",

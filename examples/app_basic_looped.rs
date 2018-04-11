@@ -14,7 +14,7 @@ fn hdlr(v: Value) {
 
 fn main() {
     loop {
-        Fui::new()
+        Fui::new("app_basic_looped")
             .action(
                 "action1",
                 "description",
