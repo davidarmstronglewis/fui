@@ -29,7 +29,7 @@
 //! }
 //!
 //! fn main() {
-//!     Fui::new()
+//!     Fui::new("program_name")
 //!         .action(
 //!             "action1",
 //!             "description",
@@ -215,10 +215,10 @@ pub struct Fui<'attrs, 'action> {
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions
-    pub fn new() -> Self {
+    pub fn new(program_name: &'attrs str) -> Self {
         Fui {
             actions: BTreeMap::new(),
-            name: "",
+            name: program_name,
             version: "",
             about: "",
             author: "",
@@ -359,7 +359,6 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     fn add_form(&self, c: &mut Cursive, form: FormView, form_id: &str) {
         // `with_id` must be before `OnEventView`
         let form = form.with_id(form_id).full_width();
-        //TODO:: ensure prog name is valid
         let prog_name = self.name.to_owned();
         let form_id = form_id.to_owned();
         let form = OnEventView::new(form).on_event(Event::CtrlChar('k'), move |c| {
@@ -509,7 +508,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     ///     background = \"yellow\"
     /// ";
     ///
-    /// let app = Fui::new()
+    /// let app = Fui::new("program_name")
     ///     .action(
     ///         "action1",
     ///         "desc",
@@ -533,7 +532,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_checkbox_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -548,7 +547,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_checkbox_is_serialized_ok_when_value_missing() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -563,7 +562,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_text_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -583,7 +582,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_autocomplete_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
@@ -603,7 +602,7 @@ mod test_date_getting_from_program_args {
 
     #[test]
     fn cli_multiselect_is_serialized_ok_when_value_preset() {
-        let value = Fui::new()
+        let value = Fui::new("app")
             .action(
                 "action1",
                 "desc",
