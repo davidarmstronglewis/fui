@@ -117,6 +117,7 @@
 #![deny(missing_docs)]
 
 extern crate clap;
+extern crate clipboard;
 #[macro_use]
 extern crate cursive as _cursive;
 extern crate glob;
@@ -135,9 +136,12 @@ pub mod utils;
 pub mod validators;
 pub mod views;
 
+use clipboard::ClipboardContext;
+use clipboard::ClipboardProvider;
 use cursive::Cursive;
+use cursive::event::Event;
 use cursive::traits::{Boxable, Identifiable};
-use cursive::views::LayerPosition;
+use cursive::views::{Dialog, LayerPosition, OnEventView};
 use form::FormView;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -161,6 +165,40 @@ struct Action<'action> {
 impl<'action> Action<'action> {
     fn cmd_with_desc(&self) -> String {
         format!("{}: {}", self.name, self.help)
+    }
+}
+
+trait DumpAsCli {
+    fn dump_as_cli(&self) -> String;
+}
+
+impl DumpAsCli for Value {
+    fn dump_as_cli(&self) -> String {
+        if self.is_object() {
+            let cmd = self.as_object()
+                .unwrap()
+                .iter()
+                .map({
+                    |(k, v)| match *v {
+                        Value::Bool(_) => format!("--{}", k),
+                        Value::String(ref s) => format!("--{} {}", k, s),
+                        Value::Number(ref n) => format!("--{} {}", k, n),
+                        Value::Array(ref v) => {
+                            let args = v.iter()
+                                .map(|vv| format!("{}", vv))
+                                .collect::<Vec<String>>()
+                                .join(" ");
+                            format!("--{} {}", k, args)
+                        }
+                        _ => "".to_string(),
+                    }
+                })
+                .collect::<Vec<String>>()
+                .join(" ");
+            cmd
+        } else {
+            "".to_string()
+        }
     }
 }
 
@@ -296,18 +334,53 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         return header;
     }
 
+    fn set_form_events(&self, form: &mut FormView) {
+        // set form events
+        let form_data = Rc::clone(&self.form_data);
+        form.set_on_submit(move |c: &mut Cursive, data: Value| {
+            *form_data.borrow_mut() = Some(data);
+            c.quit();
+        });
+        form.set_on_cancel(move |c: &mut Cursive| {
+            c.screen_mut().move_to_front(LayerPosition::FromFront(1))
+        });
+    }
+
+    fn add_form(&self, c: &mut Cursive, form: FormView, form_id: &str) {
+        // `with_id` must be before `OnEventView`
+        let form = form.with_id(form_id).full_width();
+        //TODO:: ensure prog name is valid
+        let prog_name = self.name.to_owned();
+        let form_id = form_id.to_owned();
+        let form = OnEventView::new(form).on_event(Event::CtrlChar('k'), move |c| {
+            let err = c.call_on_id(&form_id, |form: &mut FormView| match form.validate() {
+                Ok(s) => {
+                    let msg = format!("{} {} {}", prog_name, form_id, s.dump_as_cli());
+                    let mut ctx: ClipboardContext = ClipboardProvider::new().unwrap();
+                    ctx.set_contents(msg).unwrap();
+                    Ok(())
+                }
+                Err(_) => {
+                    let err = format!("Copying to clipboard - FAILED.\nFix form errors first.");
+                    Err(err)
+                }
+            });
+            if let Err(e) = err.unwrap() {
+                c.add_layer(Dialog::info(e).title("Form invalid!"));
+            }
+        });
+        c.add_layer(form);
+    }
+
     fn add_forms(&mut self, c: &mut Cursive) {
-        for (_, action) in self.actions.iter_mut() {
-            let mut form = action.form.take().unwrap();
-            let form_data = Rc::clone(&self.form_data);
-            form.set_on_submit(move |c: &mut Cursive, data: Value| {
-                *form_data.borrow_mut() = Some(data);
-                c.quit();
-            });
-            form.set_on_cancel(move |c: &mut Cursive| {
-                c.screen_mut().move_to_front(LayerPosition::FromFront(1))
-            });
-            c.add_layer(form.with_id(action.name).full_width());
+        // seperate loop prevents borrow-mut (self.actions) & borrow (any method call)
+        let action_form_list = self.actions
+            .iter_mut()
+            .map(|(_, a)| (a.name, a.form.take().unwrap()))
+            .collect::<Vec<(&str, FormView)>>();
+        for (form_id, mut form) in action_form_list.into_iter() {
+            self.set_form_events(&mut form);
+            self.add_form(c, form, form_id);
         }
     }
 
@@ -441,7 +514,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 }
 
 #[cfg(test)]
-mod tests {
+mod test_date_getting_from_program_args {
     use super::*;
 
     #[test]
@@ -532,4 +605,17 @@ mod tests {
     //fn cli_multiselect_is_serialized_ok_when_value_missing() {
     //    // clap blocks this case, optionally test ensuring that
     //}
+}
+
+#[cfg(test)]
+mod test_dumping_value_to_cli_command {
+    use super::*;
+
+    //TODO:: ensure string has double-quotes
+
+    #[test]
+    fn test_value_is_converted_to_cmd_ok_when_is_array() {
+        let v: Value = serde_json::from_str(r#"{ "arg": ["a", "b", "c"] }"#).unwrap();
+        assert_eq!(v.dump_as_cli(), r#"--arg "a" "b" "c""#);
+    }
 }

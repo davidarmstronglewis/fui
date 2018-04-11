@@ -12,6 +12,8 @@ repository = "https://github.com/xliiv/fui"
 
 [dependencies]
 clap = "2"
+# linux requires `sudo apt-get install xorg-dev`
+clipboard = "0.4"
 glob = "0.2"
 regex = "0.2"
 serde_json = "1.0"

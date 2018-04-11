@@ -2,6 +2,7 @@
 
 ## Next
 
+* `Form` can be dumped to `CLI` command by `ctrl+k`
 * Cancel `Fui`'s form shows back action picker
 * Update to new `Cursive` `API` - Breaking change
     * Replace all `Box<AnyView>` with `ViewBox`
