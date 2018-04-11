@@ -181,7 +181,7 @@ impl DumpAsCli for Value {
                 .map({
                     |(k, v)| match *v {
                         Value::Bool(_) => format!("--{}", k),
-                        Value::String(ref s) => format!("--{} {}", k, s),
+                        Value::String(ref s) => format!("--{} \"{}\"", k, s),
                         Value::Number(ref n) => format!("--{} {}", k, n),
                         Value::Array(ref v) => {
                             let args = v.iter()
@@ -611,7 +611,11 @@ mod test_date_getting_from_program_args {
 mod test_dumping_value_to_cli_command {
     use super::*;
 
-    //TODO:: ensure string has double-quotes
+    #[test]
+    fn test_value_is_converted_to_cmd_ok_when_is_string() {
+        let v: Value = serde_json::from_str(r#"{ "arg": "abc" }"#).unwrap();
+        assert_eq!(v.dump_as_cli(), r#"--arg "abc""#);
+    }
 
     #[test]
     fn test_value_is_converted_to_cmd_ok_when_is_array() {
