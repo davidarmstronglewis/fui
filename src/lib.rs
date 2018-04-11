@@ -395,7 +395,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     }
 
     fn add_cmd_picker(&mut self, c: &mut Cursive) {
-        let cmd_clone = Rc::clone(&self.picked_action);
+        let cmd_submit = Rc::clone(&self.picked_action);
+        let cmd_cancel = Rc::clone(&self.picked_action);
         // TODO: rm cloning for it
         let actions = self.actions
             .keys()
@@ -411,10 +412,13 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 )
                 .on_submit(move |c, data| {
                     let value = data.get("action").unwrap().clone();
-                    *cmd_clone.borrow_mut() = Some(value.as_str().unwrap().to_string());
+                    *cmd_submit.borrow_mut() = Some(value.as_str().unwrap().to_string());
                     c.quit();
                 })
-                .on_cancel(|c| c.quit())
+                .on_cancel(move |c| {
+                    *cmd_cancel.borrow_mut() = None;
+                    c.quit()
+                })
                 .full_screen(),
         );
     }
