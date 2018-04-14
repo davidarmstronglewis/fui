@@ -125,6 +125,20 @@ This will make the program automatically working in 2 modes:
 
 ## TODO:
 
+* empty forms are skipped and executed
+* .validator(OneOf || Regex::new("v\d+\.\d+\.\d+")).unwrap()
+    * or something similiar
+* add option for prose help in widget?
+* add option for prose help in cmd-picker?
+    * "path" in "rustup toolchain link -h"
+    * perhaps adding new cmd is walkaround, like "link-help" which displays prose
+* reusing fields in form by cloning is stupid
+* command picker show only 5 items Oo
+* expose view's options (eg. submit_anything) on Autocomplete & Multiselect
+* reusing fields in each form, like "verbose for each form"
+* allow disabling copying (ctrl+k)
+
+
 * support user's history!
     * make fill-error-correct flow pleasent
 * support for piping!
