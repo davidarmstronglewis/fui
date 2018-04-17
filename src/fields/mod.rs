@@ -76,8 +76,8 @@ impl<W: WidgetManager, T> Field<W, T> {
     }
 }
 
-//TODO:: Vec<String>
-type FieldErrors = String;
+/// Container for field's errors
+pub type FieldErrors = Vec<String>;
 
 /// Covers communication from `Form` to `Field`.
 pub trait FormField {

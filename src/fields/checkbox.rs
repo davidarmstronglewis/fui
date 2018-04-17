@@ -55,10 +55,15 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
         &self.label
     }
     fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
-        let value = FromStr::from_str(data)
+        let result = FromStr::from_str(data)
             .map(|v| Value::Bool(v))
-            .map_err(|_| "Value can't be converterd to bool".to_string());
-        value
+            .map_err(|_| {
+                let mut errors = FieldErrors::new();
+                let error = "Value can't be converterd to bool".to_string();
+                errors.push(error);
+                errors
+            });
+        result
     }
 
     fn clap_arg(&self) -> clap::Arg {

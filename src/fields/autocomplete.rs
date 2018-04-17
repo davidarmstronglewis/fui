@@ -54,12 +54,17 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
     }
 
     fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
+        let mut errors = FieldErrors::new();
         for v in &self.validators {
             if let Some(e) = v.validate(data) {
-                return Err(e);
+                errors.push(e);
             }
         }
-        Ok(Value::String(data.to_owned()))
+        if errors.len() > 0 {
+            Err(errors)
+        } else {
+            Ok(Value::String(data.to_owned()))
+        }
     }
 
     /// Gets label of the field

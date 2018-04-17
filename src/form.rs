@@ -10,10 +10,11 @@ use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
 use serde_json::map::Map;
 use serde_json::value::Value;
 
-use fields::FormField;
+use fields::{FieldErrors, FormField};
 
 type OnSubmit = Option<Rc<Fn(&mut Cursive, Value)>>;
 type OnCancel = Option<Rc<Fn(&mut Cursive)>>;
+//type = 
 
 /// Aggregates `fields` and handles process of `submitting` (or `canceling`).
 pub struct FormView {
@@ -110,13 +111,16 @@ impl FormView {
         let mut form_data = Map::with_capacity(self.fields.len());
         for field in self.fields.iter() {
             let data = field.clap_args2str(&arg_matches);
+            //TODO:::
             match field.validate(data.as_ref()) {
                 Ok(v) => {
                     form_data.insert(field.get_label().to_string(), v);
                 }
                 Err(e) => {
-                    let msg = format!("ERROR: {:?}", e);
-                    eprintln!("{}", msg);
+                    let msg: Vec<String> = e.iter().map(|s| {
+                        format!("ERROR: {:?}", s)
+                    }).collect();
+                    eprintln!("{}", msg.join("\n"));
                 }
             }
         }
@@ -124,9 +128,9 @@ impl FormView {
     }
 
     /// Validates form.
-    pub fn validate(&mut self) -> Result<Value, HashMap<String, String>> {
+    pub fn validate(&mut self) -> Result<Value, HashMap<String, FieldErrors>> {
         let mut data = Map::with_capacity(self.fields.len());
-        let mut errors = HashMap::with_capacity(self.fields.len());
+        let mut errors: HashMap<String, FieldErrors> = HashMap::with_capacity(self.fields.len());
 
         for (idx, field) in self.fields.iter().enumerate() {
             let view = self.view
@@ -139,12 +143,13 @@ impl FormView {
             let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
             let value = field.get_widget_manager().get_value(view_box);
             let label = field.get_label();
+            //TODO:::
             match field.validate(value.as_ref()) {
                 Ok(v) => {
                     data.insert(label.to_owned(), v);
                 }
                 Err(e) => {
-                    errors.insert(label.to_owned(), e.to_owned());
+                    errors.insert(label.to_owned(), e);
                 }
             }
         }
@@ -157,10 +162,11 @@ impl FormView {
         }
     }
 
-    fn show_errors(&mut self, errors: &HashMap<String, String>) {
+    fn show_errors(&mut self, form_errors: &HashMap<String, FieldErrors>) {
         for (idx, field) in self.fields.iter().enumerate() {
             let label = field.get_label();
-            let e = errors.get(label).map(|x| x.as_ref()).unwrap_or("");
+            let error = form_errors.get(label).and_then(|field_errors| field_errors.first());
+
             // can't call method which returns suitable view because of ownership
             //  * such method would get &mut self
             //  * self.field gets &self
@@ -177,7 +183,7 @@ impl FormView {
                 .get_child_mut(idx)
                 .unwrap();
             let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
-            field.get_widget_manager().set_error(viewbox, e);
+            field.get_widget_manager().set_error(viewbox, error.unwrap_or(&"".to_string()));
         }
     }
 
