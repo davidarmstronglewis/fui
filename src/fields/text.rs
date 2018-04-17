@@ -3,7 +3,7 @@ use cursive::views;
 use serde_json::value::Value;
 
 use fields;
-use fields::WidgetManager;
+use fields::{FieldErrors, WidgetManager};
 
 /// Convienient wrapper around `Field<TextManager, String>`.
 pub struct Text;
@@ -43,7 +43,7 @@ impl fields::FormField for fields::Field<TextManager, String> {
             .build_widget(&self.label, &self.help, &self.initial)
     }
 
-    fn validate(&self, data: &str) -> Result<Value, String> {
+    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
         for v in &self.validators {
             if let Some(e) = v.validate(data) {
                 return Err(e);

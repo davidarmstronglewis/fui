@@ -7,7 +7,7 @@ use serde_json::value::Value;
 
 use feeders::Feeder;
 use fields;
-use fields::{label_with_help_layout, Field, FormField, WidgetManager};
+use fields::{label_with_help_layout, Field, FieldErrors, FormField, WidgetManager};
 use views;
 
 const VALUE_SEP: &'static str = ",";
@@ -65,7 +65,7 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
     fn get_widget_manager(&self) -> &WidgetManager {
         &self.widget_manager
     }
-    fn validate(&self, data: &str) -> Result<Value, String> {
+    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
         let items = data.split(VALUE_SEP).collect::<Vec<&str>>();
         for item in items.iter() {
             for v in &self.validators {

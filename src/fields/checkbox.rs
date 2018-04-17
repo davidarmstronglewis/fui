@@ -5,7 +5,7 @@ use cursive::views;
 use serde_json::value::Value;
 
 use fields;
-use fields::WidgetManager;
+use fields::{FieldErrors, WidgetManager};
 
 /// Convienient wrapper around `Field<CheckboxManager, bool>`.
 pub struct Checkbox;
@@ -54,7 +54,7 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
     fn get_label(&self) -> &str {
         &self.label
     }
-    fn validate(&self, data: &str) -> Result<Value, String> {
+    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
         let value = FromStr::from_str(data)
             .map(|v| Value::Bool(v))
             .map_err(|_| "Value can't be converterd to bool".to_string());
