@@ -2,6 +2,7 @@
 
 ## Next
 
+* Add types `FieldErrors`, `FormErrors`
 * Add required parameter `program_name` to `Fui::new()` - Breaking change
 * Ensure `Fui` action names are unique or panic
 * `Form` can be dumped to `CLI` command by `ctrl+k`

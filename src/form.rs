@@ -12,9 +12,13 @@ use serde_json::value::Value;
 
 use fields::{FieldErrors, FormField};
 
+
+/// Container for form's errors
+pub type FormErrors = HashMap<String, FieldErrors>;
+
+
 type OnSubmit = Option<Rc<Fn(&mut Cursive, Value)>>;
 type OnCancel = Option<Rc<Fn(&mut Cursive)>>;
-//type = 
 
 /// Aggregates `fields` and handles process of `submitting` (or `canceling`).
 pub struct FormView {
@@ -111,7 +115,6 @@ impl FormView {
         let mut form_data = Map::with_capacity(self.fields.len());
         for field in self.fields.iter() {
             let data = field.clap_args2str(&arg_matches);
-            //TODO:::
             match field.validate(data.as_ref()) {
                 Ok(v) => {
                     form_data.insert(field.get_label().to_string(), v);
@@ -128,9 +131,9 @@ impl FormView {
     }
 
     /// Validates form.
-    pub fn validate(&mut self) -> Result<Value, HashMap<String, FieldErrors>> {
+    pub fn validate(&mut self) -> Result<Value, FormErrors> {
         let mut data = Map::with_capacity(self.fields.len());
-        let mut errors: HashMap<String, FieldErrors> = HashMap::with_capacity(self.fields.len());
+        let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
 
         for (idx, field) in self.fields.iter().enumerate() {
             let view = self.view
@@ -143,7 +146,6 @@ impl FormView {
             let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
             let value = field.get_widget_manager().get_value(view_box);
             let label = field.get_label();
-            //TODO:::
             match field.validate(value.as_ref()) {
                 Ok(v) => {
                     data.insert(label.to_owned(), v);
@@ -162,11 +164,10 @@ impl FormView {
         }
     }
 
-    fn show_errors(&mut self, form_errors: &HashMap<String, FieldErrors>) {
+    fn show_errors(&mut self, form_errors: &FormErrors) {
         for (idx, field) in self.fields.iter().enumerate() {
             let label = field.get_label();
             let error = form_errors.get(label).and_then(|field_errors| field_errors.first());
-
             // can't call method which returns suitable view because of ownership
             //  * such method would get &mut self
             //  * self.field gets &self
