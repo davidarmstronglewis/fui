@@ -76,12 +76,15 @@ impl<W: WidgetManager, T> Field<W, T> {
     }
 }
 
+/// Container for field's errors
+pub type FieldErrors = Vec<String>;
+
 /// Covers communication from `Form` to `Field`.
 pub trait FormField {
     /// Builds `widget` representing this `field`.
     fn build_widget(&self) -> views::ViewBox;
     /// Validates `data`.
-    fn validate(&self, data: &str) -> Result<Value, String>;
+    fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
     /// Gets `field`'s label.
     fn get_label(&self) -> &str;
     /// Gets manager which controlls `widget`.

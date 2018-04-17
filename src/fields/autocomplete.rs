@@ -5,7 +5,7 @@ use cursive::views::ViewBox;
 use serde_json::value::Value;
 
 use feeders::Feeder;
-use fields::WidgetManager;
+use fields::{FieldErrors, WidgetManager};
 use fields;
 use views;
 
@@ -53,13 +53,18 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
             .build_widget(&self.label, &self.help, &self.initial)
     }
 
-    fn validate(&self, data: &str) -> Result<Value, String> {
+    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
+        let mut errors = FieldErrors::new();
         for v in &self.validators {
             if let Some(e) = v.validate(data) {
-                return Err(e);
+                errors.push(e);
             }
         }
-        Ok(Value::String(data.to_owned()))
+        if errors.len() > 0 {
+            Err(errors)
+        } else {
+            Ok(Value::String(data.to_owned()))
+        }
     }
 
     /// Gets label of the field
