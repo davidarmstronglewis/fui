@@ -33,6 +33,14 @@ pub trait WidgetManager {
     }
     /// Builds a `value` view
     fn build_value_view(&self, value: &str) -> views::ViewBox;
+
+    // NEW API
+
+    /// Takes out the inner `View` from this manager.
+    ///
+    /// # Panic
+    /// If called more then once it will panic (bacause `View` is taken).
+    fn take_view(&mut self) -> views::ViewBox;
 }
 
 /// Building block for `Form`s which stores `data` and `Widget`.

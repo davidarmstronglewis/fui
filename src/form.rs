@@ -99,11 +99,13 @@ impl FormView {
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     pub fn fields2clap_args(&self) -> Vec<clap::Arg> {
-        let mut args = Vec::with_capacity(self.fields.len());
-        for field in &self.fields {
-            let arg = field.clap_arg();
-            args.push(arg);
-        }
+        //TODO:::
+        let mut args = Vec::new();
+        //let mut args = Vec::with_capacity(self.fields.len());
+        //for field in &self.fields {
+        //    let arg = field.clap_arg();
+        //    args.push(arg);
+        //}
         return args;
     }
 
@@ -112,80 +114,86 @@ impl FormView {
     /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
     /// [serde_json::Value]: ../../serde_json/enum.Value.html
     pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> Value {
-        let mut form_data = Map::with_capacity(self.fields.len());
-        for field in self.fields.iter() {
-            let data = field.clap_args2str(&arg_matches);
-            match field.validate(data.as_ref()) {
-                Ok(v) => {
-                    form_data.insert(field.get_label().to_string(), v);
-                }
-                Err(e) => {
-                    let msg: Vec<String> = e.iter().map(|s| {
-                        format!("ERROR: {:?}", s)
-                    }).collect();
-                    eprintln!("{}", msg.join("\n"));
-                }
-            }
-        }
+        //TODO:::
+        let mut form_data = Map::new();
+        //let mut form_data = Map::with_capacity(self.fields.len());
+        //for field in self.fields.iter() {
+        //    let data = field.clap_args2str(&arg_matches);
+        //    match field.validate(data.as_ref()) {
+        //        Ok(v) => {
+        //            form_data.insert(field.get_label().to_string(), v);
+        //        }
+        //        Err(e) => {
+        //            let msg: Vec<String> = e.iter().map(|s| {
+        //                format!("ERROR: {:?}", s)
+        //            }).collect();
+        //            eprintln!("{}", msg.join("\n"));
+        //        }
+        //    }
+        //}
         Value::Object(form_data)
     }
 
     /// Validates form.
     pub fn validate(&mut self) -> Result<Value, FormErrors> {
-        let mut data = Map::with_capacity(self.fields.len());
-        let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
+        //TODO:::
+        let mut data = Map::new();
+        //let mut data = Map::with_capacity(self.fields.len());
+        //let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
 
-        for (idx, field) in self.fields.iter().enumerate() {
-            let view = self.view
-                .get_content()
-                .as_any()
-                .downcast_ref::<LinearLayout>()
-                .unwrap()
-                .get_child(idx)
-                .unwrap();
-            let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
-            let value = field.get_widget_manager().get_value(view_box);
-            let label = field.get_label();
-            match field.validate(value.as_ref()) {
-                Ok(v) => {
-                    data.insert(label.to_owned(), v);
-                }
-                Err(e) => {
-                    errors.insert(label.to_owned(), e);
-                }
-            }
-        }
+        //for (idx, field) in self.fields.iter().enumerate() {
+        //    let view = self.view
+        //        .get_content()
+        //        .as_any()
+        //        .downcast_ref::<LinearLayout>()
+        //        .unwrap()
+        //        .get_child(idx)
+        //        .unwrap();
+        //    let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
+        //    let value = field.get_widget_manager().get_value(view_box);
+        //    let label = field.get_label();
+        //    match field.validate(value.as_ref()) {
+        //        Ok(v) => {
+        //            data.insert(label.to_owned(), v);
+        //        }
+        //        Err(e) => {
+        //            errors.insert(label.to_owned(), e);
+        //        }
+        //    }
+        //}
 
-        if errors.is_empty() {
-            Ok(Value::Object(data))
-        } else {
-            self.show_errors(&errors);
-            Err(errors)
-        }
+        //if errors.is_empty() {
+        //    Ok(Value::Object(data))
+        //} else {
+        //    self.show_errors(&errors);
+        //    Err(errors)
+        //}
+        Ok(Value::Object(data))
     }
 
     fn show_errors(&mut self, form_errors: &FormErrors) {
-        for (idx, field) in self.fields.iter().enumerate() {
-            let label = field.get_label();
-            let error = form_errors.get(label).and_then(|field_errors| field_errors.first());
-            // can't call method which returns suitable view because of ownership
-            //  * such method would get &mut self
-            //  * self.field gets &self
-            //  so this clash of &mut and &, illegal
-            //  possible solution is to use clone on WidgetManager (needs implementation)
-            //  or
-            //  form should only call field.validate and rest would be handled by field
-            //  which should solve this issue?
-            let mut view = self.view
-                .get_content_mut()
-                .as_any_mut()
-                .downcast_mut::<LinearLayout>()
-                .unwrap()
-                .get_child_mut(idx)
-                .unwrap();
-            let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
-            field.get_widget_manager().set_error(viewbox, error.unwrap_or(&"".to_string()));
-        }
+        ////TODO:::
+        //for (idx, field) in self.fields.iter().enumerate() {
+        //    let label = field.get_label();
+        //    let error = form_errors.get(label).and_then(|field_errors| field_errors.first());
+        //    // can't call method which returns suitable view because of ownership
+        //    //  * such method would get &mut self
+        //    //  * self.field gets &self
+        //    //  so this clash of &mut and &, illegal
+        //    //  possible solution is to use clone on WidgetManager (needs implementation)
+        //    //  or
+        //    //  form should only call field.validate and rest would be handled by field
+        //    //  which should solve this issue?
+        //    let mut view = self.view
+        //        .get_content_mut()
+        //        .as_any_mut()
+        //        .downcast_mut::<LinearLayout>()
+        //        .unwrap()
+        //        .get_child_mut(idx)
+        //        .unwrap();
+        //    let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
+        //    field.get_widget_manager().set_error(viewbox, error.unwrap_or(&"".to_string()));
+        //}
     }
 
     fn event_submit(&mut self) -> EventResult {

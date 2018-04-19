@@ -42,7 +42,89 @@ impl WidgetManager for AutocompleteManager {
         ));
         view
     }
+
+    // NEW API
+
+    fn take_view(&mut self) -> ViewBox {
+        ViewBox::new(Box::new(DummyView))
+    }
 }
+
+
+
+use cursive::view::ViewWrapper;
+use cursive::views::{LinearLayout, TextView, DummyView};
+//TODO::: rename to Field/Autocomplete/or whatever
+struct Field2 {
+    view: LinearLayout,
+    widget_manager: AutocompleteManager,
+}
+impl Field2 {
+    fn new(mut widget_manager: AutocompleteManager) -> Field2 {
+        let layout = LinearLayout::vertical()
+                    //TODO:: label can't include separator
+                    .child(TextView::new(""))
+                    .child(widget_manager.take_view())
+                    .child(TextView::new(""))
+                    .child(DummyView);
+        Field2 {
+            view: layout,
+            widget_manager: widget_manager,
+        }
+    }
+}
+impl fields::FormField for Field2 {
+    fn get_widget_manager(&self) -> &WidgetManager {
+        //TODO::: cleanups
+        &self.widget_manager
+    }
+    fn build_widget(&self) -> ViewBox {
+        //TODO::: cleanups
+        self.widget_manager
+            .build_widget("", "", "")
+    }
+    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
+        //TODO::: cleanups
+        let mut errors = FieldErrors::new();
+        //for v in &self.validators {
+        //    if let Some(e) = v.validate(data) {
+        //        errors.push(e);
+        //    }
+        //}
+        if errors.len() > 0 {
+            Err(errors)
+        } else {
+            Ok(Value::String(data.to_owned()))
+        }
+    }
+
+    /// Gets label of the field
+    fn get_label(&self) -> &str {
+        //TODO::: cleanups
+        //&self.label
+        ""
+    }
+
+    fn clap_arg(&self) -> clap::Arg {
+        //TODO::: cleanups
+        clap::Arg::with_name("")
+            //.help(&self.help)
+            //.long(&self.label)
+            //.required(self.is_required())
+            //.takes_value(true)
+    }
+
+    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
+        //TODO::: cleanups
+        args.value_of("").unwrap_or("").to_string()
+    }
+}
+impl ViewWrapper for Field2 {
+    wrap_impl!(self.view: LinearLayout);
+}
+
+
+
 
 impl fields::FormField for fields::Field<AutocompleteManager, String> {
     fn get_widget_manager(&self) -> &WidgetManager {
