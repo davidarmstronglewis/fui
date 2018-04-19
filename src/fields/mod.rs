@@ -100,10 +100,6 @@ pub type FieldErrors = Vec<String>;
 pub trait FormField: View {
     /// Builds `widget` representing this `field`.
     fn build_widget(&self) -> views::ViewBox;
-    ///// Validates `data`.
-    ///TODO::: docs
-    fn validate(&self) -> Result<Value, FieldErrors>;
-    //fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
     /// Gets `field`'s label.
     fn get_label(&self) -> &str;
     /// Gets manager which controlls `widget`.
@@ -117,6 +113,14 @@ pub trait FormField: View {
     ///
     /// [clap::App]: ../../clap/struct.ArgMatches.html
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
+
+    // NEW API
+
+    /// Shows field errors
+    fn show_errors(&mut self, errors: &FieldErrors);
+    /// Runs validators on field data
+    fn validate(&mut self) -> Result<Value, FieldErrors>;
+    //fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
 }
 
 fn format_annotation(label: &str, help: &str) -> String {

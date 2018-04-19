@@ -124,8 +124,7 @@ impl Field2 {
     }
     /// Append `validator`.
     pub fn validator<V: Validator + 'static>(mut self, validator: V) -> Self {
-        //TODO:::
-        //self.validators.push(Rc::new(validator));
+        self.validators.push(Rc::new(validator));
         self
     }
     /// Checks if Field is required
@@ -169,8 +168,7 @@ impl Field2 {
 
     /// Returns mutable view responsible for storing error message.
     pub fn view_error_get_mut(&mut self) -> &mut TextView {
-        let view_box: &mut ViewBox = self.view.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap();
-        (**view_box).as_any_mut().downcast_mut().unwrap()
+        self.view.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap()
     }
 
     /// Sets error message.
@@ -190,8 +188,14 @@ impl fields::FormField for Field2 {
         self.widget_manager
             .build_widget("", "", "")
     }
+
+    fn show_errors(&mut self, errors: &FieldErrors) {
+        // TODO: show all errors somehow
+        self.set_error(errors.first().map(|e| e.as_ref()).unwrap_or(""));
+    }
+
     /// Validates `Field`.
-    fn validate(&self) -> Result<Value, FieldErrors> {
+    fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();
         let value = self.widget_manager.as_string(self.view_value_get());
         for v in self.validators.iter() {
@@ -200,13 +204,16 @@ impl fields::FormField for Field2 {
             }
         }
         let result = if errors.len() > 0 {
-            //TODO::: set first error
+            self.show_errors(&errors);
             Err(errors)
         } else {
+            // clean possibly errors from last validation
+            self.show_errors(&vec!["".to_string()]);
             Ok(self.widget_manager.as_value(self.view_value_get()))
         };
         result
     }
+    //TODO::: rm it
     //fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
     //    //TODO::: cleanups
     //    let mut errors = FieldErrors::new();

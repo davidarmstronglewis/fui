@@ -150,20 +150,34 @@ impl FormView {
 
     /// Validates form.
     pub fn validate(&mut self) -> Result<Value, FormErrors> {
+        let mut data = Map::with_capacity(self.field_count as usize);
+        let mut errors: FormErrors = HashMap::with_capacity(self.field_count as usize);
+
         for idx in 0..self.field_count {
-            eprintln!("{:?}", idx);
-            let view: &View = self.view
+            let view: &mut View = self.view
                 .get_content_mut()
                 .as_any_mut()
                 .downcast_mut::<LinearLayout>()
                 .unwrap()
                 .get_child_mut(idx as usize).unwrap();
-            let field: &Field2 = view.as_any().downcast_ref().unwrap();
-            let result = field.validate();
+            let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
+            match field.validate() {
+                Ok(v) => {
+                    data.insert(field.get_label(), v);
+                }
+                Err(e) => {
+                    errors.insert(field.get_label(), e);
+                }
+            }
         }
-        Ok(Value::Null)
 
-        ////TODO:::
+        match errors.is_empty() {
+            true => Ok(Value::Object(data)),
+            false => Err(errors),
+        }
+
+
+        ////TODO::: rm it
         //let mut data = Map::new();
         ////let mut data = Map::with_capacity(self.fields.len());
         ////let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
