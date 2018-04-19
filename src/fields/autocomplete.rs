@@ -17,8 +17,12 @@ impl Autocomplete {
     pub fn new<IS: Into<String>, F: Feeder>(
         label: IS,
         feeder: F,
-    ) -> fields::Field<AutocompleteManager, String> {
-        fields::Field::new(label, AutocompleteManager(Rc::new(feeder)), "".to_string())
+    //TODO::: rm it
+    //) -> fields::Field<AutocompleteManager, String> {
+    ) -> Field2 {
+        //TODO::: rm it
+        //fields::Field::new(label, AutocompleteManager(Rc::new(feeder)), "".to_string())
+        Field2::new(AutocompleteManager(Rc::new(feeder)))
     }
 }
 
@@ -52,10 +56,13 @@ impl WidgetManager for AutocompleteManager {
 
 
 
+//TODO::: cleanups
 use cursive::view::ViewWrapper;
 use cursive::views::{LinearLayout, TextView, DummyView};
+use validators::{Required, Validator};
 //TODO::: rename to Field/Autocomplete/or whatever
-struct Field2 {
+/// TODO:::
+pub struct Field2 {
     view: LinearLayout,
     widget_manager: AutocompleteManager,
 }
@@ -71,6 +78,33 @@ impl Field2 {
             view: layout,
             widget_manager: widget_manager,
         }
+    }
+    // COMPAT STUFF
+    //TODO::: use it
+    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
+        /// Sets initial `value` of `field`.
+        //self.initial = initial.into();
+        self
+    }
+    /// Sets `help` message for `field`.
+    pub fn help<IS: Into<String>>(mut self, msg: IS) -> Self {
+        //TODO:::
+        //self.help = msg.into();
+        self
+    }
+    /// Append `validator`.
+    pub fn validator<V: Validator + 'static>(mut self, validator: V) -> Self {
+        //TODO:::
+        //self.validators.push(Rc::new(validator));
+        self
+    }
+    /// Checks if Field is required
+    pub fn is_required(&self) -> bool {
+        //TODO:::
+        //self.validators
+        //    .iter()
+        //    .any(|&ref x| (**x).as_any().downcast_ref::<Required>().is_some())
+        true
     }
 }
 impl fields::FormField for Field2 {
