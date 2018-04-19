@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use clap;
+use cursive::view::View;
 use cursive::views::ViewBox;
 use serde_json::value::Value;
 
@@ -22,12 +23,21 @@ impl Autocomplete {
     ) -> Field2 {
         //TODO::: rm it
         //fields::Field::new(label, AutocompleteManager(Rc::new(feeder)), "".to_string())
-        Field2::new(label, AutocompleteManager(Rc::new(feeder)))
+        let view = views::Autocomplete::new(feeder);
+        Field2::new(label, AutocompleteManager::new(view))
     }
 }
 
-#[derive(Clone)]
-pub struct AutocompleteManager(Rc<Feeder>);
+pub struct AutocompleteManager {
+    view: Option<views::Autocomplete>,
+}
+impl AutocompleteManager {
+    fn new(view: views::Autocomplete) -> AutocompleteManager {
+        AutocompleteManager {
+            view: Some(view),
+        }
+    }
+}
 
 impl WidgetManager for AutocompleteManager {
     fn build_widget(&self, label: &str, help: &str, initial: &str) -> ViewBox {
@@ -42,7 +52,9 @@ impl WidgetManager for AutocompleteManager {
     }
     fn build_value_view(&self, value: &str) -> ViewBox {
         let view = ViewBox::new(Box::new(
-            views::Autocomplete::new(Rc::clone(&self.0)).value(value),
+            //TODO::: rm it
+            //views::Autocomplete::new(Rc::clone(&self.feeder)).value(value),
+            views::Autocomplete::new(vec![""]).value(value),
         ));
         view
     }
@@ -50,7 +62,7 @@ impl WidgetManager for AutocompleteManager {
     // NEW API
 
     fn take_view(&mut self) -> ViewBox {
-        ViewBox::new(Box::new(DummyView))
+        ViewBox::new(Box::new(self.view.take().unwrap()))
     }
     fn as_string(&self, view: &ViewBox) -> String {
         let autocomplete: &views::Autocomplete = (**view).as_any().downcast_ref().unwrap();
@@ -71,7 +83,6 @@ impl WidgetManager for AutocompleteManager {
 use cursive::view::ViewWrapper;
 use cursive::views::{LinearLayout, TextView, DummyView};
 use validators::{Required, Validator};
-use cursive::align::HAlign;
 //TODO::: rename to Field/Autocomplete/or whatever
 //TODO::: mv Field to fields/mod.rs
 /// TODO::: docs
