@@ -143,6 +143,18 @@ impl Field2 {
         self.view.get_child(1).unwrap().as_any().downcast_ref().unwrap()
     }
 
+    /// Returns mutable view responsible for storing label.
+    pub fn view_label_get(&self) -> &TextView {
+        let label_and_help: &LinearLayout = self.view.get_child(0).unwrap().as_any().downcast_ref().unwrap();
+        label_and_help.get_child(0).unwrap().as_any().downcast_ref().unwrap()
+    }
+
+    /// Gets label of the field
+    pub fn get_label(&self) -> String {
+        let text_view: &TextView = self.view_label_get();
+        text_view.get_content().source().trim().to_owned()
+    }
+
     /// Returns mutable view responsible for storing help message.
     pub fn view_help_get_mut(&mut self) -> &mut TextView {
         let label_and_help: &mut LinearLayout = self.view.get_child_mut(0).unwrap().as_any_mut().downcast_mut().unwrap();
