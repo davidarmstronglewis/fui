@@ -22,7 +22,7 @@ impl Autocomplete {
     ) -> Field2 {
         //TODO::: rm it
         //fields::Field::new(label, AutocompleteManager(Rc::new(feeder)), "".to_string())
-        Field2::new(AutocompleteManager(Rc::new(feeder)))
+        Field2::new(label, AutocompleteManager(Rc::new(feeder)))
     }
 }
 
@@ -80,10 +80,10 @@ pub struct Field2 {
     widget_manager: AutocompleteManager,
 }
 impl Field2 {
-    fn new(mut widget_manager: AutocompleteManager) -> Field2 {
+    fn new<IS: Into<String>>(label: IS, mut widget_manager: AutocompleteManager) -> Field2 {
         let layout = LinearLayout::vertical()
                     //TODO:: label can't include separator
-                    .child(TextView::new(""))
+                    .child(TextView::new(label.into()))
                     .child(widget_manager.take_view())
                     .child(TextView::new(""))
                     .child(DummyView);
