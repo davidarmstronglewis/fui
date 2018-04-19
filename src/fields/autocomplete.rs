@@ -84,3 +84,12 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
         args.value_of(&self.label).unwrap_or("").to_string()
     }
 }
+
+//TODO::: rm it
+impl<W: WidgetManager> fields::Field<W, String> {
+    /// Sets initial `value` of `field`.
+    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
+        self.initial = initial.into();
+        self
+    }
+}

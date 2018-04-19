@@ -7,14 +7,16 @@ use std::rc::Rc;
 use validators::{Required, Validator};
 
 mod autocomplete;
-mod checkbox;
-mod multiselect;
-mod text;
+////TODO::: uncomment
+//mod checkbox;
+//mod multiselect;
+//mod text;
 
 pub use self::autocomplete::Autocomplete;
-pub use self::checkbox::Checkbox;
-pub use self::multiselect::Multiselect;
-pub use self::text::Text;
+////TODO::: uncomment
+//pub use self::checkbox::Checkbox;
+//pub use self::multiselect::Multiselect;
+//pub use self::text::Text;
 
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
