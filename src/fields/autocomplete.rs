@@ -71,6 +71,7 @@ impl WidgetManager for AutocompleteManager {
 use cursive::view::ViewWrapper;
 use cursive::views::{LinearLayout, TextView, DummyView};
 use validators::{Required, Validator};
+use cursive::align::HAlign;
 //TODO::: rename to Field/Autocomplete/or whatever
 //TODO::: mv Field to fields/mod.rs
 /// TODO::: docs
@@ -82,7 +83,8 @@ pub struct Field2 {
 impl Field2 {
     fn new<IS: Into<String>>(label: IS, mut widget_manager: AutocompleteManager) -> Field2 {
         let label_and_help = LinearLayout::horizontal()
-            .child(TextView::new(label.into()))
+            .child(TextView::new(label_padding(label.into().as_ref())))
+            .child(DummyView)
             .child(TextView::new(""));
         let layout = LinearLayout::vertical()
                     //TODO:: label can't include separator
@@ -133,7 +135,7 @@ impl Field2 {
     /// Returns mutable view responsible for storing help message.
     pub fn view_help_get_mut(&mut self) -> &mut TextView {
         let label_and_help: &mut LinearLayout = self.view.get_child_mut(0).unwrap().as_any_mut().downcast_mut().unwrap();
-        label_and_help.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap()
+        label_and_help.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap()
     }
 
     /// Sets help message.
@@ -220,6 +222,9 @@ impl fields::FormField for Field2 {
 }
 impl ViewWrapper for Field2 {
     wrap_impl!(self.view: LinearLayout);
+}
+fn label_padding(label: &str) -> String {
+    format!("{:20}", label)
 }
 
 
