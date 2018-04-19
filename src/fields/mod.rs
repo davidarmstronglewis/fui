@@ -13,6 +13,7 @@ mod autocomplete;
 //mod text;
 
 pub use self::autocomplete::Autocomplete;
+pub use self::autocomplete::Field2;
 ////TODO::: uncomment
 //pub use self::checkbox::Checkbox;
 //pub use self::multiselect::Multiselect;
@@ -41,6 +42,12 @@ pub trait WidgetManager {
     /// # Panic
     /// If called more then once it will panic (bacause `View` is taken).
     fn take_view(&mut self) -> views::ViewBox;
+    /// Returns widget value as `String`
+    fn as_string(&self, view_box: &views::ViewBox) -> String;
+    /// Returns widget value as `Value`
+    ///
+    /// [serde_json::Value]: ../serde_json/value/enum.Value.html
+    fn as_value(&self, view_box: &views::ViewBox) -> Value;
 }
 
 /// Building block for `Form`s which stores `data` and `Widget`.
@@ -90,11 +97,13 @@ impl<W: WidgetManager, T> Field<W, T> {
 pub type FieldErrors = Vec<String>;
 
 /// Covers communication from `Form` to `Field`.
-pub trait FormField {
+pub trait FormField: View {
     /// Builds `widget` representing this `field`.
     fn build_widget(&self) -> views::ViewBox;
-    /// Validates `data`.
-    fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
+    ///// Validates `data`.
+    ///TODO::: docs
+    fn validate(&self) -> Result<Value, FieldErrors>;
+    //fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
     /// Gets `field`'s label.
     fn get_label(&self) -> &str;
     /// Gets manager which controlls `widget`.

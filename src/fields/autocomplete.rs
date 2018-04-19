@@ -52,6 +52,17 @@ impl WidgetManager for AutocompleteManager {
     fn take_view(&mut self) -> ViewBox {
         ViewBox::new(Box::new(DummyView))
     }
+    fn as_string(&self, view: &ViewBox) -> String {
+        let autocomplete: &views::Autocomplete = (**view).as_any().downcast_ref().unwrap();
+        let value = (&*(*autocomplete).get_value()).clone();
+        value
+    }
+
+    fn as_value(&self, view_box: &ViewBox) -> Value {
+        let autocomplete: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
+        let value = (&*(*autocomplete).get_value()).clone();
+        Value::String(value.to_owned())
+    }
 }
 
 
@@ -61,8 +72,10 @@ use cursive::view::ViewWrapper;
 use cursive::views::{LinearLayout, TextView, DummyView};
 use validators::{Required, Validator};
 //TODO::: rename to Field/Autocomplete/or whatever
-/// TODO:::
+//TODO::: mv Field to fields/mod.rs
+/// TODO::: docs
 pub struct Field2 {
+    validators: Vec<Rc<Validator>>,
     view: LinearLayout,
     widget_manager: AutocompleteManager,
 }
@@ -75,12 +88,14 @@ impl Field2 {
                     .child(TextView::new(""))
                     .child(DummyView);
         Field2 {
+            validators: vec![],
             view: layout,
             widget_manager: widget_manager,
         }
     }
     // COMPAT STUFF
     //TODO::: use it
+    ///TODO::: doc
     pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
         /// Sets initial `value` of `field`.
         //self.initial = initial.into();
@@ -106,6 +121,12 @@ impl Field2 {
         //    .any(|&ref x| (**x).as_any().downcast_ref::<Required>().is_some())
         true
     }
+    /// Returns view responsible for storing value.
+    ///
+    /// Returns `ViewBox` since we don't know what `View` is injected.
+    pub fn view_value_get(&self) -> &ViewBox {
+        self.view.get_child(1).unwrap().as_any().downcast_ref().unwrap()
+    }
 }
 impl fields::FormField for Field2 {
     fn get_widget_manager(&self) -> &WidgetManager {
@@ -117,20 +138,37 @@ impl fields::FormField for Field2 {
         self.widget_manager
             .build_widget("", "", "")
     }
-    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
-        //TODO::: cleanups
-        let mut errors = FieldErrors::new();
-        //for v in &self.validators {
-        //    if let Some(e) = v.validate(data) {
-        //        errors.push(e);
-        //    }
-        //}
-        if errors.len() > 0 {
+    /// Validates `Field`.
+    fn validate(&self) -> Result<Value, FieldErrors> {
+        let mut errors: FieldErrors = Vec::new();
+        let value = self.widget_manager.as_string(self.view_value_get());
+        for v in self.validators.iter() {
+            if let Some(e) = v.validate(&value) {
+                errors.push(e);
+            }
+        }
+        let result = if errors.len() > 0 {
+            //TODO::: set first error
             Err(errors)
         } else {
-            Ok(Value::String(data.to_owned()))
-        }
+            Ok(self.widget_manager.as_value(self.view_value_get()))
+        };
+        result
     }
+    //fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
+    //    //TODO::: cleanups
+    //    let mut errors = FieldErrors::new();
+    //    //for v in &self.validators {
+    //    //    if let Some(e) = v.validate(data) {
+    //    //        errors.push(e);
+    //    //    }
+    //    //}
+    //    if errors.len() > 0 {
+    //        Err(errors)
+    //    } else {
+    //        Ok(Value::String(data.to_owned()))
+    //    }
+    //}
 
     /// Gets label of the field
     fn get_label(&self) -> &str {
@@ -160,46 +198,46 @@ impl ViewWrapper for Field2 {
 
 
 
-impl fields::FormField for fields::Field<AutocompleteManager, String> {
-    fn get_widget_manager(&self) -> &WidgetManager {
-        &self.widget_manager
-    }
-    fn build_widget(&self) -> ViewBox {
-        self.widget_manager
-            .build_widget(&self.label, &self.help, &self.initial)
-    }
-
-    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
-        let mut errors = FieldErrors::new();
-        for v in &self.validators {
-            if let Some(e) = v.validate(data) {
-                errors.push(e);
-            }
-        }
-        if errors.len() > 0 {
-            Err(errors)
-        } else {
-            Ok(Value::String(data.to_owned()))
-        }
-    }
-
-    /// Gets label of the field
-    fn get_label(&self) -> &str {
-        &self.label
-    }
-
-    fn clap_arg(&self) -> clap::Arg {
-        clap::Arg::with_name(&self.label)
-            .help(&self.help)
-            .long(&self.label)
-            .required(self.is_required())
-            .takes_value(true)
-    }
-
-    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
-        args.value_of(&self.label).unwrap_or("").to_string()
-    }
-}
+//impl fields::FormField for fields::Field<AutocompleteManager, String> {
+//    fn get_widget_manager(&self) -> &WidgetManager {
+//        &self.widget_manager
+//    }
+//    fn build_widget(&self) -> ViewBox {
+//        self.widget_manager
+//            .build_widget(&self.label, &self.help, &self.initial)
+//    }
+//
+//    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
+//        let mut errors = FieldErrors::new();
+//        for v in &self.validators {
+//            if let Some(e) = v.validate(data) {
+//                errors.push(e);
+//            }
+//        }
+//        if errors.len() > 0 {
+//            Err(errors)
+//        } else {
+//            Ok(Value::String(data.to_owned()))
+//        }
+//    }
+//
+//    /// Gets label of the field
+//    fn get_label(&self) -> &str {
+//        &self.label
+//    }
+//
+//    fn clap_arg(&self) -> clap::Arg {
+//        clap::Arg::with_name(&self.label)
+//            .help(&self.help)
+//            .long(&self.label)
+//            .required(self.is_required())
+//            .takes_value(true)
+//    }
+//
+//    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
+//        args.value_of(&self.label).unwrap_or("").to_string()
+//    }
+//}
 
 //TODO::: rm it
 impl<W: WidgetManager> fields::Field<W, String> {

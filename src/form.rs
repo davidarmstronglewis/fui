@@ -10,7 +10,7 @@ use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
 use serde_json::map::Map;
 use serde_json::value::Value;
 
-use fields::{FieldErrors, FormField};
+use fields::{Field2, FieldErrors, FormField};
 
 
 /// Container for form's errors
@@ -23,8 +23,10 @@ type OnCancel = Option<Rc<Fn(&mut Cursive)>>;
 /// Aggregates `fields` and handles process of `submitting` (or `canceling`).
 pub struct FormView {
     view: Dialog,
-
+    field_count: u8,
+    //TODO::: rm it?
     fields: Vec<Box<FormField>>,
+
     on_submit: OnSubmit,
     on_cancel: OnCancel,
 }
@@ -38,7 +40,10 @@ impl FormView {
             .button("Submit (Ctrl+f)", |_| {});
         FormView {
             view: layout,
+            field_count: 0,
+            //TODO::: rm it?
             fields: Vec::new(),
+
             on_submit: None,
             on_cancel: None,
         }
@@ -46,14 +51,23 @@ impl FormView {
 
     /// Appends `field` to field list.
     pub fn field<V: FormField + 'static>(mut self, field: V) -> Self {
-        let widget = field.build_widget();
+        //TODO::: rm it
+        //let widget = field.build_widget();
+        //self.view
+        //    .get_content_mut()
+        //    .as_any_mut()
+        //    .downcast_mut::<LinearLayout>()
+        //    .unwrap()
+        //    .add_child(widget);
+        //self.fields.push(Box::new(field));
+        //self
+        self.field_count += 1;
         self.view
             .get_content_mut()
             .as_any_mut()
             .downcast_mut::<LinearLayout>()
             .unwrap()
-            .add_child(widget);
-        self.fields.push(Box::new(field));
+            .add_child(field);
         self
     }
 
@@ -136,39 +150,52 @@ impl FormView {
 
     /// Validates form.
     pub fn validate(&mut self) -> Result<Value, FormErrors> {
-        //TODO:::
-        let mut data = Map::new();
-        //let mut data = Map::with_capacity(self.fields.len());
-        //let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
+        for idx in 0..self.field_count {
+            eprintln!("{:?}", idx);
+            let view: &View = self.view
+                .get_content_mut()
+                .as_any_mut()
+                .downcast_mut::<LinearLayout>()
+                .unwrap()
+                .get_child_mut(idx as usize).unwrap();
+            let field: &Field2 = view.as_any().downcast_ref().unwrap();
+            let result = field.validate();
+        }
+        Ok(Value::Null)
 
-        //for (idx, field) in self.fields.iter().enumerate() {
-        //    let view = self.view
-        //        .get_content()
-        //        .as_any()
-        //        .downcast_ref::<LinearLayout>()
-        //        .unwrap()
-        //        .get_child(idx)
-        //        .unwrap();
-        //    let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
-        //    let value = field.get_widget_manager().get_value(view_box);
-        //    let label = field.get_label();
-        //    match field.validate(value.as_ref()) {
-        //        Ok(v) => {
-        //            data.insert(label.to_owned(), v);
-        //        }
-        //        Err(e) => {
-        //            errors.insert(label.to_owned(), e);
-        //        }
-        //    }
-        //}
+        ////TODO:::
+        //let mut data = Map::new();
+        ////let mut data = Map::with_capacity(self.fields.len());
+        ////let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
 
-        //if errors.is_empty() {
-        //    Ok(Value::Object(data))
-        //} else {
-        //    self.show_errors(&errors);
-        //    Err(errors)
-        //}
-        Ok(Value::Object(data))
+        ////for (idx, field) in self.fields.iter().enumerate() {
+        ////    let view = self.view
+        ////        .get_content()
+        ////        .as_any()
+        ////        .downcast_ref::<LinearLayout>()
+        ////        .unwrap()
+        ////        .get_child(idx)
+        ////        .unwrap();
+        ////    let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
+        ////    let value = field.get_widget_manager().get_value(view_box);
+        ////    let label = field.get_label();
+        ////    match field.validate(value.as_ref()) {
+        ////        Ok(v) => {
+        ////            data.insert(label.to_owned(), v);
+        ////        }
+        ////        Err(e) => {
+        ////            errors.insert(label.to_owned(), e);
+        ////        }
+        ////    }
+        ////}
+
+        ////if errors.is_empty() {
+        ////    Ok(Value::Object(data))
+        ////} else {
+        ////    self.show_errors(&errors);
+        ////    Err(errors)
+        ////}
+        //Ok(Value::Object(data))
     }
 
     fn show_errors(&mut self, form_errors: &FormErrors) {
