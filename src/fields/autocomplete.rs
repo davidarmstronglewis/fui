@@ -81,9 +81,12 @@ pub struct Field2 {
 }
 impl Field2 {
     fn new<IS: Into<String>>(label: IS, mut widget_manager: AutocompleteManager) -> Field2 {
+        let label_and_help = LinearLayout::horizontal()
+            .child(TextView::new(label.into()))
+            .child(TextView::new(""));
         let layout = LinearLayout::vertical()
                     //TODO:: label can't include separator
-                    .child(TextView::new(label.into()))
+                    .child(label_and_help)
                     .child(widget_manager.take_view())
                     .child(TextView::new(""))
                     .child(DummyView);
