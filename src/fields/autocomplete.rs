@@ -127,6 +127,19 @@ impl Field2 {
     pub fn view_value_get(&self) -> &ViewBox {
         self.view.get_child(1).unwrap().as_any().downcast_ref().unwrap()
     }
+
+    /// Returns mutable view responsible for storing error message.
+    pub fn view_error_get_mut(&mut self) -> &mut TextView {
+        let view_box: &mut ViewBox = self.view.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap();
+        (**view_box).as_any_mut().downcast_mut().unwrap()
+    }
+
+    /// Sets error message.
+    pub fn set_error(&mut self, msg: &str) {
+        let text_view: &mut TextView = self.view_error_get_mut();
+        text_view.set_content(msg);
+    }
+
 }
 impl fields::FormField for Field2 {
     fn get_widget_manager(&self) -> &WidgetManager {
