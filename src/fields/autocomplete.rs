@@ -106,8 +106,7 @@ impl Field2 {
     }
     /// Sets `help` message for `field`.
     pub fn help<IS: Into<String>>(mut self, msg: IS) -> Self {
-        //TODO:::
-        //self.help = msg.into();
+        self.set_help(msg.into().as_ref());
         self
     }
     /// Append `validator`.
@@ -129,6 +128,18 @@ impl Field2 {
     /// Returns `ViewBox` since we don't know what `View` is injected.
     pub fn view_value_get(&self) -> &ViewBox {
         self.view.get_child(1).unwrap().as_any().downcast_ref().unwrap()
+    }
+
+    /// Returns mutable view responsible for storing help message.
+    pub fn view_help_get_mut(&mut self) -> &mut TextView {
+        let label_and_help: &mut LinearLayout = self.view.get_child_mut(0).unwrap().as_any_mut().downcast_mut().unwrap();
+        label_and_help.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap()
+    }
+
+    /// Sets help message.
+    pub fn set_help(&mut self, msg: &str) {
+        let text_view: &mut TextView = self.view_help_get_mut();
+        text_view.set_content(msg);
     }
 
     /// Returns mutable view responsible for storing error message.
