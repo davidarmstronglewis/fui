@@ -25,7 +25,7 @@ pub struct FormView {
     view: Dialog,
     field_count: u8,
     //TODO::: rm it?
-    fields: Vec<Box<FormField>>,
+    //fields: Vec<Box<FormField>>,
 
     on_submit: OnSubmit,
     on_cancel: OnCancel,
@@ -42,7 +42,7 @@ impl FormView {
             view: layout,
             field_count: 0,
             //TODO::: rm it?
-            fields: Vec::new(),
+            //fields: Vec::new(),
 
             on_submit: None,
             on_cancel: None,
@@ -112,14 +112,21 @@ impl FormView {
     /// Translates form's fields to [clap::Arg].
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
+    //TODO::: rename it to as_clap_args
     pub fn fields2clap_args(&self) -> Vec<clap::Arg> {
-        //TODO:::
-        let mut args = Vec::new();
-        //let mut args = Vec::with_capacity(self.fields.len());
-        //for field in &self.fields {
-        //    let arg = field.clap_arg();
-        //    args.push(arg);
-        //}
+        let mut args = Vec::with_capacity(self.field_count as usize);
+        // TODO::: this needs proper iteration or iterator
+        for idx in 0..self.field_count {
+            let view: &View = self.view
+                .get_content()
+                .as_any()
+                .downcast_ref::<LinearLayout>()
+                .unwrap()
+                .get_child(idx as usize).unwrap();
+            let field: &Field2 = view.as_any().downcast_ref().unwrap();
+            let arg = field.clap_arg();
+            args.push(arg);
+        }
         return args;
     }
 
@@ -127,6 +134,7 @@ impl FormView {
     ///
     /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
     /// [serde_json::Value]: ../../serde_json/enum.Value.html
+    //TODO::: rename it to clap_args_deser?
     pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> Value {
         //TODO:::
         let mut form_data = Map::new();
@@ -161,12 +169,13 @@ impl FormView {
                 .unwrap()
                 .get_child_mut(idx as usize).unwrap();
             let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
+            let label = field.get_label().to_string();
             match field.validate() {
                 Ok(v) => {
-                    data.insert(field.get_label(), v);
+                    data.insert(label, v);
                 }
                 Err(e) => {
-                    errors.insert(field.get_label(), e);
+                    errors.insert(label, e);
                 }
             }
         }

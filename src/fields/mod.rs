@@ -108,6 +108,7 @@ pub trait FormField: View {
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     /// [clap::App]: ../../clap/struct.App.html
+    //TODO::: rename it as_clap_arg
     fn clap_arg(&self) -> clap::Arg;
     /// Extracts field's data from [clap::ArgMatches] and converts it to str.
     ///

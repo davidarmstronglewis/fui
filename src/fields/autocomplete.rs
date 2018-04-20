@@ -87,14 +87,19 @@ use validators::{Required, Validator};
 //TODO::: mv Field to fields/mod.rs
 /// TODO::: docs
 pub struct Field2 {
+    // TODO::: explain why these fields
+    label: String,
+    help: String,
+
     validators: Vec<Rc<Validator>>,
     view: LinearLayout,
     widget_manager: AutocompleteManager,
 }
 impl Field2 {
     fn new<IS: Into<String>>(label: IS, mut widget_manager: AutocompleteManager) -> Field2 {
+        let label = label.into();
         let label_and_help = LinearLayout::horizontal()
-            .child(TextView::new(label_padding(label.into().as_ref())))
+            .child(TextView::new(label_padding(label.as_ref())))
             .child(DummyView)
             .child(TextView::new(""));
         let layout = LinearLayout::vertical()
@@ -104,6 +109,8 @@ impl Field2 {
                     .child(TextView::new(""))
                     .child(DummyView);
         Field2 {
+            label: label,
+            help: "".to_string(),
             validators: vec![],
             view: layout,
             widget_manager: widget_manager,
@@ -119,7 +126,7 @@ impl Field2 {
     }
     /// Sets `help` message for `field`.
     pub fn help<IS: Into<String>>(mut self, msg: IS) -> Self {
-        self.set_help(msg.into().as_ref());
+        self.set_help(msg.as_ref());
         self
     }
     /// Append `validator`.
@@ -149,9 +156,8 @@ impl Field2 {
     }
 
     /// Gets label of the field
-    pub fn get_label(&self) -> String {
-        let text_view: &TextView = self.view_label_get();
-        text_view.get_content().source().trim().to_owned()
+    pub fn get_label(&self) -> &str {
+        &self.label
     }
 
     /// Returns mutable view responsible for storing help message.
@@ -160,8 +166,14 @@ impl Field2 {
         label_and_help.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap()
     }
 
+    /// Gets help of the field
+    fn get_help(&self) -> &str {
+        &self.help
+    }
+
     /// Sets help message.
     pub fn set_help(&mut self, msg: &str) {
+        self.help = msg.to_string();
         let text_view: &mut TextView = self.view_help_get_mut();
         text_view.set_content(msg);
     }
@@ -178,6 +190,7 @@ impl Field2 {
     }
 
 }
+//TODO::: redefine FormField trait after cleanups
 impl fields::FormField for Field2 {
     fn get_widget_manager(&self) -> &WidgetManager {
         //TODO::: cleanups
@@ -231,18 +244,28 @@ impl fields::FormField for Field2 {
 
     /// Gets label of the field
     fn get_label(&self) -> &str {
-        //TODO::: cleanups
-        //&self.label
-        ""
+        &self.label
     }
 
+    /// Builds [clap::Arg] needed by automatically generated [clap::App].
+    ///
+    /// [clap::Arg]: ../../clap/struct.Arg.html
+    /// [clap::App]: ../../clap/struct.App.html
+    //TODO::: make it trait?
+    // TODO::: rename it: fn as_clap_arg(&self) -> clap::Arg {
     fn clap_arg(&self) -> clap::Arg {
-        //TODO::: cleanups
-        clap::Arg::with_name("")
-            //.help(&self.help)
-            //.long(&self.label)
-            //.required(self.is_required())
-            //.takes_value(true)
+        let (multiple, takes_value) = match self.widget_manager.as_value(self.view_value_get()) {
+            Value::Number(_) => (false, true),
+            Value::String(_) => (false, true),
+            Value::Array(_) => (true, true),
+            _ => (false, false),
+        };
+        clap::Arg::with_name(self.get_label())
+            .help(self.get_help())
+            .long(self.get_label())
+            .required(self.is_required())
+            .multiple(multiple)
+            .takes_value(takes_value)
     }
 
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
