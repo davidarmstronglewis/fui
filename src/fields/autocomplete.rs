@@ -145,12 +145,12 @@ impl Field2 {
     /// Returns view responsible for storing value.
     ///
     /// Returns `ViewBox` since we don't know what `View` is injected.
-    pub fn view_value_get(&self) -> &ViewBox {
+    fn view_value_get(&self) -> &ViewBox {
         self.view.get_child(1).unwrap().as_any().downcast_ref().unwrap()
     }
 
     /// Returns mutable view responsible for storing label.
-    pub fn view_label_get(&self) -> &TextView {
+    fn view_label_get(&self) -> &TextView {
         let label_and_help: &LinearLayout = self.view.get_child(0).unwrap().as_any().downcast_ref().unwrap();
         label_and_help.get_child(0).unwrap().as_any().downcast_ref().unwrap()
     }
@@ -161,7 +161,7 @@ impl Field2 {
     }
 
     /// Returns mutable view responsible for storing help message.
-    pub fn view_help_get_mut(&mut self) -> &mut TextView {
+    fn view_help_get_mut(&mut self) -> &mut TextView {
         let label_and_help: &mut LinearLayout = self.view.get_child_mut(0).unwrap().as_any_mut().downcast_mut().unwrap();
         label_and_help.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap()
     }
@@ -179,7 +179,7 @@ impl Field2 {
     }
 
     /// Returns mutable view responsible for storing error message.
-    pub fn view_error_get_mut(&mut self) -> &mut TextView {
+    fn view_error_get_mut(&mut self) -> &mut TextView {
         self.view.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap()
     }
 
