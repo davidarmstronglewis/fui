@@ -42,9 +42,11 @@ pub trait WidgetManager {
     /// # Panic
     /// If called more then once it will panic (bacause `View` is taken).
     fn take_view(&mut self) -> views::ViewBox;
-    /// Returns widget value as `String`
+    /// Sets view's value
+    fn set_value(&self, view_box: &mut views::ViewBox, value: &str);
+    /// Returns view's value as `String`
     fn as_string(&self, view_box: &views::ViewBox) -> String;
-    /// Returns widget value as `Value`
+    /// Returns view's value as `Value`
     ///
     /// [serde_json::Value]: ../serde_json/value/enum.Value.html
     fn as_value(&self, view_box: &views::ViewBox) -> Value;

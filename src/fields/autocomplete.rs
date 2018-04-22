@@ -64,15 +64,19 @@ impl WidgetManager for AutocompleteManager {
     fn take_view(&mut self) -> ViewBox {
         ViewBox::new(Box::new(self.view.take().unwrap()))
     }
-    fn as_string(&self, view: &ViewBox) -> String {
-        let autocomplete: &views::Autocomplete = (**view).as_any().downcast_ref().unwrap();
-        let value = (&*(*autocomplete).get_value()).clone();
+    fn as_string(&self, view_box: &ViewBox) -> String {
+        let ac: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
+        let value = (&*(*ac).get_value()).clone();
         value
+    }
+    fn set_value(&self, view_box: &mut ViewBox, value: &str) {
+        let ac: &mut views::Autocomplete = (**view_box).as_any_mut().downcast_mut().unwrap();
+        (*ac).set_value(value);
     }
 
     fn as_value(&self, view_box: &ViewBox) -> Value {
-        let autocomplete: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
-        let value = (&*(*autocomplete).get_value()).clone();
+        let ac: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
+        let value = (&*(*ac).get_value()).clone();
         Value::String(value.to_owned())
     }
 }
@@ -95,6 +99,7 @@ pub struct Field2 {
     view: LinearLayout,
     widget_manager: AutocompleteManager,
 }
+//TODO::: make it macro and use if for CheckboxField, TextField, etc.?
 impl Field2 {
     fn new<IS: Into<String>>(label: IS, mut widget_manager: AutocompleteManager) -> Field2 {
         let label = label.into();
@@ -116,12 +121,13 @@ impl Field2 {
             widget_manager: widget_manager,
         }
     }
-    // COMPAT STUFF
-    //TODO::: use it
-    ///TODO::: doc
+    /// Sets initial value of field.
     pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
-        /// Sets initial `value` of `field`.
-        //self.initial = initial.into();
+        let value = initial.into();
+        self.widget_manager.set_value(
+            // self.view_value_get_mut() // this makes borrow-checker sad
+            self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap(),
+            value.as_ref());
         self
     }
     /// Sets `help` message for `field`.
@@ -147,6 +153,13 @@ impl Field2 {
     /// Returns `ViewBox` since we don't know what `View` is injected.
     fn view_value_get(&self) -> &ViewBox {
         self.view.get_child(1).unwrap().as_any().downcast_ref().unwrap()
+    }
+
+    /// Returns mutable view responsible for storing value.
+    ///
+    /// Returns `ViewBox` since we don't know what `View` is injected.
+    fn view_value_get_mut(&mut self) -> &mut ViewBox {
+        self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap()
     }
 
     /// Returns mutable view responsible for storing label.
@@ -326,11 +339,11 @@ fn label_padding(label: &str) -> String {
 //    }
 //}
 
-//TODO::: rm it
-impl<W: WidgetManager> fields::Field<W, String> {
-    /// Sets initial `value` of `field`.
-    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
-        self.initial = initial.into();
-        self
-    }
-}
+////TODO::: rm it
+//impl<W: WidgetManager> fields::Field<W, String> {
+//    /// Sets initial `value` of `field`.
+//    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
+//        self.initial = initial.into();
+//        self
+//    }
+//}
