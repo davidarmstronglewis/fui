@@ -284,8 +284,24 @@ impl fields::FormField for Field2 {
     }
 
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
-        //TODO::: cleanups
-        args.value_of("").unwrap_or("").to_string()
+        match self.widget_manager.as_value(self.view_value_get()) {
+            Value::Bool(_) => {
+                let v = if args.is_present(&self.label) {
+                    "true"
+                } else {
+                    "false"
+                };
+                v.to_string()
+            },
+            Value::Number(_) | Value::String(_) => {
+                args.value_of(&self.label).unwrap_or("").to_string()
+            },
+            Value::Array(_) => {
+                let values = args.values_of(&self.label)
+                    .unwrap_or(clap::Values::default());
+                values.collect::<Vec<&str>>().join(VALUE_SEP)
+            },
+        }
     }
 }
 impl ViewWrapper for Field2 {
@@ -345,5 +361,48 @@ fn label_padding(label: &str) -> String {
 //    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
 //        self.initial = initial.into();
 //        self
+//    }
+//}
+
+
+// TODO::: use it or remove it
+//#[cfg(test)]
+//mod clap_args_conversion {
+//    use super::*;
+//    use clap::ArgMatches;
+//
+//    #[test]
+//    fn value_is_bool_when_arg_is_switch() {
+//        let app = clap::App::new("myprog")
+//            .arg(clap::Arg::with_name("checkbox"));
+//        let field = Field2::new("label", AutocompleteManager::new(views::Autocomplete::new(vec![""])));
+//
+//        let cmd_with_true = app.get_matches_from(vec!["myprog", "--checkbox"]);
+//
+//        assert_eq!(field.clap_args2value(cmd_with_true), Value::Bool(true)
+//        );
+//        assert_eq!(field.clap_args2value(cmd_with_true), Value::Bool(false));
+//    }
+//
+//    #[test]
+//    fn value_is_string_when_arg_is_single_value() {
+//        let app = clap::App::new("myprog")
+//            .arg(clap::Arg::with_name("autocomplete-arg"));
+//        let field = Field2::new("label", AutocompleteManager::new(views::Autocomplete::new(vec!["value"])));
+//
+//        let cmd_with_true = app.get_matches_from(vec!["myprog", "--autocomplete-arg", "value"]);
+//
+//        assert_eq!(field.clap_args2value(cmd_with_true), Value::String("value"));
+//    }
+//
+//    #[test]
+//    fn value_is_array_when_arg_is_multi_value() {
+//        let app = clap::App::new("myprog")
+//            .arg(clap::Arg::with_name("multivalue-arg"));
+//        let field = Field2::new("label", Multivalue::new(views::Multivalue::new(vec!["value"])));
+//
+//        let cmd_with_true = app.get_matches_from(vec!["myprog", "--multivalue-arg", "value", "value2"]);
+//
+//        assert_eq!(field.clap_args2value(cmd_with_true), Value::Array(["value", "value2"]));
 //    }
 //}
