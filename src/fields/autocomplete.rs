@@ -125,8 +125,8 @@ impl Field2 {
         self
     }
     /// Sets `help` message for `field`.
-    pub fn help<IS: Into<String>>(mut self, msg: IS) -> Self {
-        self.set_help(msg.as_ref());
+    pub fn help(mut self, msg: &str) -> Self {
+        self.set_help(msg);
         self
     }
     /// Append `validator`.
@@ -260,8 +260,10 @@ impl fields::FormField for Field2 {
             Value::Array(_) => (true, true),
             _ => (false, false),
         };
+        //TODO::: &self.label is enough
         clap::Arg::with_name(self.get_label())
             .help(self.get_help())
+            //TODO::: &self.label is enough
             .long(self.get_label())
             .required(self.is_required())
             .multiple(multiple)
