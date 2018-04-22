@@ -306,31 +306,68 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             .subcommands(sub_cmds)
     }
 
-    fn input_from_cli<I, T>(&self, user_args: I) -> Option<(String, Value)>
+    //TODO::: return form errors and print it in place where is called
+    fn input_from_cli<I, T>(&mut self, user_args: I) -> Option<(String, Value)>
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
     {
+        //let user_args = user_args
+        //    .into_iter()
+        //    .map(|x| x.into())
+        //    .collect::<Vec<OsString>>();
+        //let app = self.build_cli_app();
+        //let matches = app.get_matches_from(user_args);
+        //let cmd_name = matches.subcommand_name().unwrap();
+        //let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
+        //let action = self.actions
+        //    .values_mut()
+        //    .find(|action| action.name == cmd_name)
+        //    .unwrap();
+        //let value = action
+        //    .form
+        //    .as_mut()
+        //    .unwrap()
+        //    .clap_arg_matches2value(cmd_matches);
+        //Some((action.cmd_with_desc(), value))
+
+    let (form_data, cmd_name, full_action) = {
         let user_args = user_args
             .into_iter()
             .map(|x| x.into())
             .collect::<Vec<OsString>>();
-
         let app = self.build_cli_app();
-
         let matches = app.get_matches_from(user_args);
         let cmd_name = matches.subcommand_name().unwrap();
         let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
-        let action = self.actions
+        let action = &self.actions
             .values()
             .find(|action| action.name == cmd_name)
             .unwrap();
-        let value = action
+        let form = &action
             .form
             .as_ref()
-            .unwrap()
-            .clap_arg_matches2value(cmd_matches);
-        Some((action.cmd_with_desc(), value))
+            .unwrap();
+        let form_data = form.clap_arg_matches2value(cmd_matches);
+        (form_data, cmd_name.to_owned(), action.cmd_with_desc())
+    };
+
+        eprintln!("FORM DATA 2 {:#?}", form_data);
+
+        let action = &mut self.actions
+            .values_mut()
+            .find(|action| action.name == cmd_name)
+            .unwrap();
+
+        let form = &mut action
+            .form
+            .as_mut()
+            .unwrap();
+        form.set_data(form_data);
+        let result = form.validate();
+        eprintln!("VALID 2 {:#?}", result);
+        //TODO::: rm unwrap!!!
+        Some((full_action, result.unwrap()))
     }
 
     fn header(&self) -> String {

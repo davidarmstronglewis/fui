@@ -135,13 +135,35 @@ impl FormView {
     /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
     /// [serde_json::Value]: ../../serde_json/enum.Value.html
     //TODO::: rename it to clap_args_deser?
-    pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> Value {
-        //TODO:::
-        let mut form_data = Map::new();
-        //let mut form_data = Map::with_capacity(self.fields.len());
-        //for field in self.fields.iter() {
+    pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> HashMap<String, String> {
+        let mut form_data = HashMap::with_capacity(self.field_count as usize);
+        for idx in 0..self.field_count {
+            let view: &View = self.view
+                .get_content()
+                .as_any()
+                .downcast_ref::<LinearLayout>()
+                .unwrap()
+                .get_child(idx as usize).unwrap();
+            let field: &Field2 = view.as_any().downcast_ref().unwrap();
+            let data = field.clap_args2str(&arg_matches);
+            form_data.insert(field.get_label().to_owned(), data);
+        }
+        form_data
+
+        //TODO::: rm it
+        //let mut form_data = Map::with_capacity(self.field_count as usize);
+        //for idx in 0..self.field_count {
+        //    let view: &mut View = self.view
+        //        .get_content_mut()
+        //        .as_any_mut()
+        //        .downcast_mut::<LinearLayout>()
+        //        .unwrap()
+        //        .get_child_mut(idx as usize).unwrap();
+        //    let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
         //    let data = field.clap_args2str(&arg_matches);
-        //    match field.validate(data.as_ref()) {
+
+        //    //match field.validate(data.as_ref()) {
+        //    match field.validate() {
         //        Ok(v) => {
         //            form_data.insert(field.get_label().to_string(), v);
         //        }
@@ -153,7 +175,7 @@ impl FormView {
         //        }
         //    }
         //}
-        Value::Object(form_data)
+        //Value::Object(form_data)
     }
 
     /// Validates form.
@@ -219,6 +241,25 @@ impl FormView {
         ////    Err(errors)
         ////}
         //Ok(Value::Object(data))
+    }
+
+    ///TODO::: docs
+    //TODO::: return errors?
+    //TODO::: make form_data own type + use it in clap_arg_matches2value?
+    pub fn set_data(&mut self, form_data: HashMap<String, String>) {
+        eprintln!("FORM_DATA {:?}", form_data);
+        use fields::WidgetManager;
+        for idx in 0..self.field_count {
+            let view: &mut View = self.view
+                .get_content_mut()
+                .as_any_mut()
+                .downcast_mut::<LinearLayout>()
+                .unwrap()
+                .get_child_mut(idx as usize).unwrap();
+            let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
+            let label = field.get_label().to_string();
+            field.set_value(form_data.get(&label).unwrap());
+        }
     }
 
     fn show_errors(&mut self, form_errors: &FormErrors) {

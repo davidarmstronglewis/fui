@@ -124,6 +124,8 @@ pub trait FormField: View {
     /// Runs validators on field data
     fn validate(&mut self) -> Result<Value, FieldErrors>;
     //fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
+    /// Sets view's value
+    fn set_value(&mut self, value: &str);
 }
 
 fn format_annotation(label: &str, help: &str) -> String {

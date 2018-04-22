@@ -10,6 +10,8 @@ use fields::{FieldErrors, WidgetManager};
 use fields;
 use views;
 
+const VALUE_SEP: &'static str = ",";
+
 /// Convienient wrapper around `Field<AutocompleteManager, String>`.
 pub struct Autocomplete;
 
@@ -301,8 +303,18 @@ impl fields::FormField for Field2 {
                     .unwrap_or(clap::Values::default());
                 values.collect::<Vec<&str>>().join(VALUE_SEP)
             },
+            _ => "".to_string(),
         }
     }
+
+    fn set_value(&mut self, value: &str) {
+        self.widget_manager.set_value(
+            // self.view_value_get_mut(), // this makes borrow-checker sad
+            self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap(),
+            value,
+        );
+    }
+
 }
 impl ViewWrapper for Field2 {
     wrap_impl!(self.view: LinearLayout);
