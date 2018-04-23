@@ -20,11 +20,7 @@ impl Autocomplete {
     pub fn new<IS: Into<String>, F: Feeder>(
         label: IS,
         feeder: F,
-    //TODO::: rm it
-    //) -> fields::Field<AutocompleteManager, String> {
     ) -> Field2 {
-        //TODO::: rm it
-        //fields::Field::new(label, AutocompleteManager(Rc::new(feeder)), "".to_string())
         let view = views::Autocomplete::new(feeder);
         Field2::new(label, AutocompleteManager::new(view))
     }
@@ -54,8 +50,6 @@ impl WidgetManager for AutocompleteManager {
     }
     fn build_value_view(&self, value: &str) -> ViewBox {
         let view = ViewBox::new(Box::new(
-            //TODO::: rm it
-            //views::Autocomplete::new(Rc::clone(&self.feeder)).value(value),
             views::Autocomplete::new(vec![""]).value(value),
         ));
         view
@@ -241,22 +235,6 @@ impl fields::FormField for Field2 {
         };
         result
     }
-    //TODO::: rm it
-    //fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
-    //    //TODO::: cleanups
-    //    let mut errors = FieldErrors::new();
-    //    //for v in &self.validators {
-    //    //    if let Some(e) = v.validate(data) {
-    //    //        errors.push(e);
-    //    //    }
-    //    //}
-    //    if errors.len() > 0 {
-    //        Err(errors)
-    //    } else {
-    //        Ok(Value::String(data.to_owned()))
-    //    }
-    //}
-
     /// Gets label of the field
     fn get_label(&self) -> &str {
         &self.label
@@ -324,57 +302,6 @@ fn label_padding(label: &str) -> String {
 }
 
 
-
-
-//impl fields::FormField for fields::Field<AutocompleteManager, String> {
-//    fn get_widget_manager(&self) -> &WidgetManager {
-//        &self.widget_manager
-//    }
-//    fn build_widget(&self) -> ViewBox {
-//        self.widget_manager
-//            .build_widget(&self.label, &self.help, &self.initial)
-//    }
-//
-//    fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
-//        let mut errors = FieldErrors::new();
-//        for v in &self.validators {
-//            if let Some(e) = v.validate(data) {
-//                errors.push(e);
-//            }
-//        }
-//        if errors.len() > 0 {
-//            Err(errors)
-//        } else {
-//            Ok(Value::String(data.to_owned()))
-//        }
-//    }
-//
-//    /// Gets label of the field
-//    fn get_label(&self) -> &str {
-//        &self.label
-//    }
-//
-//    fn clap_arg(&self) -> clap::Arg {
-//        clap::Arg::with_name(&self.label)
-//            .help(&self.help)
-//            .long(&self.label)
-//            .required(self.is_required())
-//            .takes_value(true)
-//    }
-//
-//    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
-//        args.value_of(&self.label).unwrap_or("").to_string()
-//    }
-//}
-
-////TODO::: rm it
-//impl<W: WidgetManager> fields::Field<W, String> {
-//    /// Sets initial `value` of `field`.
-//    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
-//        self.initial = initial.into();
-//        self
-//    }
-//}
 
 
 // TODO::: use it or remove it
