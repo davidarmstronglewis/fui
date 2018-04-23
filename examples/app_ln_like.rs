@@ -6,7 +6,7 @@
 extern crate fui;
 
 use fui::feeders::DirItems;
-use fui::fields::{Autocomplete, Checkbox, Multiselect};
+use fui::fields::{Autocomplete, Checkbox, Field, Multiselect};
 use fui::form::FormView;
 use fui::utils;
 use fui::validators::{DirExists, Required};
@@ -16,9 +16,11 @@ fn hdlr(v: Value) {
     println!("user input (from fn) {:?}", v);
 }
 
+fn make_symbolic_field() -> Field {
+    Checkbox::new("make_symbolic").help("make symbolic links instead of hard links")
+}
+
 fn main() {
-    let make_symbolic =
-        Checkbox::new("make_symbolic").help("make symbolic links instead of hard links");
     Fui::new("app_ln_like")
         .action(
             "basic-link",
@@ -34,7 +36,7 @@ fn main() {
                         .help("Destiny of link")
                         .validator(Required),
                 )
-                .field(make_symbolic.clone().initial(true)),
+                .field(make_symbolic_field().initial(true)),
             hdlr,
         )
         .action(
@@ -53,7 +55,7 @@ fn main() {
                         .validator(Required)
                         .validator(DirExists),
                 )
-                .field(make_symbolic.clone()),
+                .field(make_symbolic_field()),
             hdlr,
         )
         .run();

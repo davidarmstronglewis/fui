@@ -6,7 +6,7 @@
 extern crate fui;
 
 use fui::feeders::DirItems;
-use fui::fields::{Autocomplete, Multiselect};
+use fui::fields::{Autocomplete, Field, Multiselect};
 use fui::form::FormView;
 use fui::utils::cwd;
 use fui::validators::{FileExists, OneOf, PathFree, Required};
@@ -16,14 +16,17 @@ fn hdlr(v: Value) {
     println!("user input (from fn) {:?}", v);
 }
 
-fn main() {
+fn compression_field() -> Field {
     let formats = vec!["none", "gzip", "bzip2"];
-    let compression = Autocomplete::new("compression-type", formats.clone())
+    Autocomplete::new("compression-type", formats.clone())
         .initial("gzip")
         .validator(Required)
         .validator(OneOf(formats))
-        .help("Archive format");
+        .help("Archive format")
 
+}
+
+fn main() {
     Fui::new("app_tar_like")
         .action(
             "archive-files",
@@ -41,7 +44,7 @@ fn main() {
                         .validator(Required)
                         .validator(PathFree),
                 )
-                .field(compression.clone()),
+                .field(compression_field()),
             hdlr,
         )
         .action(
@@ -60,7 +63,7 @@ fn main() {
                         .help("Dir where extracted files should land")
                         .validator(Required),
                 )
-                .field(compression.clone()),
+                .field(compression_field()),
             hdlr,
         )
         .action(
@@ -72,7 +75,7 @@ fn main() {
                         .help("Path to archive")
                         .validator(FileExists),
                 )
-                .field(compression),
+                .field(compression_field()),
             hdlr,
         )
         .run();
