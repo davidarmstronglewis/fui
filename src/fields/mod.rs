@@ -8,13 +8,13 @@ use validators::{Required, Validator};
 
 mod autocomplete;
 ////TODO::: uncomment
-//mod checkbox;
+mod checkbox;
 //mod multiselect;
 //mod text;
 
 pub use self::autocomplete::Autocomplete;
 ////TODO::: uncomment
-//pub use self::checkbox::Checkbox;
+pub use self::checkbox::Checkbox;
 //pub use self::multiselect::Multiselect;
 //pub use self::text::Text;
 
