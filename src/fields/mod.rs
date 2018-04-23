@@ -48,8 +48,7 @@ pub trait FormField: View {
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     /// [clap::App]: ../../clap/struct.App.html
-    //TODO::: rename it as_clap_arg
-    fn clap_arg(&self) -> clap::Arg;
+    fn as_clap_arg(&self) -> clap::Arg;
     /// Extracts field's data from [clap::ArgMatches] and converts it to str.
     ///
     /// [clap::App]: ../../clap/struct.ArgMatches.html
@@ -214,8 +213,7 @@ impl FormField for Field {
     /// [clap::Arg]: ../../clap/struct.Arg.html
     /// [clap::App]: ../../clap/struct.App.html
     //TODO::: make it trait?
-    // TODO::: rename it: fn as_clap_arg(&self) -> clap::Arg {
-    fn clap_arg(&self) -> clap::Arg {
+    fn as_clap_arg(&self) -> clap::Arg {
         let (multiple, takes_value) = match self.widget_manager.as_value(self.view_value_get()) {
             Value::Number(_) => (false, true),
             Value::String(_) => (false, true),

@@ -110,7 +110,7 @@ impl FormView {
                 .unwrap()
                 .get_child(idx as usize).unwrap();
             let field: &Field = view.as_any().downcast_ref().unwrap();
-            let arg = field.clap_arg();
+            let arg = field.as_clap_arg();
             args.push(arg);
         }
         return args;
