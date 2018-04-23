@@ -98,8 +98,7 @@ impl FormView {
     /// Translates form's fields to [clap::Arg].
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
-    //TODO::: rename it to as_clap_args
-    pub fn fields2clap_args(&self) -> Vec<clap::Arg> {
+    pub fn as_clap_args(&self) -> Vec<clap::Arg> {
         let mut args = Vec::with_capacity(self.field_count as usize);
         // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
@@ -123,6 +122,7 @@ impl FormView {
     //TODO::: rename it to clap_args_deser?
     pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> HashMap<String, String> {
         let mut form_data = HashMap::with_capacity(self.field_count as usize);
+        // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &View = self.view
                 .get_content()
@@ -141,6 +141,7 @@ impl FormView {
     pub fn validate(&mut self) -> Result<Value, FormErrors> {
         let mut data = Map::with_capacity(self.field_count as usize);
         let mut errors: FormErrors = HashMap::with_capacity(self.field_count as usize);
+        // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &mut View = self.view
                 .get_content_mut()
@@ -171,6 +172,7 @@ impl FormView {
     pub fn set_data(&mut self, form_data: HashMap<String, String>) {
         eprintln!("FORM_DATA {:?}", form_data);
         use fields::WidgetManager;
+        // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &mut View = self.view
                 .get_content_mut()

@@ -293,7 +293,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     pub fn build_cli_app(&self) -> clap::App {
         let mut sub_cmds: Vec<clap::App> = Vec::new();
         for action in self.actions.values() {
-            let args = action.form.as_ref().unwrap().fields2clap_args();
+            let args = action.form.as_ref().unwrap().as_clap_args();
             let sub_cmd = clap::SubCommand::with_name(action.name.as_ref())
                 .about(action.help.as_ref())
                 .args(args.as_slice());
