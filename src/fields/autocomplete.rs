@@ -14,7 +14,10 @@ use views;
 pub struct Autocomplete;
 
 impl Autocomplete {
-    /// Creates a new `Field<AutocompleteManager, String>`.
+    /// Creates a new [Field] with view [`Autocomplete`].
+    ///
+    /// [Field]: struct.Field.html
+    /// [Autocomplete]: struct.Autocomplete.html
     pub fn new<IS: Into<String>, F: Feeder>(
         label: IS,
         feeder: F,
