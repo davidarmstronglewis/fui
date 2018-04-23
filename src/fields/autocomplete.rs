@@ -38,25 +38,6 @@ impl AutocompleteManager {
 }
 
 impl WidgetManager for AutocompleteManager {
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> ViewBox {
-        let viewbox = self.build_value_view(&initial);
-        fields::label_with_help_layout(viewbox, &label, &help)
-    }
-    fn get_value(&self, view_box: &ViewBox) -> String {
-        let view_box = fields::value_view_from_layout(view_box);
-        let autocomplete: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
-        let value = (&*(*autocomplete).get_value()).clone();
-        value
-    }
-    fn build_value_view(&self, value: &str) -> ViewBox {
-        let view = ViewBox::new(Box::new(
-            views::Autocomplete::new(vec![""]).value(value),
-        ));
-        view
-    }
-
-    // NEW API
-
     fn take_view(&mut self) -> ViewBox {
         ViewBox::new(Box::new(self.view.take().unwrap()))
     }
@@ -86,6 +67,7 @@ use validators::{Required, Validator};
 //TODO::: rename to Field/Autocomplete/or whatever
 //TODO::: mv Field to fields/mod.rs
 /// TODO::: docs
+/// Builds container `view` with placeholders for `help`, `value`, `error`.
 pub struct Field2 {
     // TODO::: explain why these fields
     label: String,
@@ -93,6 +75,7 @@ pub struct Field2 {
 
     validators: Vec<Rc<Validator>>,
     view: LinearLayout,
+    /// Controlls `View` storing value.
     widget_manager: AutocompleteManager,
 }
 //TODO::: make it macro and use if for CheckboxField, TextField, etc.?
@@ -164,11 +147,6 @@ impl Field2 {
         label_and_help.get_child(0).unwrap().as_any().downcast_ref().unwrap()
     }
 
-    /// Gets label of the field
-    pub fn get_label(&self) -> &str {
-        &self.label
-    }
-
     /// Returns mutable view responsible for storing help message.
     fn view_help_get_mut(&mut self) -> &mut TextView {
         let label_and_help: &mut LinearLayout = self.view.get_child_mut(0).unwrap().as_any_mut().downcast_mut().unwrap();
@@ -198,24 +176,15 @@ impl Field2 {
         text_view.set_content(msg);
     }
 
-}
-//TODO::: redefine FormField trait after cleanups
-impl fields::FormField for Field2 {
-    fn get_widget_manager(&self) -> &WidgetManager {
-        //TODO::: cleanups
-        &self.widget_manager
-    }
-    fn build_widget(&self) -> ViewBox {
-        //TODO::: cleanups
-        self.widget_manager
-            .build_widget("", "", "")
-    }
-
+    /// Shows field errors
     fn show_errors(&mut self, errors: &FieldErrors) {
         // TODO: show all errors somehow
         self.set_error(errors.first().map(|e| e.as_ref()).unwrap_or(""));
     }
 
+}
+//TODO::: redefine FormField trait after cleanups
+impl fields::FormField for Field2 {
     /// Validates `Field`.
     fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();

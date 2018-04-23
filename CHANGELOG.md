@@ -2,10 +2,19 @@
 
 ## Next2
 
-* remove Field.build_widget()
+* Remove Field.build_widget()
 * `clap_arg_matches2value` returns form data in `HashMap` (instead of `Value`)
 * `FormView.validate` no longer takes value
-* remove `FormView.show_errors` (Field.validate runs it automatically)
+* Remove `FormView.show_errors` (Field.validate runs it automatically)
+* Remove WidgetManager API:
+    * build_widget
+    * get_value
+    * set_error
+    * build_value_view
+* Remove FormField API
+    * build_widget
+    * get_label
+    * get_widget_manager
 
 ## Next
 

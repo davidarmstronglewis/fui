@@ -21,22 +21,6 @@ pub use self::autocomplete::Field2;
 
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
-    /// Builds container `view` with placeholders for `help`, `value`, `error`.
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox;
-    /// Gets `value` from widget.
-    fn get_value(&self, view: &views::ViewBox) -> String;
-    /// Sets `error` on widget.
-    fn set_error(&self, viewbox: &mut views::ViewBox, error: &str) {
-        let layout: &mut views::LinearLayout = (**viewbox).as_any_mut().downcast_mut().unwrap();
-        let child: &mut View = (*layout).get_child_mut(2).unwrap();
-        let text: &mut views::TextView = (*child).as_any_mut().downcast_mut().unwrap();
-        text.set_content(error);
-    }
-    /// Builds a `value` view
-    fn build_value_view(&self, value: &str) -> views::ViewBox;
-
-    // NEW API
-
     /// Takes out the inner `View` from this manager.
     ///
     /// # Panic
@@ -100,12 +84,8 @@ pub type FieldErrors = Vec<String>;
 
 /// Covers communication from `Form` to `Field`.
 pub trait FormField: View {
-    /// Builds `widget` representing this `field`.
-    fn build_widget(&self) -> views::ViewBox;
     /// Gets `field`'s label.
     fn get_label(&self) -> &str;
-    /// Gets manager which controlls `widget`.
-    fn get_widget_manager(&self) -> &WidgetManager;
     /// Builds [clap::Arg] needed by automatically generated [clap::App].
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
@@ -116,14 +96,8 @@ pub trait FormField: View {
     ///
     /// [clap::App]: ../../clap/struct.ArgMatches.html
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
-
-    // NEW API
-
-    /// Shows field errors
-    fn show_errors(&mut self, errors: &FieldErrors);
     /// Runs validators on field data
     fn validate(&mut self) -> Result<Value, FieldErrors>;
-    //fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
     /// Sets view's value
     fn set_value(&mut self, value: &str);
 }
