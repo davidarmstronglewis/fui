@@ -10,11 +10,12 @@ use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
 use serde_json::map::Map;
 use serde_json::value::Value;
 
-use fields::{Field, FieldErrors, FormField};
+use fields::{Field, FieldErrors, FormField, WidgetManager};
 
 
 /// Container for form's errors
 pub type FormErrors = HashMap<String, FieldErrors>;
+pub type FormData = HashMap<String, String>;
 
 
 type OnSubmit = Option<Rc<Fn(&mut Cursive, Value)>>;
@@ -120,7 +121,7 @@ impl FormView {
     /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
     /// [serde_json::Value]: ../../serde_json/enum.Value.html
     //TODO::: rename it to clap_args_deser?
-    pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> HashMap<String, String> {
+    pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> FormData {
         let mut form_data = HashMap::with_capacity(self.field_count as usize);
         // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
@@ -169,9 +170,7 @@ impl FormView {
     ///TODO::: docs
     //TODO::: return errors?
     //TODO::: make form_data own type + use it in clap_arg_matches2value?
-    pub fn set_data(&mut self, form_data: HashMap<String, String>) {
-        eprintln!("FORM_DATA {:?}", form_data);
-        use fields::WidgetManager;
+    pub fn set_data(&mut self, form_data: FormData) {
         // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &mut View = self.view
