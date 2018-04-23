@@ -10,13 +10,13 @@ mod autocomplete;
 ////TODO::: uncomment
 mod checkbox;
 //mod multiselect;
-//mod text;
+mod text;
 
 pub use self::autocomplete::Autocomplete;
 ////TODO::: uncomment
 pub use self::checkbox::Checkbox;
 //pub use self::multiselect::Multiselect;
-//pub use self::text::Text;
+pub use self::text::Text;
 
 const VALUE_SEP: &'static str = ",";
 
