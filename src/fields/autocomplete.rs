@@ -10,7 +10,7 @@ use fields::{FieldErrors, WidgetManager};
 use fields;
 use views;
 
-/// Convienient wrapper around `Field<AutocompleteManager, String>`.
+/// Convienient wrapper around `Field`.
 pub struct Autocomplete;
 
 impl Autocomplete {
@@ -27,6 +27,7 @@ impl Autocomplete {
 pub struct AutocompleteManager {
     view: Option<views::Autocomplete>,
 }
+
 impl AutocompleteManager {
     fn new(view: views::Autocomplete) -> AutocompleteManager {
         AutocompleteManager {
@@ -39,11 +40,13 @@ impl WidgetManager for AutocompleteManager {
     fn take_view(&mut self) -> ViewBox {
         ViewBox::new(Box::new(self.view.take().unwrap()))
     }
+
     fn as_string(&self, view_box: &ViewBox) -> String {
         let ac: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
         let value = (&*(*ac).get_value()).clone();
         value
     }
+
     fn set_value(&self, view_box: &mut ViewBox, value: &str) {
         let ac: &mut views::Autocomplete = (**view_box).as_any_mut().downcast_mut().unwrap();
         (*ac).set_value(value);
