@@ -222,11 +222,9 @@ impl fields::FormField for Field2 {
             Value::Array(_) => (true, true),
             _ => (false, false),
         };
-        //TODO::: &self.label is enough
-        clap::Arg::with_name(self.get_label())
+        clap::Arg::with_name(&self.label)
             .help(self.get_help())
-            //TODO::: &self.label is enough
-            .long(self.get_label())
+            .long(&self.label)
             .required(self.is_required())
             .multiple(multiple)
             .takes_value(takes_value)
