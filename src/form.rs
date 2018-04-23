@@ -133,7 +133,7 @@ impl FormView {
                 .get_child(idx as usize).unwrap();
             let field: &Field = view.as_any().downcast_ref().unwrap();
             //TODO:: should this be replaced by clap_arg2value ?
-            let data = field.clap_args2str(&arg_matches);
+            let data = field.clap_args2string(&arg_matches);
             form_data.insert(field.get_label().to_owned(), Value::String(data));
         }
         form_data

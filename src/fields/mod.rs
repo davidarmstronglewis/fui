@@ -54,7 +54,7 @@ pub trait FormField: View {
     /// Extracts field's data from [clap::ArgMatches] and converts it to str.
     ///
     /// [clap::App]: ../../clap/struct.ArgMatches.html
-    fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
+    fn clap_args2string(&self, args: &clap::ArgMatches) -> String;
 }
 
 /// TODO:: docs
@@ -238,7 +238,7 @@ impl FormField for Field {
     }
 
     //TODO:: make it trait or move this logic to src/lib.rs?
-    fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
+    fn clap_args2string(&self, args: &clap::ArgMatches) -> String {
         match self.widget_manager.as_value(self.view_value_get()) {
             Value::Bool(_) => {
                 let v = if args.is_present(&self.label) {
