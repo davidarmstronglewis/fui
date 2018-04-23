@@ -101,7 +101,7 @@ impl FormView {
     /// [clap::Arg]: ../../clap/struct.Arg.html
     pub fn as_clap_args(&self) -> Vec<clap::Arg> {
         let mut args = Vec::with_capacity(self.field_count as usize);
-        // TODO::: this needs proper iteration or iterator
+        // TODO:: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &View = self.view
                 .get_content()
@@ -123,7 +123,7 @@ impl FormView {
     //TODO::: rename it to clap_args_deser?
     pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> FormData {
         let mut form_data = HashMap::with_capacity(self.field_count as usize);
-        // TODO::: this needs proper iteration or iterator
+        // TODO:: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &View = self.view
                 .get_content()
@@ -142,7 +142,7 @@ impl FormView {
     pub fn validate(&mut self) -> Result<Value, FormErrors> {
         let mut data = Map::with_capacity(self.field_count as usize);
         let mut errors: FormErrors = HashMap::with_capacity(self.field_count as usize);
-        // TODO::: this needs proper iteration or iterator
+        // TODO:: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &mut View = self.view
                 .get_content_mut()
@@ -169,7 +169,7 @@ impl FormView {
 
     /// Sets fields data based on `FormData`
     pub fn set_data(&mut self, form_data: FormData) {
-        // TODO::: this needs proper iteration or iterator
+        // TODO:: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &mut View = self.view
                 .get_content_mut()
