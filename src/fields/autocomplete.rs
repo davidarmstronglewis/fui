@@ -10,14 +10,16 @@ use fields::{FieldErrors, WidgetManager};
 use fields;
 use views;
 
-/// Convienient wrapper around `Field`.
+/// [Field] with [Autocomplete view] inside.
+///
+/// [Autocomplete view]: ../views/struct.Autocomplete.html
 pub struct Autocomplete;
 
 impl Autocomplete {
-    /// Creates a new [Field] with view [`Autocomplete`].
+    /// Creates a new [Field] with [Autocomplete view] inside.
     ///
     /// [Field]: struct.Field.html
-    /// [Autocomplete]: struct.Autocomplete.html
+    /// [Autocomplete view]: ../views/struct.Autocomplete.html
     pub fn new<IS: Into<String>, F: Feeder>(
         label: IS,
         feeder: F,
