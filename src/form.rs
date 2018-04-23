@@ -13,8 +13,9 @@ use serde_json::value::Value;
 use fields::{Field, FieldErrors, FormField, WidgetManager};
 
 
-/// Container for form's errors
+/// Container for form's errors.
 pub type FormErrors = HashMap<String, FieldErrors>;
+/// Container for form's data.
 pub type FormData = HashMap<String, String>;
 
 
@@ -116,12 +117,11 @@ impl FormView {
         return args;
     }
 
-    /// Translates [clap::ArgMatches] to [serde_json::Value] based on fields.
+    /// Translates [`clap::ArgMatches`] to [`FormData`].
     ///
     /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
-    /// [serde_json::Value]: ../../serde_json/enum.Value.html
-    //TODO::: rename it to clap_args_deser?
-    pub fn clap_arg_matches2value(&self, arg_matches: &clap::ArgMatches) -> FormData {
+    /// [FormData]: type.FormData.html
+    pub fn to_form_data(&self, arg_matches: &clap::ArgMatches) -> FormData {
         let mut form_data = HashMap::with_capacity(self.field_count as usize);
         // TODO:: this needs proper iteration or iterator
         for idx in 0..self.field_count {

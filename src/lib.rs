@@ -329,7 +329,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 .form
                 .as_ref()
                 .unwrap();
-            let form_data = form.clap_arg_matches2value(cmd_matches);
+            let form_data = form.to_form_data(cmd_matches);
             (form_data, cmd_name.to_owned(), action.cmd_with_desc())
         };
         let action = &mut self.actions
