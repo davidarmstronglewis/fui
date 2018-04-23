@@ -306,7 +306,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             .subcommands(sub_cmds)
     }
 
-    //TODO::: return form errors and print it in place where is called
+    //TODO:: return form errors and print it in place where is called
     fn input_from_cli<I, T>(&mut self, user_args: I) -> Option<(String, Value)>
     where
         I: IntoIterator<Item = T>,
@@ -342,7 +342,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             .unwrap();
         form.set_data(form_data);
         let result = form.validate();
-        //TODO::: handle unwrap!!!
+        //TODO:: handle unwrap!!!
         Some((full_action, result.unwrap()))
     }
 
