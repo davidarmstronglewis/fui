@@ -42,8 +42,12 @@ pub type FieldErrors = Vec<String>;
 
 /// Covers communication from `Form` to `Field`.
 pub trait FormField: View {
-    /// Gets `field`'s label.
+    /// Returns field's labels.
     fn get_label(&self) -> &str;
+    /// Sets field's value
+    fn set_value(&mut self, value: &str);
+    /// Runs field's validators on its data.
+    fn validate(&mut self) -> Result<Value, FieldErrors>;
     /// Builds [clap::Arg] needed by automatically generated [clap::App].
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
@@ -53,18 +57,16 @@ pub trait FormField: View {
     ///
     /// [clap::App]: ../../clap/struct.ArgMatches.html
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
-    /// Runs validators on field data
-    fn validate(&mut self) -> Result<Value, FieldErrors>;
-    /// Sets view's value
-    fn set_value(&mut self, value: &str);
 }
 
-/// TODO::: docs
+/// TODO:: docs
 /// Builds container `view` with placeholders for `help`, `value`, `error`.
 /// Building block for `Form`s which stores `data` and `Widget`.
 /// Widget layout where `label` and `help` are in the same line.
 pub struct Field {
-    // TODO::: explain why these fields
+    // Label, Help are stored in TextViews
+    // if you need &src from TextViews you have to allocate String which will be dropped making
+    // your &str invalid, so keep copy of Label, Help in Field to be able to return &src
     label: String,
     help: String,
 
@@ -73,7 +75,7 @@ pub struct Field {
     /// Controlls `View` storing value.
     widget_manager: Box<WidgetManager>,
 }
-//TODO::: make it macro and use if for CheckboxField, TextField, etc.?
+//TODO:: make it macro and use if for CheckboxField, TextField, etc.?
 impl Field {
     /// Creates a new `Field` with given `label`, `widget_manager`, `initial`.
     ///
@@ -181,7 +183,7 @@ impl Field {
     }
 
 }
-//TODO::: redefine FormField trait after cleanups
+
 impl FormField for Field {
     /// Gets label of the field.
     fn get_label(&self) -> &str {
@@ -221,7 +223,7 @@ impl FormField for Field {
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     /// [clap::App]: ../../clap/struct.App.html
-    //TODO::: make it trait or move this logic to src/lib.rs?
+    //TODO:: make it trait or move this logic to src/lib.rs?
     fn as_clap_arg(&self) -> clap::Arg {
         let (multiple, takes_value) = match self.widget_manager.as_value(self.view_value_get()) {
             Value::Number(_) => (false, true),
@@ -237,7 +239,7 @@ impl FormField for Field {
             .takes_value(takes_value)
     }
 
-    //TODO::: make it trait or move this logic to src/lib.rs?
+    //TODO:: make it trait or move this logic to src/lib.rs?
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
         match self.widget_manager.as_value(self.view_value_get()) {
             Value::Bool(_) => {
