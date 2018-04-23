@@ -60,9 +60,6 @@ pub trait FormField: View {
     fn set_value(&mut self, value: &str);
 }
 
-//TODO::: cleanups
-//TODO::: rename to Field/Autocomplete/or whatever
-//TODO::: mv Field to fields/mod.rs
 /// TODO::: docs
 /// Builds container `view` with placeholders for `help`, `value`, `error`.
 /// Building block for `Form`s which stores `data` and `Widget`.
