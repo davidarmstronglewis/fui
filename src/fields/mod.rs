@@ -62,6 +62,7 @@ pub trait FormField: View {
 /// TODO::: docs
 /// Builds container `view` with placeholders for `help`, `value`, `error`.
 /// Building block for `Form`s which stores `data` and `Widget`.
+/// Widget layout where `label` and `help` are in the same line.
 pub struct Field {
     // TODO::: explain why these fields
     label: String,
@@ -182,6 +183,20 @@ impl Field {
 }
 //TODO::: redefine FormField trait after cleanups
 impl FormField for Field {
+    /// Gets label of the field.
+    fn get_label(&self) -> &str {
+        &self.label
+    }
+
+    /// Sets value of the field.
+    fn set_value(&mut self, value: &str) {
+        self.widget_manager.set_value(
+            // self.view_value_get_mut(), // this makes borrow-checker sad
+            self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap(),
+            value,
+        );
+    }
+
     /// Validates `Field`.
     fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();
@@ -201,16 +216,12 @@ impl FormField for Field {
         };
         result
     }
-    /// Gets label of the field
-    fn get_label(&self) -> &str {
-        &self.label
-    }
 
     /// Builds [clap::Arg] needed by automatically generated [clap::App].
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     /// [clap::App]: ../../clap/struct.App.html
-    //TODO::: make it trait?
+    //TODO::: make it trait or move this logic to src/lib.rs?
     fn as_clap_arg(&self) -> clap::Arg {
         let (multiple, takes_value) = match self.widget_manager.as_value(self.view_value_get()) {
             Value::Number(_) => (false, true),
@@ -226,6 +237,7 @@ impl FormField for Field {
             .takes_value(takes_value)
     }
 
+    //TODO::: make it trait or move this logic to src/lib.rs?
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
         match self.widget_manager.as_value(self.view_value_get()) {
             Value::Bool(_) => {
@@ -247,48 +259,12 @@ impl FormField for Field {
             _ => "".to_string(),
         }
     }
-
-    fn set_value(&mut self, value: &str) {
-        self.widget_manager.set_value(
-            // self.view_value_get_mut(), // this makes borrow-checker sad
-            self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap(),
-            value,
-        );
-    }
-
 }
+
 impl ViewWrapper for Field {
     wrap_impl!(self.view: views::LinearLayout);
 }
+
 fn label_padding(label: &str) -> String {
     format!("{:20}", label)
-}
-
-
-
-fn format_annotation(label: &str, help: &str) -> String {
-    if help.len() > 0 {
-        format!("{:20}: {}", label, help)
-    } else {
-        format!("{:20}", label)
-    }
-}
-
-/// Widget layout where `label` and `help` are in the same line.
-pub fn label_with_help_layout(view_box: views::ViewBox, label: &str, help: &str) -> views::ViewBox {
-    let text = format_annotation(label, help);
-    let widget = views::LinearLayout::vertical()
-        .child(views::TextView::new(text))
-        .child(view_box)
-        .child(views::TextView::new(""))
-        .child(views::DummyView);
-
-    views::ViewBox::new(Box::new(widget))
-}
-
-/// Finds view storing value in widget layout
-pub fn value_view_from_layout(layout: &views::ViewBox) -> &views::ViewBox {
-    let layout: &views::LinearLayout = (**layout).as_any().downcast_ref().unwrap();
-    let value_view: &View = layout.get_child(1).unwrap();
-    (*value_view).as_any().downcast_ref().unwrap()
 }
