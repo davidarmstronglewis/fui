@@ -167,9 +167,7 @@ impl FormView {
         }
     }
 
-    ///TODO::: docs
-    //TODO::: return errors?
-    //TODO::: make form_data own type + use it in clap_arg_matches2value?
+    /// Sets fields data based on `FormData`
     pub fn set_data(&mut self, form_data: FormData) {
         // TODO::: this needs proper iteration or iterator
         for idx in 0..self.field_count {
@@ -181,6 +179,7 @@ impl FormView {
                 .get_child_mut(idx as usize).unwrap();
             let field: &mut Field = view.as_any_mut().downcast_mut().unwrap();
             let label = field.get_label().to_string();
+            // TODO:: handle this unwrap
             field.set_value(form_data.get(&label).unwrap());
         }
     }
