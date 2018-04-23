@@ -50,9 +50,10 @@ impl WidgetManager for AutocompleteManager {
         value
     }
 
-    fn set_value(&self, view_box: &mut ViewBox, value: &str) {
+    fn set_value(&self, view_box: &mut ViewBox, value: &Value) {
         let ac: &mut views::Autocomplete = (**view_box).as_any_mut().downcast_mut().unwrap();
-        (*ac).set_value(value);
+        let text = value.as_str().unwrap();
+        (*ac).set_value(text);
     }
 
     fn as_value(&self, view_box: &ViewBox) -> Value {

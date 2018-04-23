@@ -16,7 +16,7 @@ use fields::{Field, FieldErrors, FormField, WidgetManager};
 /// Container for form's errors.
 pub type FormErrors = HashMap<String, FieldErrors>;
 /// Container for form's data.
-pub type FormData = HashMap<String, String>;
+pub type FormData = HashMap<String, Value>;
 
 
 type OnSubmit = Option<Rc<Fn(&mut Cursive, Value)>>;
@@ -132,8 +132,9 @@ impl FormView {
                 .unwrap()
                 .get_child(idx as usize).unwrap();
             let field: &Field = view.as_any().downcast_ref().unwrap();
+            //TODO:: should this be replaced by clap_arg2value ?
             let data = field.clap_args2str(&arg_matches);
-            form_data.insert(field.get_label().to_owned(), data);
+            form_data.insert(field.get_label().to_owned(), Value::String(data));
         }
         form_data
     }
@@ -180,7 +181,8 @@ impl FormView {
             let field: &mut Field = view.as_any_mut().downcast_mut().unwrap();
             let label = field.get_label().to_string();
             // TODO:: handle this unwrap
-            field.set_value(form_data.get(&label).unwrap());
+            let value = form_data.get(&label).unwrap();
+            field.set_value(value);
         }
     }
 

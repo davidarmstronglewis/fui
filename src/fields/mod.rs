@@ -28,7 +28,7 @@ pub trait WidgetManager {
     /// If called more then once it will panic (bacause `View` is taken).
     fn take_view(&mut self) -> views::ViewBox;
     /// Sets view's value
-    fn set_value(&self, view_box: &mut views::ViewBox, value: &str);
+    fn set_value(&self, view_box: &mut views::ViewBox, value: &Value);
     /// Returns view's value as `String`
     fn as_string(&self, view_box: &views::ViewBox) -> String;
     /// Returns view's value as `Value`
@@ -45,7 +45,7 @@ pub trait FormField: View {
     /// Returns field's labels.
     fn get_label(&self) -> &str;
     /// Sets field's value
-    fn set_value(&mut self, value: &str);
+    fn set_value(&mut self, value: &Value);
     /// Runs field's validators on its data.
     fn validate(&mut self) -> Result<Value, FieldErrors>;
     /// Builds [clap::Arg] needed by automatically generated [clap::App].
@@ -103,12 +103,12 @@ impl Field {
         }
     }
     /// Sets initial value of field.
-    pub fn initial<IS: Into<String>>(mut self, initial: IS) -> Self {
+    pub fn initial<IS: Into<Value>>(mut self, initial: IS) -> Self {
         let value = initial.into();
         self.widget_manager.set_value(
             // self.view_value_get_mut() // this makes borrow-checker sad
             self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap(),
-            value.as_ref());
+            &value);
         self
     }
     /// Sets `help` message for `field`.
@@ -191,7 +191,7 @@ impl FormField for Field {
     }
 
     /// Sets value of the field.
-    fn set_value(&mut self, value: &str) {
+    fn set_value(&mut self, value: &Value) {
         self.widget_manager.set_value(
             // self.view_value_get_mut(), // this makes borrow-checker sad
             self.view.get_child_mut(1).unwrap().as_any_mut().downcast_mut().unwrap(),

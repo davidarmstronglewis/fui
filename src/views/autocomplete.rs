@@ -6,6 +6,7 @@ use cursive::event::{Callback, Event, EventResult, Key};
 use cursive::traits::View;
 use cursive::view::ViewWrapper;
 use cursive::views::{EditView, LinearLayout, SelectView};
+use serde_json::value::Value;
 
 use feeders::Feeder;
 use super::is_value_from_select;
