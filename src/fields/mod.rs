@@ -120,11 +120,9 @@ impl Field {
     }
     /// Checks if Field is required
     pub fn is_required(&self) -> bool {
-        //TODO:::
-        //self.validators
-        //    .iter()
-        //    .any(|&ref x| (**x).as_any().downcast_ref::<Required>().is_some())
-        true
+        self.validators
+            .iter()
+            .any(|&ref x| (**x).as_any().downcast_ref::<Required>().is_some())
     }
     /// Returns view responsible for storing value.
     ///
