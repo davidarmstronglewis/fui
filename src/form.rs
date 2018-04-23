@@ -24,8 +24,6 @@ type OnCancel = Option<Rc<Fn(&mut Cursive)>>;
 pub struct FormView {
     view: Dialog,
     field_count: u8,
-    //TODO::: rm it?
-    //fields: Vec<Box<FormField>>,
 
     on_submit: OnSubmit,
     on_cancel: OnCancel,
@@ -41,8 +39,6 @@ impl FormView {
         FormView {
             view: layout,
             field_count: 0,
-            //TODO::: rm it?
-            //fields: Vec::new(),
 
             on_submit: None,
             on_cancel: None,
@@ -51,16 +47,6 @@ impl FormView {
 
     /// Appends `field` to field list.
     pub fn field<V: FormField + 'static>(mut self, field: V) -> Self {
-        //TODO::: rm it
-        //let widget = field.build_widget();
-        //self.view
-        //    .get_content_mut()
-        //    .as_any_mut()
-        //    .downcast_mut::<LinearLayout>()
-        //    .unwrap()
-        //    .add_child(widget);
-        //self.fields.push(Box::new(field));
-        //self
         self.field_count += 1;
         self.view
             .get_content_mut()
@@ -149,40 +135,12 @@ impl FormView {
             form_data.insert(field.get_label().to_owned(), data);
         }
         form_data
-
-        //TODO::: rm it
-        //let mut form_data = Map::with_capacity(self.field_count as usize);
-        //for idx in 0..self.field_count {
-        //    let view: &mut View = self.view
-        //        .get_content_mut()
-        //        .as_any_mut()
-        //        .downcast_mut::<LinearLayout>()
-        //        .unwrap()
-        //        .get_child_mut(idx as usize).unwrap();
-        //    let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
-        //    let data = field.clap_args2str(&arg_matches);
-
-        //    //match field.validate(data.as_ref()) {
-        //    match field.validate() {
-        //        Ok(v) => {
-        //            form_data.insert(field.get_label().to_string(), v);
-        //        }
-        //        Err(e) => {
-        //            let msg: Vec<String> = e.iter().map(|s| {
-        //                format!("ERROR: {:?}", s)
-        //            }).collect();
-        //            eprintln!("{}", msg.join("\n"));
-        //        }
-        //    }
-        //}
-        //Value::Object(form_data)
     }
 
     /// Validates form.
     pub fn validate(&mut self) -> Result<Value, FormErrors> {
         let mut data = Map::with_capacity(self.field_count as usize);
         let mut errors: FormErrors = HashMap::with_capacity(self.field_count as usize);
-
         for idx in 0..self.field_count {
             let view: &mut View = self.view
                 .get_content_mut()
@@ -201,46 +159,10 @@ impl FormView {
                 }
             }
         }
-
         match errors.is_empty() {
             true => Ok(Value::Object(data)),
             false => Err(errors),
         }
-
-
-        ////TODO::: rm it
-        //let mut data = Map::new();
-        ////let mut data = Map::with_capacity(self.fields.len());
-        ////let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
-
-        ////for (idx, field) in self.fields.iter().enumerate() {
-        ////    let view = self.view
-        ////        .get_content()
-        ////        .as_any()
-        ////        .downcast_ref::<LinearLayout>()
-        ////        .unwrap()
-        ////        .get_child(idx)
-        ////        .unwrap();
-        ////    let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
-        ////    let value = field.get_widget_manager().get_value(view_box);
-        ////    let label = field.get_label();
-        ////    match field.validate(value.as_ref()) {
-        ////        Ok(v) => {
-        ////            data.insert(label.to_owned(), v);
-        ////        }
-        ////        Err(e) => {
-        ////            errors.insert(label.to_owned(), e);
-        ////        }
-        ////    }
-        ////}
-
-        ////if errors.is_empty() {
-        ////    Ok(Value::Object(data))
-        ////} else {
-        ////    self.show_errors(&errors);
-        ////    Err(errors)
-        ////}
-        //Ok(Value::Object(data))
     }
 
     ///TODO::: docs
@@ -260,31 +182,6 @@ impl FormView {
             let label = field.get_label().to_string();
             field.set_value(form_data.get(&label).unwrap());
         }
-    }
-
-    fn show_errors(&mut self, form_errors: &FormErrors) {
-        ////TODO:::
-        //for (idx, field) in self.fields.iter().enumerate() {
-        //    let label = field.get_label();
-        //    let error = form_errors.get(label).and_then(|field_errors| field_errors.first());
-        //    // can't call method which returns suitable view because of ownership
-        //    //  * such method would get &mut self
-        //    //  * self.field gets &self
-        //    //  so this clash of &mut and &, illegal
-        //    //  possible solution is to use clone on WidgetManager (needs implementation)
-        //    //  or
-        //    //  form should only call field.validate and rest would be handled by field
-        //    //  which should solve this issue?
-        //    let mut view = self.view
-        //        .get_content_mut()
-        //        .as_any_mut()
-        //        .downcast_mut::<LinearLayout>()
-        //        .unwrap()
-        //        .get_child_mut(idx)
-        //        .unwrap();
-        //    let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
-        //    field.get_widget_manager().set_error(viewbox, error.unwrap_or(&"".to_string()));
-        //}
     }
 
     fn event_submit(&mut self) -> EventResult {

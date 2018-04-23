@@ -2,7 +2,10 @@
 
 ## Next2
 
-* 
+* remove Field.build_widget()
+* `clap_arg_matches2value` returns form data in `HashMap` (instead of `Value`)
+* `FormView.validate` no longer takes value
+* remove `FormView.show_errors` (Field.validate runs it automatically)
 
 ## Next
 
