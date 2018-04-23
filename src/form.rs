@@ -10,7 +10,7 @@ use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
 use serde_json::map::Map;
 use serde_json::value::Value;
 
-use fields::{Field2, FieldErrors, FormField};
+use fields::{Field, FieldErrors, FormField};
 
 
 /// Container for form's errors
@@ -109,7 +109,7 @@ impl FormView {
                 .downcast_ref::<LinearLayout>()
                 .unwrap()
                 .get_child(idx as usize).unwrap();
-            let field: &Field2 = view.as_any().downcast_ref().unwrap();
+            let field: &Field = view.as_any().downcast_ref().unwrap();
             let arg = field.clap_arg();
             args.push(arg);
         }
@@ -130,7 +130,7 @@ impl FormView {
                 .downcast_ref::<LinearLayout>()
                 .unwrap()
                 .get_child(idx as usize).unwrap();
-            let field: &Field2 = view.as_any().downcast_ref().unwrap();
+            let field: &Field = view.as_any().downcast_ref().unwrap();
             let data = field.clap_args2str(&arg_matches);
             form_data.insert(field.get_label().to_owned(), data);
         }
@@ -148,7 +148,7 @@ impl FormView {
                 .downcast_mut::<LinearLayout>()
                 .unwrap()
                 .get_child_mut(idx as usize).unwrap();
-            let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
+            let field: &mut Field = view.as_any_mut().downcast_mut().unwrap();
             let label = field.get_label().to_string();
             match field.validate() {
                 Ok(v) => {
@@ -178,7 +178,7 @@ impl FormView {
                 .downcast_mut::<LinearLayout>()
                 .unwrap()
                 .get_child_mut(idx as usize).unwrap();
-            let field: &mut Field2 = view.as_any_mut().downcast_mut().unwrap();
+            let field: &mut Field = view.as_any_mut().downcast_mut().unwrap();
             let label = field.get_label().to_string();
             field.set_value(form_data.get(&label).unwrap());
         }

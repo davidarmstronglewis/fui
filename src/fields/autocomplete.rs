@@ -18,9 +18,9 @@ impl Autocomplete {
     pub fn new<IS: Into<String>, F: Feeder>(
         label: IS,
         feeder: F,
-    ) -> fields::Field2 {
+    ) -> fields::Field {
         let view = views::Autocomplete::new(feeder);
-        fields::Field2::new(label, AutocompleteManager::new(view))
+        fields::Field::new(label, AutocompleteManager::new(view))
     }
 }
 
@@ -69,7 +69,7 @@ impl WidgetManager for AutocompleteManager {
 //    fn value_is_bool_when_arg_is_switch() {
 //        let app = clap::App::new("myprog")
 //            .arg(clap::Arg::with_name("checkbox"));
-//        let field = Field2::new("label", AutocompleteManager::new(views::Autocomplete::new(vec![""])));
+//        let field = Field::new("label", AutocompleteManager::new(views::Autocomplete::new(vec![""])));
 //
 //        let cmd_with_true = app.get_matches_from(vec!["myprog", "--checkbox"]);
 //
@@ -82,7 +82,7 @@ impl WidgetManager for AutocompleteManager {
 //    fn value_is_string_when_arg_is_single_value() {
 //        let app = clap::App::new("myprog")
 //            .arg(clap::Arg::with_name("autocomplete-arg"));
-//        let field = Field2::new("label", AutocompleteManager::new(views::Autocomplete::new(vec!["value"])));
+//        let field = Field::new("label", AutocompleteManager::new(views::Autocomplete::new(vec!["value"])));
 //
 //        let cmd_with_true = app.get_matches_from(vec!["myprog", "--autocomplete-arg", "value"]);
 //
@@ -93,7 +93,7 @@ impl WidgetManager for AutocompleteManager {
 //    fn value_is_array_when_arg_is_multi_value() {
 //        let app = clap::App::new("myprog")
 //            .arg(clap::Arg::with_name("multivalue-arg"));
-//        let field = Field2::new("label", Multivalue::new(views::Multivalue::new(vec!["value"])));
+//        let field = Field::new("label", Multivalue::new(views::Multivalue::new(vec!["value"])));
 //
 //        let cmd_with_true = app.get_matches_from(vec!["myprog", "--multivalue-arg", "value", "value2"]);
 //

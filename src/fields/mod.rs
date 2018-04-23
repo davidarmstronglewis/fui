@@ -66,7 +66,7 @@ pub trait FormField: View {
 /// TODO::: docs
 /// Builds container `view` with placeholders for `help`, `value`, `error`.
 /// Building block for `Form`s which stores `data` and `Widget`.
-pub struct Field2 {
+pub struct Field {
     // TODO::: explain why these fields
     label: String,
     help: String,
@@ -77,13 +77,13 @@ pub struct Field2 {
     widget_manager: Box<WidgetManager>,
 }
 //TODO::: make it macro and use if for CheckboxField, TextField, etc.?
-impl Field2 {
+impl Field {
     /// Creates a new `Field` with given `label`, `widget_manager`, `initial`.
     ///
     /// `label` should match NOTE from [Fui::action]
     ///
     /// [Fui::action]: ../struct.Fui.html#method.action
-    fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field2 {
+    fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field {
         let label = label.into();
         let label_and_help = views::LinearLayout::horizontal()
             .child(views::TextView::new(label_padding(label.as_ref())))
@@ -95,7 +95,7 @@ impl Field2 {
                     .child(widget_manager.take_view())
                     .child(views::TextView::new(""))
                     .child(views::DummyView);
-        Field2 {
+        Field {
             label: label,
             help: "".to_string(),
             validators: vec![],
@@ -187,7 +187,7 @@ impl Field2 {
 
 }
 //TODO::: redefine FormField trait after cleanups
-impl FormField for Field2 {
+impl FormField for Field {
     /// Validates `Field`.
     fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();
@@ -264,7 +264,7 @@ impl FormField for Field2 {
     }
 
 }
-impl ViewWrapper for Field2 {
+impl ViewWrapper for Field {
     wrap_impl!(self.view: views::LinearLayout);
 }
 fn label_padding(label: &str) -> String {
