@@ -1,6 +1,7 @@
 //! Contains `form` related concetps like `FormView`.
-use std::rc::Rc;
 use std::collections::HashMap;
+use std::iter::FromIterator;
+use std::rc::Rc;
 
 use clap;
 use cursive::Cursive;
@@ -101,8 +102,8 @@ impl FormView {
     ///
     /// [clap::Arg]: ../../clap/struct.Arg.html
     pub fn as_clap_args(&self) -> Vec<clap::Arg> {
+        // TODO:: mv it to fui field.is_multiple(), field.takes_value()
         let mut args = Vec::with_capacity(self.field_count as usize);
-        // TODO:: this needs proper iteration or iterator
         for idx in 0..self.field_count {
             let view: &View = self.view
                 .get_content()
@@ -122,8 +123,15 @@ impl FormView {
     /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
     /// [FormData]: type.FormData.html
     pub fn to_form_data(&self, arg_matches: &clap::ArgMatches) -> FormData {
-        let mut form_data = HashMap::with_capacity(self.field_count as usize);
-        // TODO:: this needs proper iteration or iterator
+        let args: Vec<(String, Value)> = self.for_each(|f| {
+            let data = f.clap_args2string(&arg_matches);
+            (f.get_label().to_owned(), Value::String(data))
+        });
+        HashMap::from_iter(args)
+    }
+
+    fn for_each<T, F: (Fn(&Field) -> T)>(&self, f: F) -> Vec<T> {
+        let mut args = Vec::with_capacity(self.field_count as usize);
         for idx in 0..self.field_count {
             let view: &View = self.view
                 .get_content()
@@ -132,28 +140,37 @@ impl FormView {
                 .unwrap()
                 .get_child(idx as usize).unwrap();
             let field: &Field = view.as_any().downcast_ref().unwrap();
-            //TODO:: should this be replaced by clap_arg2value ?
-            let data = field.clap_args2string(&arg_matches);
-            form_data.insert(field.get_label().to_owned(), Value::String(data));
+            args.push(f(field))
         }
-        form_data
+        args
     }
 
-    /// Validates form.
-    pub fn validate(&mut self) -> Result<Value, FormErrors> {
-        let mut data = Map::with_capacity(self.field_count as usize);
-        let mut errors: FormErrors = HashMap::with_capacity(self.field_count as usize);
-        // TODO:: this needs proper iteration or iterator
+    fn for_each_mut<T, F: (FnMut(&mut Field) -> T)>(&mut self, mut f: F) -> Vec<T> {
+        let mut args = Vec::with_capacity(self.field_count as usize);
         for idx in 0..self.field_count {
             let view: &mut View = self.view
                 .get_content_mut()
                 .as_any_mut()
                 .downcast_mut::<LinearLayout>()
                 .unwrap()
-                .get_child_mut(idx as usize).unwrap();
+                .get_child_mut(idx as usize)
+                .unwrap();
             let field: &mut Field = view.as_any_mut().downcast_mut().unwrap();
-            let label = field.get_label().to_string();
-            match field.validate() {
+            args.push(f(field))
+        }
+        args
+    }
+
+    /// Validates form.
+    pub fn validate(&mut self) -> Result<Value, FormErrors> {
+        let validation_results: Vec<(String, Result<Value, FieldErrors>)> = self.for_each_mut(|f| {
+            let label = f.get_label().to_string();
+            (label, f.validate())
+        });
+        let mut data = Map::with_capacity(self.field_count as usize);
+        let mut errors: FormErrors = HashMap::with_capacity(self.field_count as usize);
+        for (label, result) in validation_results {
+            match result {
                 Ok(v) => {
                     data.insert(label, v);
                 }
@@ -170,20 +187,12 @@ impl FormView {
 
     /// Sets fields data based on `FormData`
     pub fn set_data(&mut self, form_data: FormData) {
-        // TODO:: this needs proper iteration or iterator
-        for idx in 0..self.field_count {
-            let view: &mut View = self.view
-                .get_content_mut()
-                .as_any_mut()
-                .downcast_mut::<LinearLayout>()
-                .unwrap()
-                .get_child_mut(idx as usize).unwrap();
-            let field: &mut Field = view.as_any_mut().downcast_mut().unwrap();
-            let label = field.get_label().to_string();
+        self.for_each_mut(|f| {
+            let label = f.get_label().to_string();
             // TODO:: handle this unwrap
             let value = form_data.get(&label).unwrap();
-            field.set_value(value);
-        }
+            f.set_value(value);
+        });
     }
 
     fn event_submit(&mut self) -> EventResult {
