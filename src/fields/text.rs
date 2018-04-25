@@ -47,6 +47,7 @@ impl WidgetManager for EditViewManager {
         let edit_view: &mut views::EditView = (**view_box).as_any_mut().downcast_mut().unwrap();
         let value = match *value {
             Value::Null => "",
+            Value::String(ref v) => v,
             Value::Array(ref v) => {
                 match v.len() {
                     0 => "",
