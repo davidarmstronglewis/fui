@@ -118,19 +118,10 @@ impl FormView {
         return args;
     }
 
-    /// Translates [`clap::ArgMatches`] to [`FormData`].
+    /// Calls function on each field.
     ///
-    /// [clap::ArgMatches]: ../../clap/struct.ArgMatches.html
-    /// [FormData]: type.FormData.html
-    pub fn to_form_data(&self, arg_matches: &clap::ArgMatches) -> FormData {
-        let args: Vec<(String, Value)> = self.for_each(|f| {
-            let data = f.clap_args2string(&arg_matches);
-            (f.get_label().to_owned(), Value::String(data))
-        });
-        HashMap::from_iter(args)
-    }
-
-    fn for_each<T, F: (Fn(&Field) -> T)>(&self, f: F) -> Vec<T> {
+    /// Additionally returns a `Vec<T>` where `T` is return value for each field call.
+    pub fn for_each<T, F: (Fn(&Field) -> T)>(&self, f: F) -> Vec<T> {
         let mut args = Vec::with_capacity(self.field_count as usize);
         for idx in 0..self.field_count {
             let view: &View = self.view
@@ -145,7 +136,10 @@ impl FormView {
         args
     }
 
-    fn for_each_mut<T, F: (FnMut(&mut Field) -> T)>(&mut self, mut f: F) -> Vec<T> {
+    /// Calls function on each mutable field.
+    ///
+    /// Additionally returns a `Vec<T>` where `T` is return value for each field call.
+    pub fn for_each_mut<T, F: (FnMut(&mut Field) -> T)>(&mut self, mut f: F) -> Vec<T> {
         let mut args = Vec::with_capacity(self.field_count as usize);
         for idx in 0..self.field_count {
             let view: &mut View = self.view

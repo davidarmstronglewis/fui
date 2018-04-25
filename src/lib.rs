@@ -142,13 +142,17 @@ use cursive::Cursive;
 use cursive::event::Event;
 use cursive::traits::{Boxable, Identifiable};
 use cursive::views::{Dialog, LayerPosition, OnEventView};
-use form::FormView;
+use fields::FormField;
+use form::{FormView, FormData};
 use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::env;
 use std::ffi::OsString;
+use std::iter::FromIterator;
 use std::rc::Rc;
 use validators::OneOf;
+
 
 const DEFAULT_THEME: &'static str = "
 [colors]
@@ -276,6 +280,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         let input_data = if args.len() > 1 {
             // input from CLI
             self.input_from_cli(args)
+            // TODO:: print errors here from validation in input_from_cli
         } else {
             // input from TUI
             self.input_from_tui()
@@ -306,43 +311,80 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             .subcommands(sub_cmds)
     }
 
+    fn cli_cmd2cmd_name(&self, user_args: &Vec<OsString>) -> String {
+        let matches = self.build_cli_app().get_matches_from(user_args);
+        let cmd_name = matches.subcommand_name().unwrap();
+        let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
+        cmd_name.to_owned()
+    }
+
+    fn cli_cmd2action(&self, user_args: &Vec<OsString>) -> &Action<'action> {
+        let cmd_name = self.cli_cmd2cmd_name(user_args);
+        let action = self.actions
+            .values()
+            .find(|action| action.name == cmd_name)
+            .unwrap();
+        action
+    }
+
+    fn cli_cmd2action_mut(&mut self, user_args: &Vec<OsString>) -> &mut Action<'action> {
+        let cmd_name = self.cli_cmd2cmd_name(user_args);
+        let action = self.actions
+            .values_mut()
+            .find(|action| action.name == cmd_name)
+            .unwrap();
+        action
+    }
+
+    fn cli_cmd2form_data(&self, user_args: &Vec<OsString>) -> FormData {
+        let matches = self.build_cli_app()
+            .get_matches_from(user_args);
+        let cmd_name = matches.subcommand_name().unwrap();
+        let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
+        let action = &self.actions
+            .values()
+            .find(|action| action.name == cmd_name)
+            .unwrap();
+        let form = &action
+            .form
+            .as_ref()
+            .unwrap();
+        let form_data = form.for_each(|f| {
+            let label = f.get_label();
+            let value = match cmd_matches.values_of(label) {
+                Some(vals) => {
+                    let array: Vec<Value> = vals.map(|i| Value::String(i.to_string())).collect();
+                    Value::Array(array)
+                },
+                None => {
+                    Value::Null
+                },
+            };
+            (label.to_owned(), value)
+        });
+        HashMap::from_iter(form_data)
+    }
+
     //TODO:: return form errors and print it in place where is called
     fn input_from_cli<I, T>(&mut self, user_args: I) -> Option<(String, Value)>
     where
         I: IntoIterator<Item = T>,
         T: Into<OsString> + Clone,
     {
-        let (form_data, cmd_name, full_action) = {
-            let user_args = user_args
-                .into_iter()
-                .map(|x| x.into())
-                .collect::<Vec<OsString>>();
-            let app = self.build_cli_app();
-            let matches = app.get_matches_from(user_args);
-            let cmd_name = matches.subcommand_name().unwrap();
-            let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
-            let action = &self.actions
-                .values()
-                .find(|action| action.name == cmd_name)
-                .unwrap();
-            let form = &action
-                .form
-                .as_ref()
-                .unwrap();
-            let form_data = form.to_form_data(cmd_matches);
-            (form_data, cmd_name.to_owned(), action.cmd_with_desc())
-        };
-        let action = &mut self.actions
-            .values_mut()
-            .find(|action| action.name == cmd_name)
-            .unwrap();
-        let form = &mut action
+        let user_args = user_args
+            .into_iter()
+            .map(|x| x.into())
+            .collect::<Vec<OsString>>();
+        let full_action = self.cli_cmd2action(&user_args).cmd_with_desc();
+        let form_data = self.cli_cmd2form_data(&user_args);
+        let action = self.cli_cmd2action_mut(&user_args);
+        let form = action
             .form
             .as_mut()
             .unwrap();
         form.set_data(form_data);
         let result = form.validate();
-        //TODO:: handle unwrap!!!
+        // TODO:: propagate error from unwrap
         Some((full_action, result.unwrap()))
     }
 

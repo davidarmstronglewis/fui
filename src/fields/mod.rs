@@ -51,10 +51,6 @@ pub trait FormField: View {
     /// [clap::Arg]: ../../clap/struct.Arg.html
     /// [clap::App]: ../../clap/struct.App.html
     fn as_clap_arg(&self) -> clap::Arg;
-    /// Extracts field's data from [clap::ArgMatches] and converts it to str.
-    ///
-    /// [clap::App]: ../../clap/struct.ArgMatches.html
-    fn clap_args2string(&self, args: &clap::ArgMatches) -> String;
 }
 
 /// TODO:: docs
@@ -235,29 +231,6 @@ impl FormField for Field {
             .required(self.is_required())
             .multiple(multiple)
             .takes_value(takes_value)
-    }
-
-    //TODO:: make it trait or move this logic to src/lib.rs?
-    fn clap_args2string(&self, args: &clap::ArgMatches) -> String {
-        match self.widget_manager.as_value(self.view_value_get()) {
-            Value::Bool(_) => {
-                let v = if args.is_present(&self.label) {
-                    "true"
-                } else {
-                    "false"
-                };
-                v.to_string()
-            },
-            Value::Number(_) | Value::String(_) => {
-                args.value_of(&self.label).unwrap_or("").to_string()
-            },
-            Value::Array(_) => {
-                let values = args.values_of(&self.label)
-                    .unwrap_or(clap::Values::default());
-                values.collect::<Vec<&str>>().join(VALUE_SEP)
-            },
-            _ => "".to_string(),
-        }
     }
 }
 

@@ -54,8 +54,17 @@ impl WidgetManager for AutocompleteManager {
 
     fn set_value(&self, view_box: &mut ViewBox, value: &Value) {
         let ac: &mut views::Autocomplete = (**view_box).as_any_mut().downcast_mut().unwrap();
-        let text = value.as_str().unwrap();
-        (*ac).set_value(text);
+        let value = match value {
+            Value::Null => "",
+            Value::Array(v) => {
+                match v.len() {
+                    0 => "",
+                    _ => v[0].as_str().unwrap(),
+                }
+            },
+            _ => "",
+        };
+        (*ac).set_value(value);
     }
 
     fn as_value(&self, view_box: &ViewBox) -> Value {
@@ -64,48 +73,3 @@ impl WidgetManager for AutocompleteManager {
         Value::String(value.to_owned())
     }
 }
-
-
-
-
-// TODO::: use it or remove it
-//#[cfg(test)]
-//mod clap_args_conversion {
-//    use super::*;
-//    use clap::ArgMatches;
-//
-//    #[test]
-//    fn value_is_bool_when_arg_is_switch() {
-//        let app = clap::App::new("myprog")
-//            .arg(clap::Arg::with_name("checkbox"));
-//        let field = Field::new("label", AutocompleteManager::new(views::Autocomplete::new(vec![""])));
-//
-//        let cmd_with_true = app.get_matches_from(vec!["myprog", "--checkbox"]);
-//
-//        assert_eq!(field.clap_args2value(cmd_with_true), Value::Bool(true)
-//        );
-//        assert_eq!(field.clap_args2value(cmd_with_true), Value::Bool(false));
-//    }
-//
-//    #[test]
-//    fn value_is_string_when_arg_is_single_value() {
-//        let app = clap::App::new("myprog")
-//            .arg(clap::Arg::with_name("autocomplete-arg"));
-//        let field = Field::new("label", AutocompleteManager::new(views::Autocomplete::new(vec!["value"])));
-//
-//        let cmd_with_true = app.get_matches_from(vec!["myprog", "--autocomplete-arg", "value"]);
-//
-//        assert_eq!(field.clap_args2value(cmd_with_true), Value::String("value"));
-//    }
-//
-//    #[test]
-//    fn value_is_array_when_arg_is_multi_value() {
-//        let app = clap::App::new("myprog")
-//            .arg(clap::Arg::with_name("multivalue-arg"));
-//        let field = Field::new("label", Multivalue::new(views::Multivalue::new(vec!["value"])));
-//
-//        let cmd_with_true = app.get_matches_from(vec!["myprog", "--multivalue-arg", "value", "value2"]);
-//
-//        assert_eq!(field.clap_args2value(cmd_with_true), Value::Array(["value", "value2"]));
-//    }
-//}
