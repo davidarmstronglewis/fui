@@ -1,8 +1,6 @@
-use clap;
-use cursive::view::View;
 use cursive::views::ViewBox;
 use cursive::views;
-use fields::{FieldErrors, WidgetManager};
+use fields::WidgetManager;
 use fields;
 use serde_json::value::Value;
 

@@ -16,8 +16,6 @@ pub use self::checkbox::Checkbox;
 pub use self::multiselect::Multiselect;
 pub use self::text::Text;
 
-const VALUE_SEP: &'static str = ",";
-
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
     /// Takes out the inner `View` from this manager.

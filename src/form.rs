@@ -1,17 +1,16 @@
 //! Contains `form` related concetps like `FormView`.
 use std::collections::HashMap;
-use std::iter::FromIterator;
 use std::rc::Rc;
 
 use clap;
 use cursive::Cursive;
 use cursive::event::{Callback, Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{View, ViewWrapper};
-use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
+use cursive::views::{Dialog, DialogFocus, LinearLayout};
 use serde_json::map::Map;
 use serde_json::value::Value;
 
-use fields::{Field, FieldErrors, FormField, WidgetManager};
+use fields::{Field, FieldErrors, FormField};
 
 
 /// Container for form's errors.

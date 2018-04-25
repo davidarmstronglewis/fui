@@ -1,11 +1,8 @@
-use std::str::FromStr;
-
-use clap;
 use cursive::views;
 use serde_json::value::Value;
 
 use fields;
-use fields::{FieldErrors, WidgetManager};
+use fields::WidgetManager;
 
 /// [Field] with [Checkbox view] inside.
 ///

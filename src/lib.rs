@@ -314,7 +314,6 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     fn cli_cmd2cmd_name(&self, user_args: &Vec<OsString>) -> String {
         let matches = self.build_cli_app().get_matches_from(user_args);
         let cmd_name = matches.subcommand_name().unwrap();
-        let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
         cmd_name.to_owned()
     }
 

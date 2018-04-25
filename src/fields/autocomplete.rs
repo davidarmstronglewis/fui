@@ -1,12 +1,8 @@
-use std::rc::Rc;
-
-use clap;
-use cursive::view::View;
 use cursive::views::ViewBox;
 use serde_json::value::Value;
 
 use feeders::Feeder;
-use fields::{FieldErrors, WidgetManager};
+use fields::WidgetManager;
 use fields;
 use views;
 
