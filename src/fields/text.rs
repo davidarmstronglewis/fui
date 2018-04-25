@@ -6,6 +6,7 @@ use serde_json::value::Value;
 
 /// [Field] with [EditView view] inside.
 ///
+/// [Field]: struct.Field.html
 /// [EditView view]: ../../cursive/views/struct.EditView.html
 pub struct Text;
 

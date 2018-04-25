@@ -8,6 +8,7 @@ use views;
 
 /// [Field] with [Autocomplete view] inside.
 ///
+/// [Field]: struct.Field.html
 /// [Autocomplete view]: ../views/struct.Autocomplete.html
 pub struct Autocomplete;
 

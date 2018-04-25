@@ -69,12 +69,12 @@ pub struct Field {
 }
 //TODO:: make it macro and use if for CheckboxField, TextField, etc.?
 impl Field {
-    /// Creates a new `Field` with given `label`, `widget_manager`, `initial`.
+    /// Creates a new `Field` with given `label`, `widget_manager`.
     ///
     /// `label` should match NOTE from [Fui::action]
     ///
     /// [Fui::action]: ../struct.Fui.html#method.action
-    fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field {
+    pub fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field {
         let label = label.into();
         let label_and_help = views::LinearLayout::horizontal()
             .child(views::TextView::new(label_padding(label.as_ref())))

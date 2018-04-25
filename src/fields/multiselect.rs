@@ -10,6 +10,7 @@ const VALUE_SEP: &'static str = ",";
 
 /// [Field] with [Multiselect view] inside.
 ///
+/// [Field]: struct.Field.html
 /// [Multiselect view]: ../views/struct.Multiselect.html
 pub struct Multiselect;
 
