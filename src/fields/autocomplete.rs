@@ -50,9 +50,9 @@ impl WidgetManager for AutocompleteManager {
 
     fn set_value(&self, view_box: &mut ViewBox, value: &Value) {
         let ac: &mut views::Autocomplete = (**view_box).as_any_mut().downcast_mut().unwrap();
-        let value = match value {
+        let value = match *value {
             Value::Null => "",
-            Value::Array(v) => {
+            Value::Array(ref v) => {
                 match v.len() {
                     0 => "",
                     _ => v[0].as_str().unwrap(),

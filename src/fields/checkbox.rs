@@ -46,7 +46,7 @@ impl WidgetManager for CheckboxManager {
 
     fn set_value(&self, view_box: &mut views::ViewBox, value: &Value) {
         let checkbox: &mut views::Checkbox = (**view_box).as_any_mut().downcast_mut().unwrap();
-        let value = match value {
+        let value = match *value {
             Value::Null => false,
             _ => true,
         };
