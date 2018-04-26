@@ -2,7 +2,6 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use clap;
 use cursive::Cursive;
 use cursive::event::{Callback, Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{View, ViewWrapper};
@@ -97,30 +96,10 @@ impl FormView {
         self
     }
 
-    /// Translates form's fields to [clap::Arg].
-    ///
-    /// [clap::Arg]: ../../clap/struct.Arg.html
-    pub fn as_clap_args(&self) -> Vec<clap::Arg> {
-        // TODO:: mv it to fui field.is_multiple(), field.takes_value()
-        let mut args = Vec::with_capacity(self.field_count as usize);
-        for idx in 0..self.field_count {
-            let view: &View = self.view
-                .get_content()
-                .as_any()
-                .downcast_ref::<LinearLayout>()
-                .unwrap()
-                .get_child(idx as usize).unwrap();
-            let field: &Field = view.as_any().downcast_ref().unwrap();
-            let arg = field.as_clap_arg();
-            args.push(arg);
-        }
-        return args;
-    }
-
     /// Calls function on each field.
     ///
     /// Additionally returns a `Vec<T>` where `T` is return value for each field call.
-    pub fn for_each<T, F: (Fn(&Field) -> T)>(&self, f: F) -> Vec<T> {
+    pub fn for_each<'a, T, F: (Fn(&'a Field) -> T)>(&'a self, f: F) -> Vec<T> {
         let mut args = Vec::with_capacity(self.field_count as usize);
         for idx in 0..self.field_count {
             let view: &View = self.view

@@ -1,5 +1,4 @@
 //! Includes `form's` building blocks, `fields`.
-use clap;
 use cursive::view::{View, ViewWrapper};
 use cursive::views;
 use serde_json::value::Value;
@@ -40,15 +39,12 @@ pub type FieldErrors = Vec<String>;
 pub trait FormField: View {
     /// Returns field's labels.
     fn get_label(&self) -> &str;
+    /// Gets field's value
+    fn get_value(&self) -> Value;
     /// Sets field's value
     fn set_value(&mut self, value: &Value);
     /// Runs field's validators on its data.
     fn validate(&mut self) -> Result<Value, FieldErrors>;
-    /// Builds [clap::Arg] needed by automatically generated [clap::App].
-    ///
-    /// [clap::Arg]: ../../clap/struct.Arg.html
-    /// [clap::App]: ../../clap/struct.App.html
-    fn as_clap_arg(&self) -> clap::Arg;
 }
 
 /// TODO:: docs
@@ -146,7 +142,7 @@ impl Field {
     }
 
     /// Gets help of the field
-    fn get_help(&self) -> &str {
+    pub fn get_help(&self) -> &str {
         &self.help
     }
 
@@ -182,6 +178,11 @@ impl FormField for Field {
         &self.label
     }
 
+    /// Gets value of the field.
+    fn get_value(&self) -> Value {
+        self.widget_manager.as_value(self.view_value_get())
+    }
+
     /// Sets value of the field.
     fn set_value(&mut self, value: &Value) {
         self.widget_manager.set_value(
@@ -209,26 +210,6 @@ impl FormField for Field {
             Ok(self.widget_manager.as_value(self.view_value_get()))
         };
         result
-    }
-
-    /// Builds [clap::Arg] needed by automatically generated [clap::App].
-    ///
-    /// [clap::Arg]: ../../clap/struct.Arg.html
-    /// [clap::App]: ../../clap/struct.App.html
-    //TODO:: make it trait or move this logic to src/lib.rs?
-    fn as_clap_arg(&self) -> clap::Arg {
-        let (multiple, takes_value) = match self.widget_manager.as_value(self.view_value_get()) {
-            Value::Number(_) => (false, true),
-            Value::String(_) => (false, true),
-            Value::Array(_) => (true, true),
-            _ => (false, false),
-        };
-        clap::Arg::with_name(&self.label)
-            .help(self.get_help())
-            .long(&self.label)
-            .required(self.is_required())
-            .multiple(multiple)
-            .takes_value(takes_value)
     }
 }
 

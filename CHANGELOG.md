@@ -24,16 +24,14 @@
         * `fn build_widget(&self) -> Box<AnyView>;`
         * `fn get_widget_manager(&self) -> &WidgetManager;`
         * `fn clap_arg(&self) -> Arg;`
-        * TODO::: rm it for sure
         * `fn clap_args2str(&self, args: &ArgMatches) -> String;`
     * Replace:
         * `fn validate(&self, data: &str) -> Result<Value, String>;`
         * with:
         * `fn validate(&mut self) -> Result<Value, FieldErrors>;`
     * Add:
+        * `fn get_value(&self) -> Value;`
         * `fn set_value(&mut self, value: &Value);`
-        * TODO::: rm it 
-        * `fn as_clap_arg(&self) -> Arg;`
 
 * `Field` changes:
     * Remove `label_with_help_layout` (`Field` itself handles that)

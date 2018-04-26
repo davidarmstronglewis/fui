@@ -292,13 +292,42 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         }
     }
 
+    fn form2clap_args<'a, 'b>(&self, form: &'a FormView) -> Vec<clap::Arg<'a, 'b>> {
+        let fields_spec = form.for_each(|field| {
+            let label = field.get_label();
+            let help = field.get_help();
+            let is_required = field.is_required();
+            let (is_multiple, takes_value) = match field.get_value() {
+                Value::Number(_) => (false, true),
+                Value::String(_) => (false, true),
+                Value::Array(_) => (true, true),
+                _ => (false, false),
+            };
+            (label, help, is_required, is_multiple, takes_value)
+        });
+
+        let mut args = Vec::with_capacity(fields_spec.len());
+        for spec in fields_spec {
+            let arg = clap::Arg::with_name(spec.0)
+                .help(spec.1)
+                .long(spec.0)
+                .required(spec.2)
+                .multiple(spec.3)
+                .takes_value(spec.4);
+            args.push(arg);
+        }
+        args
+
+    }
+
     /// Returns automatiacally generated [clap::App]
     ///
     /// [clap::App]: ../clap/struct.App.html
     pub fn build_cli_app(&self) -> clap::App {
         let mut sub_cmds: Vec<clap::App> = Vec::new();
         for action in self.actions.values() {
-            let args = action.form.as_ref().unwrap().as_clap_args();
+            let form = action.form.as_ref().unwrap();
+            let args = self.form2clap_args(form);
             let sub_cmd = clap::SubCommand::with_name(action.name.as_ref())
                 .about(action.help.as_ref())
                 .args(args.as_slice());
