@@ -12,12 +12,10 @@
             * `Fui` itself handles this feature
         * `fn show_errors(&mut self, form_errors: &FormErrors)`
             * now each Field sets it implicity during validation
-
     * Add:
         * `FormData` type
         * `pub fn for_each` which calls function on each field.
         * `pub fn for_each_mut` which calls function on each field (mutable variant).
-
 * `FormField` changes:
     * `FormField` must also implements `Cursive::View`
     * Remove:
@@ -32,19 +30,18 @@
     * Add:
         * `fn get_value(&self) -> Value;`
         * `fn set_value(&mut self, value: &Value);`
-
 * `Field` changes:
     * Remove `label_with_help_layout` (`Field` itself handles that)
     * Replace:
         * `pub struct Field<W: WidgetManager, T>`
         * with
-        * `pub struct Field`
+        * `pub struct Field` (value is stored as `serde_json::Value`)
     * Replace
         * `pub fn new<IS: Into<String>>(label: IS, widget_manager: W, initial: T) -> Self`
         * with
         * `pub fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field`
     * Replace
-        * `pub fn initial(self, value: bool) -> Self`
+        * `pub fn initial(self, value: T) -> Self`
         * with
         * `pub fn initial<IS: Into<Value>>(self, initial: IS) -> Self`
     * Replace
@@ -54,10 +51,9 @@
     * Add:
         * `pub fn set_help(&mut self, msg: &str)`
         * `pub fn set_error(&mut self, msg: &str)`
-    * Add `FieldErrors` type
+        * `FieldErrors` type
     * Implement `FormField` for `Field`
     * Implement `ViewWrapper` for `Field`
-
     * `Checkbox` changes:
         * Replace:
             * `pub fn new<IS: Into<String>>(label: IS) -> Field<CheckboxManager, bool>`
@@ -78,23 +74,19 @@
             * `pub fn new<IS: Into<String>, F: Feeder>(label: IS, feeder: F) -> Field<MultiselectManager, Vec<String>>`
             * with
             * `pub fn new<IS: Into<String>, F: Feeder>(label: IS, feeder: F) -> Field`
-
 * `WidgetManager` changes:
     * Remove:
         * `fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView>;`
         * `fn set_error(&self, view: &mut AnyView, error: &str);`
         * `fn build_value_view(&self, value: &str) -> Box<AnyView>;`
-
     * Replace:
         * `fn get_value(&self, view: &AnyView) -> String;`
         * with
         * `fn as_string(&self, view_box: &ViewBox) -> String;`
-
     * Add:
         * `fn take_view(&mut self) -> ViewBox;`
         * `fn set_value(&self, view_box: &mut ViewBox, value: &Value);`
         * `fn as_value(&self, view_box: &ViewBox) -> Value;`
-
 * `Views` changes:
     * Add `set_value` to `Autocomplete`
 
