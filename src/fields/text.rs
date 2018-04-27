@@ -54,7 +54,7 @@ impl WidgetManager for EditViewManager {
         (*edit_view).set_content(value);
     }
 
-    fn as_value(&self, view_box: &ViewBox) -> Value {
+    fn get_value(&self, view_box: &ViewBox) -> Value {
         let edit_view: &views::EditView = (**view_box).as_any().downcast_ref().unwrap();
         let value = (&*(*edit_view).get_content()).clone();
         Value::String(value.to_owned())

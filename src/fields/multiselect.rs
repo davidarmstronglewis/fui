@@ -58,7 +58,7 @@ impl WidgetManager for MultiselectManager {
         ms.select_items(items);
     }
 
-    fn as_value(&self, view_box: &ViewBox) -> Value {
+    fn get_value(&self, view_box: &ViewBox) -> Value {
         let ms: &views::Multiselect = (**view_box).as_any().downcast_ref().unwrap();
         let value: Vec<Value> = ms.get_selected_items()
             .iter()

@@ -47,7 +47,7 @@ impl WidgetManager for CheckboxManager {
         (*checkbox).set_checked(value);
     }
 
-    fn as_value(&self, view_box: &views::ViewBox) -> Value {
+    fn get_value(&self, view_box: &views::ViewBox) -> Value {
         let checkbox: &views::Checkbox = (**view_box).as_any().downcast_ref().unwrap();
         Value::Bool(checkbox.is_checked())
     }

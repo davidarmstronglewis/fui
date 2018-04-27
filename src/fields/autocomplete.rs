@@ -59,7 +59,7 @@ impl WidgetManager for AutocompleteManager {
         (*ac).set_value(value);
     }
 
-    fn as_value(&self, view_box: &ViewBox) -> Value {
+    fn get_value(&self, view_box: &ViewBox) -> Value {
         let ac: &views::Autocomplete = (**view_box).as_any().downcast_ref().unwrap();
         let value = (&*(*ac).get_value()).clone();
         Value::String(value.to_owned())

@@ -76,17 +76,18 @@
             * `pub fn new<IS: Into<String>, F: Feeder>(label: IS, feeder: F) -> Field`
 * `WidgetManager` changes:
     * Remove:
-        * `fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView>;`
         * `fn set_error(&self, view: &mut AnyView, error: &str);`
+        * `fn build_widget(&self, label: &str, help: &str, initial: &str) -> Box<AnyView>;`
+    * Replace:
         * `fn build_value_view(&self, value: &str) -> Box<AnyView>;`
+        * with
+        * `fn take_view(&mut self) -> ViewBox;`
     * Replace:
         * `fn get_value(&self, view: &AnyView) -> String;`
         * with
-        * `fn get_value(&self) -> Value;`
+        * `fn get_value(&self, view_box: &views::ViewBox) -> Value;`
     * Add:
-        * `fn take_view(&mut self) -> ViewBox;`
         * `fn set_value(&self, view_box: &mut ViewBox, value: &Value);`
-        * `fn as_value(&self, view_box: &ViewBox) -> Value;`
 * `Views` changes:
     * Add `set_value` to `Autocomplete`
 

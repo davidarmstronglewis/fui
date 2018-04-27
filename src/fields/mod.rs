@@ -30,7 +30,7 @@ pub trait WidgetManager {
     /// Returns view's value as `Value`
     ///
     /// [serde_json::Value]: ../serde_json/value/enum.Value.html
-    fn as_value(&self, view_box: &views::ViewBox) -> Value;
+    fn get_value(&self, view_box: &views::ViewBox) -> Value;
 }
 
 /// Container for field's errors
@@ -196,7 +196,7 @@ impl FormField for Field {
 
     /// Gets value of the field.
     fn get_value(&self) -> Value {
-        self.widget_manager.as_value(self.view_value_get())
+        self.widget_manager.get_value(self.view_value_get())
     }
 
     /// Sets value of the field.
@@ -211,7 +211,7 @@ impl FormField for Field {
     /// Validates `Field`.
     fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();
-        let value = self.widget_manager.as_value(self.view_value_get());
+        let value = self.widget_manager.get_value(self.view_value_get());
         match value {
             Value::Null => self.validate_value("", &mut errors),
             Value::String(ref value) => {
@@ -236,7 +236,7 @@ impl FormField for Field {
         } else {
             // clean possibly errors from last validation
             self.show_errors(&vec!["".to_string()]);
-            Ok(self.widget_manager.as_value(self.view_value_get()))
+            Ok(self.widget_manager.get_value(self.view_value_get()))
         };
         result
     }
