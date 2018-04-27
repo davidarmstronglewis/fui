@@ -24,8 +24,6 @@ pub trait WidgetManager {
     fn take_view(&mut self) -> views::ViewBox;
     /// Sets view's value
     fn set_value(&self, view_box: &mut views::ViewBox, value: &Value);
-    /// Returns view's value as `String`
-    fn as_string(&self, view_box: &views::ViewBox) -> String;
     /// Returns view's value as `Value`
     ///
     /// [serde_json::Value]: ../serde_json/value/enum.Value.html
@@ -170,6 +168,13 @@ impl Field {
         self.set_error(errors.first().map(|e| e.as_ref()).unwrap_or(""));
     }
 
+    fn validate_value(&self, value: &str, errors: &mut FieldErrors) {
+        for validator in self.validators.iter() {
+            if let Some(e) = validator.validate(&value) {
+                errors.push(e);
+            }
+        }
+    }
 }
 
 impl FormField for Field {
@@ -195,11 +200,24 @@ impl FormField for Field {
     /// Validates `Field`.
     fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();
-        let value = self.widget_manager.as_string(self.view_value_get());
-        for v in self.validators.iter() {
-            if let Some(e) = v.validate(&value) {
-                errors.push(e);
-            }
+        let value = self.widget_manager.as_value(self.view_value_get());
+        match value {
+            Value::Null => self.validate_value("", &mut errors),
+            Value::String(ref value) => {
+                self.validate_value(value, &mut errors);
+            },
+            Value::Array(ref items) => {
+                if items.len() == 0 {
+                    self.validate_value("", &mut errors);
+                } else {
+                    for item in items {
+                        let text = item.as_str().unwrap();
+                        self.validate_value(text, &mut errors);
+                    }
+                }
+            },
+            _ => (),
+
         }
         let result = if errors.len() > 0 {
             self.show_errors(&errors);

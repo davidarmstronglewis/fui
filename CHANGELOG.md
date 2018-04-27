@@ -82,7 +82,7 @@
     * Replace:
         * `fn get_value(&self, view: &AnyView) -> String;`
         * with
-        * `fn as_string(&self, view_box: &ViewBox) -> String;`
+        * `fn get_value(&self) -> Value;`
     * Add:
         * `fn take_view(&mut self) -> ViewBox;`
         * `fn set_value(&self, view_box: &mut ViewBox, value: &Value);`

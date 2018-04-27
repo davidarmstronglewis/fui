@@ -6,8 +6,6 @@ use fields::WidgetManager;
 use fields;
 use views;
 
-const VALUE_SEP: &'static str = ",";
-
 /// [Field] with [Multiselect view] inside.
 ///
 /// [Field]: struct.Field.html
@@ -45,23 +43,18 @@ impl WidgetManager for MultiselectManager {
         ViewBox::new(Box::new(self.view.take().unwrap()))
     }
 
-    fn as_string(&self, view_box: &ViewBox) -> String {
-        let ms: &views::Multiselect = (**view_box).as_any().downcast_ref().unwrap();
-        let result: Vec<String> = ms.get_selected_items()
-            .iter()
-            .map(|x| (*x).to_owned())
-            .collect();
-        result.join(VALUE_SEP)
-    }
-
     fn set_value(&self, view_box: &mut ViewBox, value: &Value) {
         let ms: &mut views::Multiselect = (**view_box).as_any_mut().downcast_mut().unwrap();
-        let items: Vec<String> = value
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|i| i.as_str().unwrap().to_owned())
-            .collect();
+        let items: Vec<String> = match *value {
+            Value::String(ref v) => vec![v.to_owned()],
+            Value::Array(ref v) => {
+                v
+                    .iter()
+                    .map(|i| i.as_str().unwrap().to_owned())
+                    .collect()
+            }
+            _ => vec![],
+        };
         ms.select_items(items);
     }
 
@@ -72,5 +65,22 @@ impl WidgetManager for MultiselectManager {
             .map(|x| Value::String((*x).to_owned()))
             .collect();
         Value::Array(value)
+    }
+}
+
+#[cfg(test)]
+mod test_multiselect_validation {
+    use super::*;
+    use fields::FormField;
+    use validators::Required;
+
+
+    #[test]
+    fn required_raised_when_value_missing() {
+        let mut field = Multiselect::new("label", vec![""]).validator(Required);
+
+        let result = field.validate();
+
+        assert_eq!(result, Err(vec!["Field is required".to_string()]));
     }
 }

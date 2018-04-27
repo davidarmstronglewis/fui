@@ -38,12 +38,6 @@ impl WidgetManager for CheckboxManager {
         views::ViewBox::new(Box::new(self.view.take().unwrap()))
     }
 
-    fn as_string(&self, view_box: &views::ViewBox) -> String {
-        let checkbox: &views::Checkbox = (**view_box).as_any().downcast_ref().unwrap();
-        let value = checkbox.is_checked();
-        format!("{}", value)
-    }
-
     fn set_value(&self, view_box: &mut views::ViewBox, value: &Value) {
         let checkbox: &mut views::Checkbox = (**view_box).as_any_mut().downcast_mut().unwrap();
         let value = match *value {
