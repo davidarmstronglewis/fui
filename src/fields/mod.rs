@@ -15,7 +15,10 @@ pub use self::checkbox::Checkbox;
 pub use self::multiselect::Multiselect;
 pub use self::text::Text;
 
-/// Covers communication from `Field` to `Widget`.
+/// Covers communication from [Field] to [View].
+///
+/// [Field]: ../fields/struct.Field.html
+/// [View]: ../views/index.html
 pub trait WidgetManager {
     /// Takes out the inner `View` from this manager.
     ///
@@ -45,10 +48,19 @@ pub trait FormField: View {
     fn validate(&mut self) -> Result<Value, FieldErrors>;
 }
 
-/// TODO:: docs
-/// Builds container `view` with placeholders for `help`, `value`, `error`.
-/// Building block for `Form`s which stores `data` and `Widget`.
-/// Widget layout where `label` and `help` are in the same line.
+/// Building block for [FormView] with a placeholder for a value [View].
+///
+/// To plug a [View] into [Field] you need to wrap it with [WidgetManager].
+///
+/// [Field]'s responsibilities:
+/// * stores value
+/// * shows lable and description
+/// * shows possible error messages
+///
+/// [FormView]: ../form/struct.FormView.html
+/// [Field]: ../fields/struct.Field.html
+/// [WidgetManager]: ../fields/trait.WidgetManager.html
+/// [View]: ../views/index.html
 pub struct Field {
     // Label, Help are stored in TextViews
     // if you need &src from TextViews you have to allocate String which will be dropped making
@@ -61,7 +73,7 @@ pub struct Field {
     /// Controlls `View` storing value.
     widget_manager: Box<WidgetManager>,
 }
-//TODO:: make it macro and use if for CheckboxField, TextField, etc.?
+//TODO: make it macro and use if for CheckboxField, TextField, etc.?
 impl Field {
     /// Creates a new `Field` with given `label`, `widget_manager`.
     ///
@@ -75,7 +87,6 @@ impl Field {
             .child(views::DummyView)
             .child(views::TextView::new(""));
         let layout = views::LinearLayout::vertical()
-                    //TODO:: label can't include separator
                     .child(label_and_help)
                     .child(widget_manager.take_view())
                     .child(views::TextView::new(""))
