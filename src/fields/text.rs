@@ -38,12 +38,6 @@ impl WidgetManager for EditViewManager {
         ViewBox::new(Box::new(self.view.take().unwrap()))
     }
 
-    fn as_string(&self, view_box: &ViewBox) -> String {
-        let edit_view: &views::EditView = (**view_box).as_any().downcast_ref().unwrap();
-        let value = (&*(*edit_view).get_content()).clone();
-        value
-    }
-
     fn set_value(&self, view_box: &mut ViewBox, value: &Value) {
         let edit_view: &mut views::EditView = (**view_box).as_any_mut().downcast_mut().unwrap();
         let value = match *value {
