@@ -143,7 +143,7 @@ use cursive::event::Event;
 use cursive::traits::{Boxable, Identifiable};
 use cursive::views::{Dialog, LayerPosition, OnEventView};
 use fields::FormField;
-use form::{FormView, FormData};
+use form::{FormView, FormData, FormErrors};
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
@@ -205,6 +205,20 @@ impl DumpAsCli for Value {
         }
     }
 }
+
+fn format_cli_errors(errors: FormErrors) -> String {
+    // TODO: incorrect values should be also printed
+    let mut field_errors: Vec<String> = Vec::with_capacity(errors.len());
+    for (field_name, errors_vec) in errors {
+        let errors: Vec<String> = errors_vec.iter().map(|s| format!("\t{}", s)).collect();
+        let errors = errors.join("\n");
+        let field_error = format!("{:?}:\n{}", field_name, errors);
+        field_errors.push(field_error);
+    }
+    let title = "INVALID input. Found error(s):";
+    format!("{}\n{}", title, field_errors.join("\n"))
+}
+
 
 /// Top level building block of `fui` crate
 pub struct Fui<'attrs, 'action> {
@@ -280,7 +294,6 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         let input_data = if args.len() > 1 {
             // input from CLI
             self.input_from_cli(args)
-            // TODO:: print errors here from validation in input_from_cli
         } else {
             // input from TUI
             self.input_from_tui()
@@ -393,7 +406,6 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         HashMap::from_iter(form_data)
     }
 
-    //TODO:: return form errors and print it in place where is called
     fn input_from_cli<I, T>(&mut self, user_args: I) -> Option<(String, Value)>
     where
         I: IntoIterator<Item = T>,
@@ -411,9 +423,16 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             .as_mut()
             .unwrap();
         form.set_data(form_data);
-        let result = form.validate();
-        // TODO:: propagate error from unwrap
-        Some((full_action, result.unwrap()))
+
+        let form_data = match form.validate() {
+            Ok(v) => v,
+            Err(errors) => {
+                let msg = format_cli_errors(errors);
+                eprintln!("{}", msg);
+                ::std::process::exit(1)
+            },
+        };
+        Some((full_action, form_data))
     }
 
     fn header(&self) -> String {
