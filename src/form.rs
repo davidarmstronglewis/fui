@@ -161,9 +161,9 @@ impl FormView {
     pub fn set_data(&mut self, form_data: FormData) {
         self.for_each_mut(|f| {
             let label = f.get_label().to_string();
-            // TODO:: handle this unwrap
-            let value = form_data.get(&label).unwrap();
-            f.set_value(value);
+            if let Some(v) = form_data.get(&label) {
+                f.set_value(v);
+            }
         });
     }
 
