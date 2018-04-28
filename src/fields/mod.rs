@@ -1,4 +1,4 @@
-//! Includes `form's` building blocks, `fields`.
+//! Includes form's building blocks.
 use cursive::view::{View, ViewWrapper};
 use cursive::views;
 use serde_json::value::Value;
@@ -36,13 +36,16 @@ pub trait WidgetManager {
 /// Container for field's errors
 pub type FieldErrors = Vec<String>;
 
-/// Covers communication from `Form` to `Field`.
+/// Covers communication from [Form] to [Field].
+///
+/// [Form]: ../form/struct.FormView.html
+/// [Field]: ../fields/struct.Field.html
 pub trait FormField: View {
-    /// Returns field's labels.
+    /// Returns field's label.
     fn get_label(&self) -> &str;
-    /// Gets field's value
+    /// Gets field's value.
     fn get_value(&self) -> Value;
-    /// Sets field's value
+    /// Sets field's value.
     fn set_value(&mut self, value: &Value);
     /// Runs field's validators on its data.
     fn validate(&mut self) -> Result<Value, FieldErrors>;
@@ -99,7 +102,7 @@ impl Field {
             widget_manager: Box::new(widget_manager),
         }
     }
-    /// Sets initial value of field.
+    /// Sets initial value.
     pub fn initial<IS: Into<Value>>(mut self, initial: IS) -> Self {
         let value = initial.into();
         self.widget_manager.set_value(
@@ -108,17 +111,17 @@ impl Field {
             &value);
         self
     }
-    /// Sets `help` message for `field`.
+    /// Sets help message.
     pub fn help(mut self, msg: &str) -> Self {
         self.set_help(msg);
         self
     }
-    /// Append `validator`.
+    /// Appends validator.
     pub fn validator<V: Validator + 'static>(mut self, validator: V) -> Self {
         self.validators.push(Rc::new(validator));
         self
     }
-    /// Checks if Field is required
+    /// Checks if is required
     pub fn is_required(&self) -> bool {
         self.validators
             .iter()
@@ -150,7 +153,7 @@ impl Field {
         label_and_help.get_child_mut(2).unwrap().as_any_mut().downcast_mut().unwrap()
     }
 
-    /// Gets help of the field
+    /// Gets help message.
     pub fn get_help(&self) -> &str {
         &self.help
     }
@@ -189,17 +192,14 @@ impl Field {
 }
 
 impl FormField for Field {
-    /// Gets label of the field.
     fn get_label(&self) -> &str {
         &self.label
     }
 
-    /// Gets value of the field.
     fn get_value(&self) -> Value {
         self.widget_manager.get_value(self.view_value_get())
     }
 
-    /// Sets value of the field.
     fn set_value(&mut self, value: &Value) {
         self.widget_manager.set_value(
             // self.view_value_get_mut(), // this makes borrow-checker sad
@@ -208,7 +208,6 @@ impl FormField for Field {
         );
     }
 
-    /// Validates `Field`.
     fn validate(&mut self) -> Result<Value, FieldErrors> {
         let mut errors: FieldErrors = Vec::new();
         let value = self.widget_manager.get_value(self.view_value_get());

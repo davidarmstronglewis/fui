@@ -1,4 +1,4 @@
-//! `fui` lets you build a form based user interfaces for a [CLI] program.
+//! `fui` add [CLI] and text form interface to a program.
 //!
 //! [CLI]: https://en.wikipedia.org/wiki/Command-line_interface
 //!
@@ -88,31 +88,32 @@
 //!
 //! * [Fui]
 //! * [FormView]
-//! * [fields]
+//! * [Fields]
 //!
 //! These components will be most frequently used building blocks, especially [FormView] and
-//! [fields].
+//! [Fields].
 //!
 //! [Fui]: struct.Fui.html
 //! [FormView]: form/struct.FormView.html
-//! [fields]: fields/index.html
+//! [Fields]: fields/index.html
 //!
 //! Here's the logic behind those components:
 //!
 //! * [Fui] is a struct which gathers your program `action`s
 //! * `action`s are things which program does (like, `git pull`, `git push`, etc.)
 //! * `action` includes:
-//!     * description: this should shortly explain to `user` what `action` does
-//!     * [FormView]: is a container for [fields]
-//!         * [fields] represents data used during `action` execution
-//!     * handler: is a `fn`/`callback` called after user fills the `Form`
+//!     * name: short name of an `action`
+//!     * description: this should shortly explain to `user` what an `action` does
+//!     * [FormView]: is a container for [Fields]
+//!         * [Fields] represents data used during `action` execution
+//!     * handler: is a `fn`/`closure` called after user fills the `Form`
 //!
 //!
 //! ### Flow:
 //!
 //! 1) user picks `action` (then `form` is shown)
 //! 2) user submit `form` with `data`
-//! 3) `handler` is called with `data` (point 2)
+//! 3) `handler` is called with `data`
 //!
 #![deny(missing_docs)]
 
@@ -220,7 +221,7 @@ fn format_cli_errors(errors: FormErrors) -> String {
 }
 
 
-/// Top level building block of `fui` crate
+/// Top level building block of `fui` crate.
 pub struct Fui<'attrs, 'action> {
     actions: BTreeMap<String, Action<'action>>,
     name: &'attrs str,
@@ -232,7 +233,7 @@ pub struct Fui<'attrs, 'action> {
     form_data: Rc<RefCell<Option<Value>>>,
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
-    /// Creates a new `Fui` with empty actions
+    /// Creates a new `Fui` with empty actions.
     pub fn new(program_name: &'attrs str) -> Self {
         Fui {
             actions: BTreeMap::new(),
@@ -245,7 +246,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             form_data: Rc::new(RefCell::new(None)),
         }
     }
-    /// Defines action by providing `name`, `help`, `form`, `hdlr`
+    /// Defines action by providing `name`, `help`, `form`, `hdlr`.
     ///
     /// NOTE:
     ///
@@ -286,9 +287,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         self.actions.values().find(|a| a.name == name)
     }
 
-    /// Coordinates flow from action picking to handler running
-    // This must be moving, until FormView implements copy or FormViews are added to cursive once
-    // then top layer are switched (instead of current inserting/popping)
+    /// Coordinates flow from action picking to handler running.
     pub fn run(mut self) {
         let args = env::args_os();
         let input_data = if args.len() > 1 {
@@ -333,7 +332,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     }
 
-    /// Returns automatiacally generated [clap::App]
+    /// Returns automatiacally generated [clap::App].
     ///
     /// [clap::App]: ../clap/struct.App.html
     pub fn build_cli_app(&self) -> clap::App {
@@ -552,7 +551,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         ))
     }
 
-    /// Sets program's `name.
+    /// Sets program's `name`.
     ///
     /// For CLI means [Clap::App::name]
     ///

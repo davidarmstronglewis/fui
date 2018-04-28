@@ -14,7 +14,7 @@ use super::is_value_from_select;
 
 pub type OnSubmit = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;
 
-/// Single selection view with suggestions
+/// Single selection view with suggestions.
 pub struct Autocomplete {
     view: LinearLayout,
 
