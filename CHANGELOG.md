@@ -39,7 +39,7 @@
     * Replace
         * `pub fn new<IS: Into<String>>(label: IS, widget_manager: W, initial: T) -> Self`
         * with
-        * `pub fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field`
+        * `pub fn new<IS: Into<String>, VM: WidgetManager + 'static, I: Into<Value>>(label: IS, mut widget_manager: VM, initial: I) -> Field`
     * Replace
         * `pub fn initial(self, value: T) -> Self`
         * with

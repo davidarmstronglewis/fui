@@ -17,7 +17,7 @@ impl Text {
     /// [EditView view]: ../../cursive/views/struct.EditView.html
     pub fn new<IS: Into<String>>(label: IS) -> fields::Field {
         let view = views::EditView::new();
-        fields::Field::new(label, EditViewManager::new(view))
+        fields::Field::new(label, EditViewManager::new(view), "")
     }
 }
 

@@ -17,7 +17,7 @@ impl Checkbox {
     /// [Checkbox view]: ../../cursive/views/struct.Checkbox.html
     pub fn new<IS: Into<String>>(label: IS) -> fields::Field {
         let view = views::Checkbox::new();
-        fields::Field::new(label, CheckboxManager::new(view))
+        fields::Field::new(label, CheckboxManager::new(view), "")
     }
 }
 

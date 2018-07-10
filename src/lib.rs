@@ -533,7 +533,9 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         // Cursive blocks stdout, unless it's dropped, so
         // deattached cursive here to allow destroying it at the end of this fn
         let mut c = Cursive::default();
-        c.load_theme(self.theme).expect("Can't load theme");
+        // TODO::: replace it with load_theme_file
+        //c.load_theme(self.theme).expect("Can't load theme");
+        //c.load_theme(self.theme).expect("Can't load theme");
         self.add_forms(&mut c);
         self.add_cmd_picker(&mut c);
 

@@ -21,7 +21,7 @@ serde_json = "1.0"
 [dependencies.cursive]
 #TODO:: requires new version
 git = "https://github.com/gyscos/Cursive"
-#version = "0.9"?
+#version = "0.9"
 default-features = false
 
 [features]

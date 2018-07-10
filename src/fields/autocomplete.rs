@@ -22,7 +22,7 @@ impl Autocomplete {
         feeder: F,
     ) -> fields::Field {
         let view = views::Autocomplete::new(feeder);
-        fields::Field::new(label, AutocompleteManager::new(view))
+        fields::Field::new(label, AutocompleteManager::new(view), "")
     }
 }
 

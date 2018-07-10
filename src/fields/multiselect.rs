@@ -22,7 +22,7 @@ impl Multiselect {
         feeder: F,
     ) -> fields::Field {
         let view = views::Multiselect::new(feeder);
-        fields::Field::new(label, MultiselectManager::new(view))
+        fields::Field::new(label, MultiselectManager::new(view), "")
     }
 }
 

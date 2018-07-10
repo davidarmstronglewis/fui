@@ -83,7 +83,7 @@ impl Field {
     /// `label` should match NOTE from [Fui::action]
     ///
     /// [Fui::action]: ../struct.Fui.html#method.action
-    pub fn new<VM: WidgetManager + 'static, IS: Into<String>>(label: IS, mut widget_manager: VM) -> Field {
+    pub fn new<IS: Into<String>, VM: WidgetManager + 'static, I: Into<Value>>(label: IS, mut widget_manager: VM, initial: I) -> Field {
         let label = label.into();
         let label_and_help = views::LinearLayout::horizontal()
             .child(views::TextView::new(label_padding(label.as_ref())))
