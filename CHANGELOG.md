@@ -44,12 +44,8 @@
         * `pub fn initial(self, value: T) -> Self`
         * with
         * `pub fn initial<IS: Into<Value>>(self, initial: IS) -> Self`
-    * Replace
-        * `pub fn help<IS: Into<String>>(self, msg: IS) -> Self`
-        * with
-        * `pub fn help(self, msg: &str) -> Self`
     * Add:
-        * `pub fn set_help(&mut self, msg: &str)`
+        * `pub fn set_help<IS: Into<String>>(&mut self, msg: IS)`
         * `pub fn set_error(&mut self, msg: &str)`
         * `FieldErrors` type
     * Implement `FormField` for `Field`

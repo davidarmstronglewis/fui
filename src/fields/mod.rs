@@ -89,6 +89,7 @@ impl Field {
             .child(views::TextView::new(label_padding(label.as_ref())))
             .child(views::DummyView)
             .child(views::TextView::new(""));
+        //TODO::: use initial here
         let layout = views::LinearLayout::vertical()
                     .child(label_and_help)
                     .child(widget_manager.take_view())
@@ -112,7 +113,7 @@ impl Field {
         self
     }
     /// Sets help message.
-    pub fn help(mut self, msg: &str) -> Self {
+    pub fn help<IS: Into<String>>(mut self, msg: IS) -> Self {
         self.set_help(msg);
         self
     }
@@ -159,10 +160,13 @@ impl Field {
     }
 
     /// Sets help message.
-    pub fn set_help(&mut self, msg: &str) {
-        self.help = msg.to_string();
-        let text_view: &mut views::TextView = self.view_help_get_mut();
-        text_view.set_content(msg);
+    pub fn set_help<IS: Into<String>>(&mut self, msg: IS) {
+        let help = msg.into();
+        {
+            let text_view: &mut views::TextView = self.view_help_get_mut();
+            text_view.set_content(help.as_ref());
+        }
+        self.help = help;
     }
 
     /// Returns mutable view responsible for storing error message.
