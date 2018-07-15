@@ -89,19 +89,20 @@ impl Field {
             .child(views::TextView::new(label_padding(label.as_ref())))
             .child(views::DummyView)
             .child(views::TextView::new(""));
-        //TODO::: use initial here
         let layout = views::LinearLayout::vertical()
                     .child(label_and_help)
                     .child(widget_manager.take_view())
                     .child(views::TextView::new(""))
                     .child(views::DummyView);
-        Field {
+        let mut field = Field {
             label: label,
             help: "".to_string(),
             validators: vec![],
             view: layout,
             widget_manager: Box::new(widget_manager),
-        }
+        };
+        field.set_value(&initial.into());
+        field
     }
     /// Sets initial value.
     pub fn initial<IS: Into<Value>>(mut self, initial: IS) -> Self {
