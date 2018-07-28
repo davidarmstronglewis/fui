@@ -92,8 +92,9 @@ impl Autocomplete {
     /// Copy selected text to edit view
     fn selection_to_edit(&mut self) {
         if !self.get_select_view().is_empty() {
-            let selection = self.get_select_view_mut().selection();
-            self.get_edit_view_mut().set_content((&*selection).clone());
+            if let Some(x) = self.get_select_view_mut().selection() {
+                self.get_edit_view_mut().set_content((&*x).clone());
+            }
         }
     }
 
