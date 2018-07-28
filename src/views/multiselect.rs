@@ -141,7 +141,7 @@ impl Multiselect {
         if let Some(idx) = selected_view.selected_id() {
             let item = selected_view.selection();
             selected_view.remove_item(idx);
-            return Some(item);
+            return item;
         } else {
             None
         }
