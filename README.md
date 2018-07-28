@@ -16,7 +16,7 @@ Add CLI & form interface to your program.
 ### Cargo.toml
 ```toml
 [dependencies]
-fui = "0.8"
+fui = "0.9"
 ```
 
 ### main.rs

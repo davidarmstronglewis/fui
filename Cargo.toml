@@ -1,6 +1,6 @@
 [package]
 name = "fui"
-version = "0.8.0"
+version = "0.9.0"
 description = "Add CLI & form interface to your program."
 keywords = ["TUI", "forms", "CLI", "ncurses", "termion"]
 documentation = "https://docs.rs/fui"
