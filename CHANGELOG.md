@@ -1,7 +1,9 @@
 # Changelog
 
-## Next
 
+## 0.9.0
+
+* Update `cursive` to 0.9
 * Add types `FieldErrors`, `FormErrors`
 * Add required parameter `program_name` to `Fui::new()` - Breaking change
 * Ensure `Fui` action names are unique or panic
