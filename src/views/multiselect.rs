@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
-use cursive::Cursive;
-use cursive::With;
 use cursive::event::{Callback, Event, EventResult, Key};
 use cursive::traits::{Boxable, View};
 use cursive::view::ViewWrapper;
 use cursive::views::{BoxView, DummyView, LinearLayout, OnEventView, Panel, SelectView};
+use cursive::Cursive;
+use cursive::With;
 
-use feeders::Feeder;
 use super::is_value_from_select;
+use feeders::Feeder;
 use views::Autocomplete;
 
 type OnSelect = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;

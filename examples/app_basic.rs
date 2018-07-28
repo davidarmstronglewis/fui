@@ -4,9 +4,9 @@
 extern crate clap;
 extern crate fui;
 
-use fui::{Fui, Value};
-use fui::form::FormView;
 use fui::fields::Text;
+use fui::form::FormView;
+use fui::{Fui, Value};
 
 fn hdlr(v: Value) {
     println!("user input (from fn) {:?}", v);

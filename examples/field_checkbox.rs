@@ -3,12 +3,12 @@ extern crate cursive;
 extern crate fui;
 extern crate serde_json;
 
-use cursive::Cursive;
 use cursive::views::Dialog;
+use cursive::Cursive;
 use serde_json::value::Value;
 
-use fui::form::FormView;
 use fui::fields::Checkbox;
+use fui::form::FormView;
 
 fn show_data(c: &mut Cursive, data: Value) {
     let text = format!("Got data: {:?}", data);

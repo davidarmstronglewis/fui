@@ -2,9 +2,9 @@
 
 use glob::{glob_with, MatchOptions};
 use std::env;
+use std::fmt::Display;
 use std::fs;
 use std::path::Path;
-use std::fmt::Display;
 use std::rc::Rc;
 
 /// Makes data querable.

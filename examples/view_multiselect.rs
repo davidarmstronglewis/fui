@@ -4,8 +4,8 @@ extern crate fui;
 
 use std::rc::Rc;
 
-use cursive::Cursive;
 use cursive::views::LinearLayout;
+use cursive::Cursive;
 
 use fui::feeders::DirItems;
 use fui::views::Multiselect;
