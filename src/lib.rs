@@ -138,10 +138,10 @@ pub mod views;
 
 use clipboard::ClipboardContext;
 use clipboard::ClipboardProvider;
-use cursive::Cursive;
 use cursive::event::Event;
 use cursive::traits::{Boxable, Identifiable};
 use cursive::views::{Dialog, LayerPosition, OnEventView};
+use cursive::Cursive;
 use form::FormView;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -258,9 +258,13 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         };
 
         if let Some(item) = self.action_by_name(&name) {
-            panic!("Action name must be unique, but it's already defined ({:?})", item.cmd_with_desc());
+            panic!(
+                "Action name must be unique, but it's already defined ({:?})",
+                item.cmd_with_desc()
+            );
         }
-        self.actions.insert(action_details.cmd_with_desc(), action_details);
+        self.actions
+            .insert(action_details.cmd_with_desc(), action_details);
         self
     }
 

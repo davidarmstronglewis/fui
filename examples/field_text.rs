@@ -4,9 +4,9 @@ extern crate fui;
 extern crate regex;
 extern crate serde_json;
 
-use cursive::Cursive;
 use cursive::traits::Boxable;
 use cursive::views::Dialog;
+use cursive::Cursive;
 use regex::Regex;
 use serde_json::value::Value;
 

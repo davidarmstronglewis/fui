@@ -1,21 +1,19 @@
 //! Contains `form` related concetps like `FormView`.
-use std::rc::Rc;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use clap;
-use cursive::Cursive;
 use cursive::event::{Callback, Event, EventResult, Key, MouseButton, MouseEvent};
 use cursive::view::{View, ViewWrapper};
 use cursive::views::{Dialog, DialogFocus, LinearLayout, ViewBox};
+use cursive::Cursive;
 use serde_json::map::Map;
 use serde_json::value::Value;
 
 use fields::{FieldErrors, FormField};
 
-
 /// Container for form's errors
 pub type FormErrors = HashMap<String, FieldErrors>;
-
 
 type OnSubmit = Option<Rc<Fn(&mut Cursive, Value)>>;
 type OnCancel = Option<Rc<Fn(&mut Cursive)>>;
@@ -120,9 +118,7 @@ impl FormView {
                     form_data.insert(field.get_label().to_string(), v);
                 }
                 Err(e) => {
-                    let msg: Vec<String> = e.iter().map(|s| {
-                        format!("ERROR: {:?}", s)
-                    }).collect();
+                    let msg: Vec<String> = e.iter().map(|s| format!("ERROR: {:?}", s)).collect();
                     eprintln!("{}", msg.join("\n"));
                 }
             }
@@ -167,7 +163,9 @@ impl FormView {
     fn show_errors(&mut self, form_errors: &FormErrors) {
         for (idx, field) in self.fields.iter().enumerate() {
             let label = field.get_label();
-            let error = form_errors.get(label).and_then(|field_errors| field_errors.first());
+            let error = form_errors
+                .get(label)
+                .and_then(|field_errors| field_errors.first());
             // can't call method which returns suitable view because of ownership
             //  * such method would get &mut self
             //  * self.field gets &self
@@ -184,7 +182,9 @@ impl FormView {
                 .get_child_mut(idx)
                 .unwrap();
             let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
-            field.get_widget_manager().set_error(viewbox, error.unwrap_or(&"".to_string()));
+            field
+                .get_widget_manager()
+                .set_error(viewbox, error.unwrap_or(&"".to_string()));
         }
     }
 

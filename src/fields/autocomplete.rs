@@ -5,8 +5,8 @@ use cursive::views::ViewBox;
 use serde_json::value::Value;
 
 use feeders::Feeder;
-use fields::{FieldErrors, WidgetManager};
 use fields;
+use fields::{FieldErrors, WidgetManager};
 use views;
 
 /// Convienient wrapper around `Field<AutocompleteManager, String>`.

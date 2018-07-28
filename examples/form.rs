@@ -3,13 +3,13 @@ extern crate cursive;
 extern crate fui;
 extern crate serde_json;
 
-use cursive::Cursive;
 use cursive::traits::Boxable;
 use cursive::views::Dialog;
+use cursive::Cursive;
 use serde_json::value::Value;
 
-use fui::form::FormView;
 use fui::fields::{Autocomplete, Checkbox, Multiselect, Text};
+use fui::form::FormView;
 
 fn submit_handler(c: &mut Cursive, data: Value) {
     let text = format!("submit data: {:?}", data);

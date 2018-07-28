@@ -3,9 +3,9 @@ extern crate cursive;
 extern crate fui;
 extern crate serde_json;
 
-use cursive::Cursive;
 use cursive::traits::Boxable;
 use cursive::views::Dialog;
+use cursive::Cursive;
 use serde_json::value::Value;
 
 use fui::fields::Autocomplete;

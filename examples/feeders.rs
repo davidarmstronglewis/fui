@@ -4,12 +4,12 @@ extern crate fui;
 
 use std::rc::Rc;
 
-use cursive::Cursive;
 use cursive::traits::Boxable;
 use cursive::views::{Dialog, DummyView, LinearLayout};
+use cursive::Cursive;
 
-use fui::views::Autocomplete;
 use fui::feeders::DirItems;
+use fui::views::Autocomplete;
 
 fn handler(c: &mut Cursive, submitted: Rc<String>) {
     let text = format!("submitted {:?}", submitted);

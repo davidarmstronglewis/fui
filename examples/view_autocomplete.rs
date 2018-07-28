@@ -4,9 +4,9 @@ extern crate fui;
 
 use std::rc::Rc;
 
-use cursive::Cursive;
 use cursive::traits::Boxable;
 use cursive::views::{Dialog, DummyView, LinearLayout};
+use cursive::Cursive;
 
 use fui::feeders::DirItems;
 use fui::views::Autocomplete;
