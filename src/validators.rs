@@ -1,4 +1,4 @@
-//! Provides data validators used by `fields`.
+//! Provides data validators used by `Fields`.
 use regex::Regex;
 use std::any::Any;
 use std::fmt::Debug;
@@ -15,7 +15,7 @@ pub trait Validator: Debug {
 
 /// Ensures data is included.
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// use fui::validators::Required;
@@ -43,7 +43,7 @@ impl Validator for Required {
 
 /// Ensures path is free.
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// extern crate fui;
@@ -77,7 +77,7 @@ impl Validator for PathFree {
 
 /// Ensures data is dir path which exists.
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// extern crate fui;
@@ -115,7 +115,7 @@ impl Validator for DirExists {
 
 /// Ensures data is file path which exists.
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// extern crate fui;
@@ -153,7 +153,7 @@ impl Validator for FileExists {
 
 /// Ensures value is one of provided options.
 ///
-/// Examples
+/// # Examples
 ///
 /// ```
 /// use fui::validators::OneOf;

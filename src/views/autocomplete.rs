@@ -14,7 +14,7 @@ use feeders::Feeder;
 
 pub type OnSubmit = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;
 
-/// Single selection view with suggestions
+/// Single selection view with suggestions.
 pub struct Autocomplete {
     view: LinearLayout,
 
@@ -61,25 +61,25 @@ impl Autocomplete {
         ac
     }
 
-    /// Get typed in value
+    /// Gets typed in value.
     pub fn get_value(&self) -> Rc<String> {
         self.get_edit_view().get_content()
     }
 
-    /// Allow to submit any text
+    /// Allows to submit any text.
     pub fn submit_anything(mut self) -> Self {
         self.submit_anything = true;
         self
     }
 
-    /// Sets text value
+    /// Sets text value.
     pub fn value(mut self, initial: &str) -> Self {
         self.get_edit_view_mut().set_content(initial);
         self.refresh_listing();
         self
     }
 
-    /// Refresh suggestions
+    /// Refresh suggestions.
     fn refresh_listing(&mut self) {
         let feeder = Rc::clone(&self.feeder);
         let text = self.get_edit_view().get_content();
@@ -89,7 +89,7 @@ impl Autocomplete {
         select.add_all_str((*feeder).query(text.as_ref(), 0, shown_count).into_iter());
     }
 
-    /// Copy selected text to edit view
+    /// Copy selected text to edit view.
     fn selection_to_edit(&mut self) {
         if !self.get_select_view().is_empty() {
             if let Some(x) = self.get_select_view_mut().selection() {
@@ -98,7 +98,7 @@ impl Autocomplete {
         }
     }
 
-    /// Checks if value comes from suggestions
+    /// Checks if value comes from suggestions.
     pub fn is_value_from_select(&self, to_check: &str) -> bool {
         let select = self.get_select_view();
         is_value_from_select(select, to_check)

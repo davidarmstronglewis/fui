@@ -1,4 +1,4 @@
-//! Contains `form` related concetps like `FormView`.
+//! Contains form related concetps like `FormView`.
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -12,13 +12,15 @@ use serde_json::value::Value;
 
 use fields::{FieldErrors, FormField};
 
-/// Container for form's errors
+/// Container for form's errors.
 pub type FormErrors = HashMap<String, FieldErrors>;
 
 type OnSubmit = Option<Rc<Fn(&mut Cursive, Value)>>;
 type OnCancel = Option<Rc<Fn(&mut Cursive)>>;
 
-/// Aggregates `fields` and handles process of `submitting` (or `canceling`).
+/// Aggregates [Fields] and handles process of `submitting` (or `canceling`).
+///
+/// [Fields]: ../fields/index.html
 pub struct FormView {
     view: Dialog,
 
