@@ -14,7 +14,7 @@ use views::Autocomplete;
 type OnSelect = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;
 type OnDeselect = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;
 
-/// Multiple selection view with suggestions
+/// Multiple selection view with suggestions.
 pub struct Multiselect {
     view: LinearLayout,
     select_anything: bool,
@@ -147,13 +147,13 @@ impl Multiselect {
         }
     }
 
-    /// Allows selecting any text
+    /// Allows selecting any text.
     pub fn select_anything(mut self) -> Self {
         self.select_anything = true;
         self
     }
 
-    /// Allows selecting single item many times
+    /// Allows selecting single item many times.
     pub fn redundant_selection(mut self) -> Self {
         self.redundant_selection = true;
         self

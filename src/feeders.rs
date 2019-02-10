@@ -1,4 +1,11 @@
-//! Data providers for `views` with suggestion feature (like `Autocomplete`, `Multiselect`).
+//! Data providers for `views` with suggestion feature.
+//!
+//! `Views` with suggestion feature:
+//! * [Autocomplete]
+//! * [Multiselect]
+//!
+//! [Autocomplete]: ../views/struct.Autocomplete.html
+//! [Multiselect]: ../views/struct.Multiselect.html
 
 use glob::{glob_with, MatchOptions};
 use std::env;

@@ -1,4 +1,9 @@
-//! Contains views which are building blocks for `fields`.
+//! Contains views which are building blocks for `Fields`.
+//!
+//! [Views] are also defined in dependency crate [Cursive].
+//!
+//! [Views]: ../views/index.html
+//! [Cursive]: ../../cursive/views/index.html
 mod autocomplete;
 mod multiselect;
 
