@@ -120,6 +120,7 @@ extern crate clap;
 extern crate clipboard;
 #[macro_use]
 extern crate cursive as _cursive;
+extern crate dirs;
 extern crate glob;
 extern crate regex;
 extern crate serde_json;

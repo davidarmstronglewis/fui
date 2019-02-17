@@ -7,8 +7,8 @@
 //! [Autocomplete]: ../views/struct.Autocomplete.html
 //! [Multiselect]: ../views/struct.Multiselect.html
 
+use dirs;
 use glob::{glob_with, MatchOptions};
-use std::env;
 use std::fmt::Display;
 use std::fs;
 use std::path::Path;
@@ -96,7 +96,8 @@ impl Feeder for DirItems {
         let path = if text == "" {
             format!("./")
         } else if text.starts_with('~') {
-            let path = text.replace("~", env::home_dir().unwrap().to_str().unwrap());
+            // TODO: remove unwraps
+            let path = text.replace("~", dirs::home_dir().unwrap().to_str().unwrap());
             format!("{}", path)
         } else {
             format!("{}", text)
@@ -154,12 +155,15 @@ mod tests {
         let found = {
             if let Ok(v) = fs::read_dir(start) {
                 v.filter(|x| {
-                    !x.as_ref()
-                        .unwrap()
-                        .file_name()
-                        .to_str()
-                        .unwrap()
-                        .starts_with(".")
+                    if let Ok(entry) = x.as_ref() {
+                        if let Some(name) = entry.file_name().to_str() {
+                            !name.starts_with(".")
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
                 }).map(|x| {
                         let p = format!("{}", x.as_ref().unwrap().path().display());
                         p.replace("./", "")
@@ -220,7 +224,7 @@ mod tests {
     fn test_dir_item_works_with_homedir() {
         let di = DirItems::new();
         let found = di.query("~/", 0, 200);
-        let homedir = env::home_dir().unwrap();
+        let homedir = dirs::home_dir().unwrap();
         assert_eq!(
             HashSet::<String>::from_iter(found),
             expected(homedir.to_str().unwrap())
