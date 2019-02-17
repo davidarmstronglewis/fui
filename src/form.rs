@@ -134,7 +134,8 @@ impl FormView {
         let mut errors: FormErrors = HashMap::with_capacity(self.fields.len());
 
         for (idx, field) in self.fields.iter().enumerate() {
-            let view = self.view
+            let view = self
+                .view
                 .get_content()
                 .as_any()
                 .downcast_ref::<LinearLayout>()
@@ -176,7 +177,8 @@ impl FormView {
             //  or
             //  form should only call field.validate and rest would be handled by field
             //  which should solve this issue?
-            let mut view = self.view
+            let mut view = self
+                .view
                 .get_content_mut()
                 .as_any_mut()
                 .downcast_mut::<LinearLayout>()
@@ -193,7 +195,8 @@ impl FormView {
     fn event_submit(&mut self) -> EventResult {
         match self.validate() {
             Ok(data_map) => {
-                let opt_cb = self.on_submit
+                let opt_cb = self
+                    .on_submit
                     .clone()
                     .map(|cb| Callback::from_fn(move |c| cb(c, data_map.clone())));
                 EventResult::Consumed(opt_cb)
@@ -206,7 +209,8 @@ impl FormView {
     }
 
     fn event_cancel(&mut self) -> EventResult {
-        let cb = self.on_cancel
+        let cb = self
+            .on_cancel
             .clone()
             .map(|cb| Callback::from_fn(move |c| cb(c)));
         EventResult::Consumed(cb)
@@ -244,7 +248,8 @@ impl ViewWrapper for FormView {
             Event::Key(Key::Enter) => match self.view.focus() {
                 DialogFocus::Button(0) => self.event_cancel(),
                 DialogFocus::Button(1) => self.event_submit(),
-                _ => self.with_view_mut(|v| v.on_event(event))
+                _ => self
+                    .with_view_mut(|v| v.on_event(event))
                     .unwrap_or(EventResult::Ignored),
             },
             // TODO: ctlr+enter binding?

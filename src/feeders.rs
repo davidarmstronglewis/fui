@@ -118,26 +118,27 @@ impl Feeder for DirItems {
                 } else {
                     true
                 }
-            }).filter(|x| {
-                    let path = x.as_ref().unwrap().metadata().unwrap();
-                    match self.dir_item_type {
-                        DirItemType::Dir => path.is_dir(),
-                        DirItemType::All => true,
-                    }
-                })
-                .map(|x| {
-                    let path = x.unwrap();
-                    let path = if self.use_full_paths {
-                        fs::canonicalize(path).unwrap()
-                    } else {
-                        path
-                    };
-                    let text = format!("{}", path.display());
-                    text
-                })
-                .skip(position)
-                .take(items_count)
-                .collect()
+            })
+            .filter(|x| {
+                let path = x.as_ref().unwrap().metadata().unwrap();
+                match self.dir_item_type {
+                    DirItemType::Dir => path.is_dir(),
+                    DirItemType::All => true,
+                }
+            })
+            .map(|x| {
+                let path = x.unwrap();
+                let path = if self.use_full_paths {
+                    fs::canonicalize(path).unwrap()
+                } else {
+                    path
+                };
+                let text = format!("{}", path.display());
+                text
+            })
+            .skip(position)
+            .take(items_count)
+            .collect()
         } else {
             Vec::new()
         }
@@ -164,11 +165,12 @@ mod tests {
                     } else {
                         false
                     }
-                }).map(|x| {
-                        let p = format!("{}", x.as_ref().unwrap().path().display());
-                        p.replace("./", "")
-                    })
-                    .collect()
+                })
+                .map(|x| {
+                    let p = format!("{}", x.as_ref().unwrap().path().display());
+                    p.replace("./", "")
+                })
+                .collect()
             } else {
                 Vec::new()
             }

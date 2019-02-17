@@ -30,22 +30,26 @@ impl Multiselect {
     pub fn new<T: Feeder>(feeder: T) -> Self {
         let separator_width = 1;
         let layout = LinearLayout::horizontal()
-            .child(Panel::new(Autocomplete::new(feeder)
+            .child(Panel::new(
+                Autocomplete::new(feeder)
                     //TODO: allow customization?
-                    .full_width()))
+                    .full_width(),
+            ))
             .child(DummyView.fixed_width(separator_width))
             .child(Panel::new(
-                OnEventView::new(SelectView::<String>::new()
-                            //TODO: allow customization?
-                            .full_width())
-                    .on_pre_event_inner(Event::CtrlChar('p'), |s| {
+                OnEventView::new(
+                    SelectView::<String>::new()
+                        //TODO: allow customization?
+                        .full_width(),
+                )
+                .on_pre_event_inner(Event::CtrlChar('p'), |s| {
                     s.get_inner_mut().select_up(1);
                     Some(EventResult::Consumed(None))
                 })
-                    .on_pre_event_inner(Event::CtrlChar('n'), |s| {
-                        s.get_inner_mut().select_down(1);
-                        Some(EventResult::Consumed(None))
-                    }),
+                .on_pre_event_inner(Event::CtrlChar('n'), |s| {
+                    s.get_inner_mut().select_down(1);
+                    Some(EventResult::Consumed(None))
+                }),
             ));
 
         Multiselect {
@@ -61,7 +65,8 @@ impl Multiselect {
     }
 
     fn get_options_view(&self) -> &Autocomplete {
-        let box_view = self.view
+        let box_view = self
+            .view
             .get_child(self.options_idx as usize)
             .unwrap()
             .as_any()
@@ -71,7 +76,8 @@ impl Multiselect {
     }
 
     fn get_selected_view(&self) -> &SelectView<String> {
-        let box_view = self.view
+        let box_view = self
+            .view
             .get_child(self.selected_idx as usize)
             .unwrap()
             .as_any()
@@ -81,7 +87,8 @@ impl Multiselect {
     }
 
     fn get_selected_view_mut(&mut self) -> &mut SelectView<String> {
-        let box_view = self.view
+        let box_view = self
+            .view
             .get_child_mut(self.selected_idx as usize)
             .unwrap()
             .as_any_mut()
@@ -230,7 +237,8 @@ impl ViewWrapper for Multiselect {
                 }
                 EventResult::Consumed(None)
             }
-            _ => self.with_view_mut(|v| v.on_event(event))
+            _ => self
+                .with_view_mut(|v| v.on_event(event))
                 .unwrap_or(EventResult::Ignored),
         }
     }

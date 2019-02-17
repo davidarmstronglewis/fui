@@ -22,8 +22,10 @@ fn main() {
 
     let layout = LinearLayout::vertical()
         .child(
-            Autocomplete::new(vec!["option1", "option2", "option3", "option4", "option5", "option6"])
-                .on_submit(handler)
+            Autocomplete::new(vec![
+                "option1", "option2", "option3", "option4", "option5", "option6",
+            ])
+            .on_submit(handler),
         )
         .child(DummyView)
         .child(Autocomplete::new(DirItems::new()).on_submit(handler))

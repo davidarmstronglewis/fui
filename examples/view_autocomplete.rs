@@ -25,9 +25,9 @@ fn main() {
         .child(DummyView)
         .child(
             Autocomplete::new(DirItems::new())
-            // allow submitting values outside completition
-            .submit_anything()
-            .on_submit(handler),
+                // allow submitting values outside completition
+                .submit_anything()
+                .on_submit(handler),
         )
         .full_width();
 
