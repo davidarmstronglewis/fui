@@ -470,6 +470,26 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         self
     }
 
+    /// Gets program's `name`.
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    /// Gets program's `about`.
+    pub fn get_about(&self) -> &str {
+        &self.about
+    }
+
+    /// Gets program's `author`.
+    pub fn get_author(&self) -> &str {
+        &self.author
+    }
+
+    /// Gets program's `version`.
+    pub fn get_version(&self) -> &str {
+        &self.version
+    }
+
     /// Sets program's `version`.
     ///
     /// For CLI means [Clap::App::version]
