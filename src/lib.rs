@@ -176,7 +176,8 @@ trait DumpAsCli {
 impl DumpAsCli for Value {
     fn dump_as_cli(&self) -> String {
         if self.is_object() {
-            let cmd = self.as_object()
+            let cmd = self
+                .as_object()
                 .unwrap()
                 .iter()
                 .map({
@@ -185,7 +186,8 @@ impl DumpAsCli for Value {
                         Value::String(ref s) => format!("--{} \"{}\"", k, s),
                         Value::Number(ref n) => format!("--{} {}", k, n),
                         Value::Array(ref v) => {
-                            let args = v.iter()
+                            let args = v
+                                .iter()
                                 .map(|vv| format!("{}", vv))
                                 .collect::<Vec<String>>()
                                 .join(" ");
@@ -326,7 +328,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         let matches = app.get_matches_from(user_args);
         let cmd_name = matches.subcommand_name().unwrap();
         let cmd_matches = matches.subcommand_matches(cmd_name).unwrap();
-        let action = self.actions
+        let action = self
+            .actions
             .values()
             .find(|action| action.name == cmd_name)
             .unwrap();
@@ -388,7 +391,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     fn add_forms(&mut self, c: &mut Cursive) {
         // seperate loop prevents borrow-mut (self.actions) & borrow (any method call)
-        let action_form_list = self.actions
+        let action_form_list = self
+            .actions
             .iter_mut()
             .map(|(_, a)| (a.name, a.form.take().unwrap()))
             .collect::<Vec<(&str, FormView)>>();
@@ -402,7 +406,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         let cmd_submit = Rc::clone(&self.picked_action);
         let cmd_cancel = Rc::clone(&self.picked_action);
         // TODO: rm cloning for it
-        let actions = self.actions
+        let actions = self
+            .actions
             .keys()
             .map(|x| x.to_owned())
             .collect::<Vec<String>>();

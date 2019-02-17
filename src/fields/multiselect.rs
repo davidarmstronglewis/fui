@@ -53,7 +53,8 @@ impl WidgetManager for MultiselectManager {
         let view_box = fields::value_view_from_layout(view_box);
         let ms: &views::Multiselect = (**view_box).as_any().downcast_ref().unwrap();
 
-        let result: Vec<String> = ms.get_selected_items()
+        let result: Vec<String> = ms
+            .get_selected_items()
             .iter()
             .map(|x| (*x).to_owned())
             .collect();
@@ -105,7 +106,8 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
     }
 
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
-        let values = args.values_of(&self.label)
+        let values = args
+            .values_of(&self.label)
             .unwrap_or(clap::Values::default());
         values.collect::<Vec<&str>>().join(VALUE_SEP)
     }

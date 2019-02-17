@@ -306,7 +306,8 @@ impl ViewWrapper for Autocomplete {
                     }
                 }
 
-                let cb = self.on_submit
+                let cb = self
+                    .on_submit
                     .clone()
                     .map(|on_submit| Callback::from_fn(move |c| on_submit(c, to_submit.clone())));
                 EventResult::Consumed(cb)

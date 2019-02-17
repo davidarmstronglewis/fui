@@ -1,7 +1,6 @@
 //! Various kinds of helpers.
 use std::env;
 
-
 /// Returns current working dir as String.
 pub fn cwd() -> String {
     env::current_dir()
