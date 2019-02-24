@@ -125,6 +125,9 @@ extern crate glob;
 extern crate regex;
 extern crate serde_json;
 
+// TODO: make it public when ready
+mod clap_conv;
+
 /// Re-export of [Cursive](../cursive/index.html) crate.
 pub mod cursive {
     pub use _cursive::*;
@@ -273,6 +276,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     fn action_by_name(&self, name: &str) -> Option<&Action> {
         self.actions.values().find(|a| a.name == name)
+    }
+
+    fn actions(&self) -> Vec<&Action> {
+        self.actions.values().collect()
     }
 
     /// Coordinates flow from action picking to handler running.
