@@ -90,6 +90,12 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
     fn get_label(&self) -> &str {
         &self.label
     }
+
+    /// Gets help of the field
+    fn get_help(&self) -> &str {
+        self.help.as_ref()
+    }
+
     fn build_widget(&self) -> ViewBox {
         let initial = self.initial.join(VALUE_SEP);
         self.widget_manager

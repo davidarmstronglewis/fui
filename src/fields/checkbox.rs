@@ -54,6 +54,12 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
     fn get_label(&self) -> &str {
         &self.label
     }
+
+    /// Gets help of the field
+    fn get_help(&self) -> &str {
+        self.help.as_ref()
+    }
+
     fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
         let result = FromStr::from_str(data)
             .map(|v| Value::Bool(v))
