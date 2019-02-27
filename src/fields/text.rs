@@ -62,6 +62,11 @@ impl fields::FormField for fields::Field<TextManager, String> {
         &self.label
     }
 
+    /// Gets help of the field
+    fn get_help(&self) -> &str {
+        self.help.as_ref()
+    }
+
     fn clap_arg(&self) -> clap::Arg {
         clap::Arg::with_name(&self.label)
             .long(&self.label)

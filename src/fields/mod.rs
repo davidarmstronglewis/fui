@@ -87,6 +87,8 @@ pub trait FormField {
     fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
     /// Gets `field`'s label.
     fn get_label(&self) -> &str;
+    /// Gets `field`'s help
+    fn get_help(&self) -> &str;
     /// Gets manager which controlls `widget`.
     fn get_widget_manager(&self) -> &WidgetManager;
     /// Builds [clap::Arg] needed by automatically generated [clap::App].

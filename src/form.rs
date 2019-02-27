@@ -221,6 +221,11 @@ impl FormView {
         self.view.set_title(title);
         self
     }
+
+    /// Gets fields of `FormView`
+    pub fn get_fields(&self) -> &[Box<FormField>] {
+        &self.fields
+    }
 }
 
 impl ViewWrapper for FormView {
