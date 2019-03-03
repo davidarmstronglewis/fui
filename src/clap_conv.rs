@@ -21,8 +21,11 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
 
             let mut form = FormView::new();
             for flag in clap_app.p.flags.iter() {
-                let long = flag.s.long.unwrap();
-                let help = flag.b.help.unwrap();
+                // TODO: improve by allowing short + help?
+                let long = flag.s.long
+                    .expect(&format!("Arg {:?} must have long name", flag.b.name));
+                let help = flag.b.help
+                    .expect(&format!("Arg {:?} must have help", flag.b.name));
                 if flag.b.settings.is_set(ArgSettings::Multiple) {
                     // TODO: add validator for a positive integer
                     form = form.field(Text::new(long).help(help));
@@ -132,8 +135,4 @@ mod tests {
     //TODO:::
     //.requires("config") //warning
     //.conflicts_with("output")// warning
-    // required
-        //.help("turns up the awesome")
-        //.long("awesome")
-
 }
