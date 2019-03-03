@@ -19,6 +19,9 @@ impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
         for flag in clap_app.p.flags.iter() {
+            if flag.b.blacklist.is_some() {
+                show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
+            }
             if flag.b.requires.is_some() {
                 show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
             }
@@ -146,6 +149,4 @@ mod tests {
         assert_eq!(field.get_help(), "arg_help");
         //TODO: assert text if possible
     }
-    //TODO:::
-    //.conflicts_with("output")// warning
 }
