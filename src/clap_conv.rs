@@ -4,7 +4,8 @@
 
 use Fui;
 use clap;
-use fields::Checkbox;
+use clap::ArgSettings;
+use fields::{Checkbox, Text};
 use form::FormView;
 
 impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
@@ -14,13 +15,21 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
             .author(clap_app.get_author().unwrap_or(""))
             .version(clap_app.get_version().unwrap_or(""));
 
+        //println!("{:?}", clap_app.p.flags);
+
         if clap_app.p.subcommands.len() == 0 {
 
             let mut form = FormView::new();
             for flag in clap_app.p.flags.iter() {
                 let long = flag.s.long.unwrap();
                 let help = flag.b.help.unwrap();
-                form = form.field(Checkbox::new(long).help(help));
+                if flag.b.settings.is_set(ArgSettings::Multiple) {
+                    // TODO: add validator for a positive integer
+                    form = form.field(Text::new(long).help(help));
+                } else {
+                    form = form.field(Checkbox::new(long).help(help));
+                }
+
             }
 
             fui = fui.action(
@@ -99,10 +108,28 @@ mod tests {
         let field = &action.form.as_ref().unwrap().get_fields()[0];
         assert_eq!(field.get_label(), "arg_long");
         assert_eq!(field.get_help(), "arg_help");
-        //TODO::: assert checkbox if possible
+        //TODO: assert checkbox if possible
+    }
+
+    #[test]
+    fn switch_multi_is_converted_to_text() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-switch")
+                .long("arg_long")
+                .help("arg_help")
+                .multiple(true)
+        );
+        let fui: Fui = Fui::from(&app);
+
+        let action: &Action = fui.action_by_name("default")
+            .expect("expected default action");
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.get_label(), "arg_long");
+        assert_eq!(field.get_help(), "arg_help");
+        //TODO: assert text if possible
     }
     //TODO:::
-    //.multiple(true)// use
     //.requires("config") //warning
     //.conflicts_with("output")// warning
     // required
