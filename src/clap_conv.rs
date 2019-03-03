@@ -8,10 +8,20 @@ use clap::ArgSettings;
 use fields::{Checkbox, Text};
 use form::FormView;
 
+fn show_warn(msg: &'static str) {
+    // TODO: find a better way for warning users
+    // crate log requires to use env var to make messages visible
+    // so we need something better
+    panic!(msg);
+}
+
 impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
         for flag in clap_app.p.flags.iter() {
+            if flag.b.requires.is_some() {
+                show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
+            }
             // TODO: improve by allowing short + help?
             let long = flag.s.long
                 .expect(&format!("Arg {:?} must have long name", flag.b.name));
@@ -137,6 +147,5 @@ mod tests {
         //TODO: assert text if possible
     }
     //TODO:::
-    //.requires("config") //warning
     //.conflicts_with("output")// warning
 }
