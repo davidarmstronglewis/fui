@@ -8,6 +8,26 @@ use clap::ArgSettings;
 use fields::{Checkbox, Text};
 use form::FormView;
 
+impl<'a> From<&'a clap::App<'_, '_>> for FormView {
+    fn from(clap_app: &'a clap::App) -> Self {
+        let mut form = FormView::new();
+        for flag in clap_app.p.flags.iter() {
+            // TODO: improve by allowing short + help?
+            let long = flag.s.long
+                .expect(&format!("Arg {:?} must have long name", flag.b.name));
+            let help = flag.b.help
+                .expect(&format!("Arg {:?} must have help", flag.b.name));
+            if flag.b.settings.is_set(ArgSettings::Multiple) {
+                // TODO: add validator for a positive integer
+                form = form.field(Text::new(long).help(help));
+            } else {
+                form = form.field(Checkbox::new(long).help(help));
+            }
+        }
+        form
+    }
+}
+
 impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut fui = Fui::new(clap_app.get_name())
@@ -18,23 +38,7 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
         //println!("{:?}", clap_app.p.flags);
 
         if clap_app.p.subcommands.len() == 0 {
-
-            let mut form = FormView::new();
-            for flag in clap_app.p.flags.iter() {
-                // TODO: improve by allowing short + help?
-                let long = flag.s.long
-                    .expect(&format!("Arg {:?} must have long name", flag.b.name));
-                let help = flag.b.help
-                    .expect(&format!("Arg {:?} must have help", flag.b.name));
-                if flag.b.settings.is_set(ArgSettings::Multiple) {
-                    // TODO: add validator for a positive integer
-                    form = form.field(Text::new(long).help(help));
-                } else {
-                    form = form.field(Checkbox::new(long).help(help));
-                }
-
-            }
-
+            let form: FormView = FormView::from(clap_app);
             fui = fui.action(
                 "default",
                 "Auto generated subcommand for compatibility",
@@ -44,11 +48,11 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
 
         } else {
             for subcmd in clap_app.p.subcommands.iter() {
+                let form: FormView = FormView::from(subcmd);
                 fui = fui.action(
                     subcmd.get_name(),
                     subcmd.p.meta.about.unwrap_or(""),
-                    //TODO:
-                    FormView::new(),
+                    form,
                     |_| {},
                 );
             }
