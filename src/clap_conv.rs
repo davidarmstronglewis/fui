@@ -44,9 +44,9 @@ impl<'a> From<&'a clap::App<'_, '_>> for FormView {
 impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut fui = Fui::new(clap_app.get_name())
-            .about(clap_app.get_about().unwrap_or(""))
-            .author(clap_app.get_author().unwrap_or(""))
-            .version(clap_app.get_version().unwrap_or(""));
+            .about(clap_app.p.meta.about.unwrap_or(""))
+            .author(clap_app.p.meta.author.unwrap_or(""))
+            .version(clap_app.p.meta.version.unwrap_or(""));
 
         //println!("{:?}", clap_app.p.flags);
 
@@ -90,9 +90,9 @@ mod tests {
         let fui: Fui = Fui::from(&app);
 
         assert_eq!(app.get_name(), fui.get_name());
-        assert_eq!(app.get_about(), Some(fui.get_about()));
-        assert_eq!(app.get_author(), Some(fui.get_author()));
-        assert_eq!(app.get_version(), Some(fui.get_version()));
+        assert_eq!(app.p.meta.about, Some(fui.get_about()));
+        assert_eq!(app.p.meta.author, Some(fui.get_author()));
+        assert_eq!(app.p.meta.version, Some(fui.get_version()));
     }
 
     #[test]

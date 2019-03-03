@@ -11,10 +11,7 @@ readme = "README.md"
 repository = "https://github.com/xliiv/fui"
 
 [dependencies]
-#clap = "2"
-# this must be xliiv's fork until this gets merged
-# https://github.com/clap-rs/clap/pull/1417
-clap = { git = "https://github.com/xliiv/clap.git", branch = "get-version" }
+clap = "2"
 # linux requires `sudo apt-get install xorg-dev`
 clipboard = "0.4"
 dirs = "1.0"
