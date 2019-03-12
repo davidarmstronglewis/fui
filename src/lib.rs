@@ -185,7 +185,7 @@ impl DumpAsCli for Value {
                 .iter()
                 .map({
                     |(k, v)| match *v {
-                        Value::Bool(_) => format!("--{}", k),
+                        Value::Bool(true) => format!("--{}", k),
                         Value::String(ref s) => format!("--{} \"{}\"", k, s),
                         Value::Number(ref n) => format!("--{} {}", k, n),
                         Value::Array(ref v) => {
@@ -300,6 +300,40 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             hdlr(data);
         }
     }
+
+    fn dump_as_cli(&self) -> Vec<String> {
+        let mut arg_vec = vec![self.name.to_owned()];
+        if let Some(a) = self.picked_action.borrow().as_ref() {
+            // FIXME: a picked value should be action name
+            // instead it's "{name}: {help}" O.o
+            let default_action = format!("{}: ", &arg_vec[0]);
+            if *a != default_action {
+                arg_vec.push(a.to_owned())
+            }
+        }
+        if let Some(f) = self.form_data.borrow().as_ref() {
+            arg_vec.push(f.dump_as_cli());
+        }
+        arg_vec
+    }
+
+    fn set_action(&mut self, name: &str) {
+        if let Some(a) = self.action_by_name(name) {
+            *self.picked_action.borrow_mut() = Some(a.name.to_string());
+        }
+    }
+
+    fn set_form_data(&mut self, form_data: Value) {
+        *self.form_data.borrow_mut() = Some(form_data);
+    }
+
+    /// Gets user input converted to cli-like format
+    pub fn get_cli_input(mut self) -> Vec<String> {
+        self.input_from_tui();
+        self.dump_as_cli()
+    }
+
+
 
     /// Returns automatiacally generated [clap::App].
     ///
@@ -671,5 +705,11 @@ mod test_dumping_value_to_cli_command {
     fn test_value_is_converted_to_cmd_ok_when_is_array() {
         let v: Value = serde_json::from_str(r#"{ "arg": ["a", "b", "c"] }"#).unwrap();
         assert_eq!(v.dump_as_cli(), r#"--arg "a" "b" "c""#);
+    }
+
+    #[test]
+    fn test_value_is_empty_when_arg_is_false() {
+        let v: Value = serde_json::from_str(r#"{ "arg": false }"#).unwrap();
+        assert_eq!(v.dump_as_cli(), r#""#);
     }
 }
