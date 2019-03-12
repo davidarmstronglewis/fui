@@ -53,8 +53,8 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
         if clap_app.p.subcommands.len() == 0 {
             let form: FormView = FormView::from(clap_app);
             fui = fui.action(
-                "default",
-                "Auto generated subcommand for compatibility",
+                clap_app.get_name(),
+                "",
                 form,
                 |_| {},
             );
@@ -96,11 +96,46 @@ mod tests {
     }
 
     #[test]
+    fn dump_as_cli_works_when_data_empty() {
+        let app = App::new("virtua_fighter");
+        let fui = Fui::from(&app);
+        let dumped = fui.dump_as_cli();
+        assert_eq!(dumped, vec!["virtua_fighter"]);
+    }
+
+    #[test]
+    fn dump_as_cli_works_when_action_set() {
+        let app = App::new("virtua_fighter")
+            .subcommand(SubCommand::with_name("first"));
+        let mut fui = Fui::from(&app);
+        fui.set_action("first");
+        let dumped = fui.dump_as_cli();
+        assert_eq!(dumped, vec!["virtua_fighter", "first"]);
+    }
+
+    #[test]
+    fn dump_as_cli_works_when_checkbox_in_form() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-switch")
+        );
+        let mut fui = Fui::from(&app);
+        fui.set_action("first");
+        fui.set_form_data(
+            serde_json::from_str(r#"{ "some-switch": true }"#).unwrap()
+        );
+
+        let dumped = fui.dump_as_cli();
+
+        assert_eq!(dumped, vec!["virtua_fighter", "--some-switch"]);
+    }
+
+
+    #[test]
     fn zero_subcmds_creates_default_command_test() {
         let app = App::new("virtua_fighter");
         let fui: Fui = Fui::from(&app);
         let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
-        assert_eq!(found, vec!["default"]);
+        assert_eq!(found, vec!["virtua_fighter"]);
     }
 
     #[test]
@@ -123,7 +158,7 @@ mod tests {
         );
         let fui: Fui = Fui::from(&app);
 
-        let action: &Action = fui.action_by_name("default")
+        let action: &Action = fui.action_by_name("virtua_fighter")
             .expect("expected default action");
         let field = &action.form.as_ref().unwrap().get_fields()[0];
         assert_eq!(field.get_label(), "arg_long");
@@ -141,7 +176,7 @@ mod tests {
         );
         let fui: Fui = Fui::from(&app);
 
-        let action: &Action = fui.action_by_name("default")
+        let action: &Action = fui.action_by_name("virtua_fighter")
             .expect("expected default action");
         let field = &action.form.as_ref().unwrap().get_fields()[0];
 
