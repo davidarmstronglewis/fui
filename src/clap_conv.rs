@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn dump_as_cli_works_when_action_set() {
         let app = App::new("virtua_fighter")
-            .subcommand(SubCommand::with_name("first"));
+            .subcommand(SubCommand::with_name("first").about("help"));
         let mut fui = Fui::from(&app);
         fui.set_action("first");
         let dumped = fui.dump_as_cli();
@@ -114,21 +114,52 @@ mod tests {
     }
 
     #[test]
-    fn dump_as_cli_works_when_checkbox_in_form() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-switch")
-        );
+    fn dump_as_cli_works_when_action_has_help() {
+        let app = App::new("virtua_fighter")
+            .subcommand(SubCommand::with_name("first").about("help"));
         let mut fui = Fui::from(&app);
         fui.set_action("first");
+        let dumped = fui.dump_as_cli();
+        assert_eq!(dumped, vec!["virtua_fighter", "first"]);
+    }
+
+    #[test]
+    fn dump_as_cli_works_when_checkbox_true_in_form() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-switch").long("long").help("arg-help")
+        );
+        let mut fui = Fui::from(&app);
         fui.set_form_data(
-            serde_json::from_str(r#"{ "some-switch": true }"#).unwrap()
+            serde_json::from_str(r#"{ "long": true }"#).unwrap()
         );
 
         let dumped = fui.dump_as_cli();
 
-        assert_eq!(dumped, vec!["virtua_fighter", "--some-switch"]);
+        assert_eq!(dumped, vec!["virtua_fighter", "--long"]);
     }
 
+    #[test]
+    fn dump_as_cli_works_when_checkbox_in_subcommand() {
+        let app = App::new("virtua_fighter")
+            .subcommand(
+                clap::SubCommand::with_name("first")
+                    .about("about")
+                    .arg(
+                        clap::Arg::with_name("subcmd-name")
+                            .long("subcmd-long")
+                            .help("subcmd-help")
+                    )
+            );
+        let mut fui = Fui::from(&app);
+        fui.set_action("first");
+        fui.set_form_data(
+            serde_json::from_str(r#"{ "subcmd-long": true }"#).unwrap()
+        );
+
+        let dumped = fui.dump_as_cli();
+
+        assert_eq!(dumped, vec!["virtua_fighter", "first", "--subcmd-long"]);
+    }
 
     #[test]
     fn zero_subcmds_creates_default_command_test() {
