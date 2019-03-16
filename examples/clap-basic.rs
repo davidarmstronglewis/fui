@@ -11,8 +11,8 @@ fn main() {
     let app = App::new("virtua_fighter")
         .arg(
             Arg::with_name("some-switch")
-                .long("arg_long")
-                .help("arg_help")
+                .long("arg-long")
+                .help("arg-help")
         )
         ;
 

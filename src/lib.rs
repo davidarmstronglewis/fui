@@ -304,10 +304,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     fn dump_as_cli(&self) -> Vec<String> {
         let mut arg_vec = vec![self.name.to_owned()];
         if let Some(a) = self.picked_action.borrow().as_ref() {
-            // FIXME: a picked value should be action name
-            // instead it's "{name}: {help}" O.o
-            let default_action = format!("{}: ", &arg_vec[0]);
-            if *a != default_action {
+            if *a != arg_vec[0] {
                 arg_vec.push(a.to_owned())
             }
         }
@@ -462,6 +459,9 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 )
                 .on_submit(move |c, data| {
                     let value = data.get("action").unwrap().clone();
+                    // here we return name+desc of Action, we can't return only name
+                    // because Action has shorter lifetime then this callback (which is static)
+                    // so thanks to lifetime, they saved me a bug :)
                     *cmd_submit.borrow_mut() = Some(value.as_str().unwrap().to_string());
                     c.quit();
                 })
@@ -487,14 +487,18 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         self.add_forms(&mut c);
         self.add_cmd_picker(&mut c);
 
+        let mut action_name = "";
         while *self.form_data.borrow() == None {
             c.run();
-            let picked_action = match self.picked_action.borrow().clone() {
+            let action_with_desc = match self.picked_action.borrow().clone() {
                 Some(v) => v,
                 None => return None,
             };
-            self.top_form_by_action_name(&mut c, self.actions.get(&picked_action).unwrap().name);
+            // to get action name we have to extract it from "name: desc"
+            action_name = self.actions.get(&action_with_desc).unwrap().name;
+            self.top_form_by_action_name(&mut c, action_name);
         }
+        *self.picked_action.borrow_mut() = Some(action_name.to_string());
         Some((
             self.picked_action.borrow().clone().unwrap(),
             self.form_data.borrow().clone().unwrap(),

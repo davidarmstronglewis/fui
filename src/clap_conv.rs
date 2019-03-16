@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn dump_as_cli_works_when_action_set() {
         let app = App::new("virtua_fighter")
-            .subcommand(SubCommand::with_name("first").about("help"));
+            .subcommand(SubCommand::with_name("first"));
         let mut fui = Fui::from(&app);
         fui.set_action("first");
         let dumped = fui.dump_as_cli();
@@ -114,13 +114,13 @@ mod tests {
     }
 
     #[test]
-    fn dump_as_cli_works_when_action_has_help() {
-        let app = App::new("virtua_fighter")
-            .subcommand(SubCommand::with_name("first").about("help"));
+    fn dump_as_cli_skips_default_subcommand() {
+        let app_name = "virtua_fighter";
+        let app = App::new(app_name);
         let mut fui = Fui::from(&app);
-        fui.set_action("first");
+        fui.set_action(app_name);
         let dumped = fui.dump_as_cli();
-        assert_eq!(dumped, vec!["virtua_fighter", "first"]);
+        assert_eq!(dumped, vec!["virtua_fighter"]);
     }
 
     #[test]
