@@ -172,7 +172,7 @@ impl<'action> Action<'action> {
     }
 }
 
-fn value2array(value: Value) -> Vec<String> {
+fn value2array(value: &Value) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     if let Value::Object(map) = value {
         for (key, val) in map {
@@ -196,10 +196,9 @@ fn value2array(value: Value) -> Vec<String> {
                         }
                     }
                 },
-                Value::Object(inner_map) => {
+                Value::Object(_) => {
                     result.push(format!("{}", key));
-                    let v = Value::from(inner_map);
-                    let mut found = value2array(v);
+                    let mut found = value2array(&val);
                     result.append(&mut found);
                 }
                 _ => (),
@@ -346,7 +345,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             }
         }
         if let Some(f) = self.form_data.borrow().as_ref() {
-            arg_vec.push(f.dump_as_cli());
+            arg_vec.append(&mut value2array(&f));
         }
         arg_vec
     }
@@ -762,7 +761,7 @@ mod cli_args_tese {
     #[test]
     fn test_value_empty_object_is_converted_to_empty_array() {
         let v: Value = serde_json::from_str(r#"{}"#).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = Vec::new();
         assert_eq!(found, expected);
     }
@@ -770,7 +769,7 @@ mod cli_args_tese {
     #[test]
     fn test_value_object_with_bool_false_is_converted_to_empty_array() {
         let v: Value = serde_json::from_str(r#"{"arg": false}"#).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = Vec::new();
         assert_eq!(found, expected);
     }
@@ -778,7 +777,7 @@ mod cli_args_tese {
     #[test]
     fn test_value_object_with_bool_true_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": true}"#).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec!["--arg".to_string()];
         assert_eq!(found, expected);
     }
@@ -786,7 +785,7 @@ mod cli_args_tese {
     #[test]
     fn test_value_object_with_numerical_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": 5}"#).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec!["--arg".to_string(), "5".to_string()];
         assert_eq!(found, expected);
     }
@@ -794,7 +793,7 @@ mod cli_args_tese {
     #[test]
     fn test_value_object_with_string_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": "text"}"#).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec!["--arg".to_string(), "text".to_string()];
         assert_eq!(found, expected);
     }
@@ -802,7 +801,7 @@ mod cli_args_tese {
     #[test]
     fn test_value_object_with_array_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": ["a", "b", "c"]}"#).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec![
             "--arg", "a", "b", "c"
         ].iter().map(|x| x.to_string()).collect();
@@ -814,7 +813,7 @@ mod cli_args_tese {
         let v: Value = serde_json::from_str(
             r#"{"subcmd": {}}"#
         ).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec!["subcmd".into()];
         assert_eq!(found, expected);
     }
@@ -824,7 +823,7 @@ mod cli_args_tese {
         let v: Value = serde_json::from_str(
             r#"{"subcmd": {"arg": "text"}}"#
         ).unwrap();
-        let found: Vec<String> = value2array(v);
+        let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec![
             "subcmd", "--arg", "text",
         ].iter().map(|x| x.to_string()).collect();
