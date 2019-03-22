@@ -5,8 +5,10 @@
 use Fui;
 use clap;
 use clap::ArgSettings;
-use fields::{Checkbox, Text};
+use fields::{Autocomplete, Checkbox, Multiselect, Text};
 use form::FormView;
+use feeders::DirItems;
+use validators::Required;
 
 fn show_warn(msg: &'static str) {
     // TODO: find a better way for warning users
@@ -18,6 +20,33 @@ fn show_warn(msg: &'static str) {
 impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
+        // TODO: flag & option loops are mostly copy & paste so make it DRY
+        for option in clap_app.p.opts.iter() {
+            if option.b.blacklist.is_some() {
+                show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
+            }
+            if option.b.requires.is_some() {
+                show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
+            }
+            // TODO: improve by allowing short + help?
+            let long = option.s.long
+                .expect(&format!("Arg {:?} must have long name", option.b.name));
+            let help = option.b.help
+                .expect(&format!("Arg {:?} must have help", option.b.name));
+            if option.b.settings.is_set(ArgSettings::Multiple) {
+                let mut field = Multiselect::new(long, DirItems::new()).help(help);
+                if option.b.settings.is_set(ArgSettings::Required) {
+                    field = field.validator(Required);
+                }
+                form = form.field(field)
+            } else {
+                let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+                if option.b.settings.is_set(ArgSettings::Required) {
+                    field = field.validator(Required);
+                }
+                form = form.field(field)
+            }
+        }
         for flag in clap_app.p.flags.iter() {
             if flag.b.blacklist.is_some() {
                 show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
@@ -87,6 +116,7 @@ mod tests {
             .about("Does awesome things")
             .author("Akria Yuki")
             .version("1.0");
+
         let fui: Fui = Fui::from(&app);
 
         assert_eq!(app.get_name(), fui.get_name());
@@ -99,7 +129,9 @@ mod tests {
     fn dump_as_cli_works_when_data_empty() {
         let app = App::new("virtua_fighter");
         let fui = Fui::from(&app);
+
         let dumped = fui.dump_as_cli();
+
         assert_eq!(dumped, vec!["virtua_fighter"]);
     }
 
@@ -109,7 +141,9 @@ mod tests {
             .subcommand(SubCommand::with_name("first"));
         let mut fui = Fui::from(&app);
         fui.set_action("first");
+
         let dumped = fui.dump_as_cli();
+
         assert_eq!(dumped, vec!["virtua_fighter", "first"]);
     }
 
@@ -119,7 +153,9 @@ mod tests {
         let app = App::new(app_name);
         let mut fui = Fui::from(&app);
         fui.set_action(app_name);
+
         let dumped = fui.dump_as_cli();
+
         assert_eq!(dumped, vec!["virtua_fighter"]);
     }
 
@@ -165,7 +201,9 @@ mod tests {
     fn zero_subcmds_creates_default_command_test() {
         let app = App::new("virtua_fighter");
         let fui: Fui = Fui::from(&app);
+
         let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
+
         assert_eq!(found, vec!["virtua_fighter"]);
     }
 
@@ -174,9 +212,10 @@ mod tests {
         let app = App::new("virtua_fighter")
             .subcommand(SubCommand::with_name("first"))
             .subcommand(SubCommand::with_name("second"));
-
         let fui: Fui = Fui::from(&app);
+
         let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
+
         assert_eq!(found, vec!["first", "second"]);
     }
 
@@ -191,7 +230,9 @@ mod tests {
 
         let action: &Action = fui.action_by_name("virtua_fighter")
             .expect("expected default action");
+
         let field = &action.form.as_ref().unwrap().get_fields()[0];
+
         assert_eq!(field.get_label(), "arg_long");
         assert_eq!(field.get_help(), "arg_help");
         //TODO: assert checkbox if possible
@@ -206,13 +247,76 @@ mod tests {
                 .multiple(true)
         );
         let fui: Fui = Fui::from(&app);
-
         let action: &Action = fui.action_by_name("virtua_fighter")
             .expect("expected default action");
+
         let field = &action.form.as_ref().unwrap().get_fields()[0];
 
         assert_eq!(field.get_label(), "arg_long");
         assert_eq!(field.get_help(), "arg_help");
         //TODO: assert text if possible
+    }
+}
+
+
+#[cfg(test)]
+mod option_args {
+    use Action;
+    use clap::{App, Arg};
+    use super::*;
+
+    #[test]
+    fn dump_as_cli_works_for_single_option() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("arg-name")
+                .takes_value(true)
+                .long("long")
+                .help("help")
+        );
+        let mut fui = Fui::from(&app);
+        fui.set_form_data(
+            serde_json::from_str(r#"{ "long": "some-value" }"#).unwrap()
+        );
+
+        let dumped = fui.dump_as_cli();
+
+        assert_eq!(dumped, vec!["virtua_fighter", "--long", "some-value"]);
+    }
+
+    #[test]
+    fn field_respects_attribute_required_for_single_option() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-option")
+                .takes_value(true)
+                .long("arg-long")
+                .help("help")
+                .required(true)
+        );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui.action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.is_required(), true);
+    }
+
+    #[test]
+    fn field_respects_attribute_required_for_multi_option() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-option")
+                .takes_value(true)
+                .long("arg-long")
+                .help("help")
+                .required(true)
+                .multiple(true)
+        );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui.action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.is_required(), true);
     }
 }
