@@ -88,4 +88,8 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String {
         args.value_of(&self.label).unwrap_or("").to_string()
     }
+
+    fn is_required(&self) -> bool {
+        self.is_required()
+    }
 }
