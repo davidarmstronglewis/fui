@@ -100,6 +100,8 @@ pub trait FormField {
     ///
     /// [clap::App]: ../../clap/struct.ArgMatches.html
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
+    /// Checks if Field is required
+    fn is_required(&self) -> bool;
 }
 
 fn format_annotation(label: &str, help: &str) -> String {

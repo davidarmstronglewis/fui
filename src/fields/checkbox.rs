@@ -86,6 +86,10 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
         };
         v.to_string()
     }
+
+    fn is_required(&self) -> bool {
+        self.is_required()
+    }
 }
 
 impl<W: WidgetManager> fields::Field<W, bool> {

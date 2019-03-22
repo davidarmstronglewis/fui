@@ -117,6 +117,9 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
             .unwrap_or(clap::Values::default());
         values.collect::<Vec<&str>>().join(VALUE_SEP)
     }
+    fn is_required(&self) -> bool {
+        self.is_required()
+    }
 }
 
 impl<W: WidgetManager> Field<W, Vec<String>> {
