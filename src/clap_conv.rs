@@ -160,6 +160,21 @@ mod tests {
     }
 
     #[test]
+    fn dump_as_cli_works_when_checkbox_false_in_form() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-switch").long("long").help("arg-help")
+        );
+        let mut fui = Fui::from(&app);
+        fui.set_form_data(
+            serde_json::from_str(r#"{ "long": false }"#).unwrap()
+        );
+
+        let dumped = fui.dump_as_cli();
+
+        assert_eq!(dumped, vec!["virtua_fighter"]);
+    }
+
+    #[test]
     fn dump_as_cli_works_when_checkbox_true_in_form() {
         let app = App::new("virtua_fighter").arg(
             Arg::with_name("some-switch").long("long").help("arg-help")
