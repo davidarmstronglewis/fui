@@ -186,13 +186,13 @@ fn value2array(value: &Value) -> Vec<String> {
                 },
                 Value::String(s) => {
                     result.push(format!("--{}", key));
-                    result.push(format!("{}", s));
+                    result.push(format!("\"{}\"", s));
                 },
                 Value::Array(vals) => {
                     result.push(format!("--{}", key));
                     for v in vals {
                         if v.is_string() {
-                            result.push(v.as_str().unwrap().into());
+                            result.push(format!("{}", v));
                         }
                     }
                 },
@@ -214,33 +214,7 @@ trait DumpAsCli {
 
 impl DumpAsCli for Value {
     fn dump_as_cli(&self) -> String {
-        if self.is_object() {
-            let cmd = self
-                .as_object()
-                .unwrap()
-                .iter()
-                .map({
-                    |(k, v)| match *v {
-                        Value::Bool(true) => format!("--{}", k),
-                        Value::String(ref s) => format!("--{} \"{}\"", k, s),
-                        Value::Number(ref n) => format!("--{} {}", k, n),
-                        Value::Array(ref v) => {
-                            let args = v
-                                .iter()
-                                .map(|vv| format!("{}", vv))
-                                .collect::<Vec<String>>()
-                                .join(" ");
-                            format!("--{} {}", k, args)
-                        }
-                        _ => "".to_string(),
-                    }
-                })
-                .collect::<Vec<String>>()
-                .join(" ");
-            cmd
-        } else {
-            "".to_string()
-        }
+        return value2array(&self).join(" ");
     }
 }
 
@@ -732,7 +706,7 @@ mod test_date_getting_from_program_args {
 }
 
 #[cfg(test)]
-mod test_dumping_value_to_cli_command {
+mod dump_as_cli {
     use super::*;
 
     #[test]
@@ -794,7 +768,7 @@ mod value2array_tests {
     fn test_value_object_with_string_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": "text"}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg".to_string(), "text".to_string()];
+        let expected: Vec<String> = vec!["--arg".to_string(), "\"text\"".to_string()];
         assert_eq!(found, expected);
     }
 
@@ -803,7 +777,7 @@ mod value2array_tests {
         let v: Value = serde_json::from_str(r#"{"arg": ["a", "b", "c"]}"#).unwrap();
         let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec![
-            "--arg", "a", "b", "c"
+            "--arg", "\"a\"", "\"b\"", "\"c\""
         ].iter().map(|x| x.to_string()).collect();
         assert_eq!(found, expected);
     }
@@ -825,7 +799,7 @@ mod value2array_tests {
         ).unwrap();
         let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec![
-            "subcmd", "--arg", "text",
+            "subcmd", "--arg", "\"text\"",
         ].iter().map(|x| x.to_string()).collect();
         assert_eq!(found, expected);
     }

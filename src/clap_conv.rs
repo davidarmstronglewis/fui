@@ -295,7 +295,7 @@ mod option_args {
 
         let dumped = fui.dump_as_cli();
 
-        assert_eq!(dumped, vec!["virtua_fighter", "--long", "some-value"]);
+        assert_eq!(dumped, vec!["virtua_fighter", "--long", "\"some-value\""]);
     }
 
     #[test]
