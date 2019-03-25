@@ -755,7 +755,7 @@ mod test_dumping_value_to_cli_command {
 }
 
 #[cfg(test)]
-mod cli_args_tese {
+mod value2array_tests {
     use super::*;
 
     #[test]
