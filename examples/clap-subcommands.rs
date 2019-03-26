@@ -9,8 +9,7 @@ use std::env;
 fn main() {
     let app = clap::App::new("program")
         .subcommand(
-            clap::SubCommand::with_name("simple-subcmd")
-                .about("Does something subcommandish")
+            clap::SubCommand::with_name("simple-subcmd").about("Does something subcommandish"),
         )
         .subcommand(
             clap::SubCommand::with_name("subcmd-with-arg")
@@ -18,10 +17,9 @@ fn main() {
                 .arg(
                     clap::Arg::with_name("subcmd-arg-name")
                         .long("subcmd-arg-long")
-                        .help("Help for subcmd-arg")
-                )
-        )
-        ;
+                        .help("Help for subcmd-arg"),
+                ),
+        );
 
     let mut _arg_vec: Vec<String> = env::args().collect();
     if _arg_vec.len() <= 1 {
