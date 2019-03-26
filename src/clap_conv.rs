@@ -2,13 +2,13 @@
 //! This is an EXPERIMENTAL feature on very early stage.
 //!
 
-use Fui;
 use clap;
 use clap::ArgSettings;
+use feeders::DirItems;
 use fields::{Autocomplete, Checkbox, Multiselect, Text};
 use form::FormView;
-use feeders::DirItems;
 use validators::Required;
+use Fui;
 
 fn show_warn(msg: &'static str) {
     // TODO: find a better way for warning users
@@ -29,9 +29,13 @@ impl<'a> From<&'a clap::App<'_, '_>> for FormView {
                 show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
             }
             // TODO: improve by allowing short + help?
-            let long = option.s.long
+            let long = option
+                .s
+                .long
                 .expect(&format!("Arg {:?} must have long name", option.b.name));
-            let help = option.b.help
+            let help = option
+                .b
+                .help
                 .expect(&format!("Arg {:?} must have help", option.b.name));
             if option.b.settings.is_set(ArgSettings::Multiple) {
                 let mut field = Multiselect::new(long, DirItems::new()).help(help);
@@ -55,9 +59,13 @@ impl<'a> From<&'a clap::App<'_, '_>> for FormView {
                 show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
             }
             // TODO: improve by allowing short + help?
-            let long = flag.s.long
+            let long = flag
+                .s
+                .long
                 .expect(&format!("Arg {:?} must have long name", flag.b.name));
-            let help = flag.b.help
+            let help = flag
+                .b
+                .help
                 .expect(&format!("Arg {:?} must have help", flag.b.name));
             if flag.b.settings.is_set(ArgSettings::Multiple) {
                 // TODO: add validator for a positive integer
@@ -81,13 +89,7 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
 
         if clap_app.p.subcommands.len() == 0 {
             let form: FormView = FormView::from(clap_app);
-            fui = fui.action(
-                clap_app.get_name(),
-                "",
-                form,
-                |_| {},
-            );
-
+            fui = fui.action(clap_app.get_name(), "", form, |_| {});
         } else {
             for subcmd in clap_app.p.subcommands.iter() {
                 let form: FormView = FormView::from(subcmd);
@@ -107,8 +109,8 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use Action;
     use clap::{App, Arg, SubCommand};
+    use Action;
 
     #[test]
     fn app_meta_data_test() {
@@ -137,8 +139,7 @@ mod tests {
 
     #[test]
     fn dump_as_cli_works_when_action_set() {
-        let app = App::new("virtua_fighter")
-            .subcommand(SubCommand::with_name("first"));
+        let app = App::new("virtua_fighter").subcommand(SubCommand::with_name("first"));
         let mut fui = Fui::from(&app);
         fui.set_action("first");
 
@@ -161,13 +162,10 @@ mod tests {
 
     #[test]
     fn dump_as_cli_works_when_checkbox_false_in_form() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-switch").long("long").help("arg-help")
-        );
+        let app = App::new("virtua_fighter")
+            .arg(Arg::with_name("some-switch").long("long").help("arg-help"));
         let mut fui = Fui::from(&app);
-        fui.set_form_data(
-            serde_json::from_str(r#"{ "long": false }"#).unwrap()
-        );
+        fui.set_form_data(serde_json::from_str(r#"{ "long": false }"#).unwrap());
 
         let dumped = fui.dump_as_cli();
 
@@ -176,13 +174,10 @@ mod tests {
 
     #[test]
     fn dump_as_cli_works_when_checkbox_true_in_form() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-switch").long("long").help("arg-help")
-        );
+        let app = App::new("virtua_fighter")
+            .arg(Arg::with_name("some-switch").long("long").help("arg-help"));
         let mut fui = Fui::from(&app);
-        fui.set_form_data(
-            serde_json::from_str(r#"{ "long": true }"#).unwrap()
-        );
+        fui.set_form_data(serde_json::from_str(r#"{ "long": true }"#).unwrap());
 
         let dumped = fui.dump_as_cli();
 
@@ -191,21 +186,16 @@ mod tests {
 
     #[test]
     fn dump_as_cli_works_when_checkbox_in_subcommand() {
-        let app = App::new("virtua_fighter")
-            .subcommand(
-                clap::SubCommand::with_name("first")
-                    .about("about")
-                    .arg(
-                        clap::Arg::with_name("subcmd-name")
-                            .long("subcmd-long")
-                            .help("subcmd-help")
-                    )
-            );
+        let app = App::new("virtua_fighter").subcommand(
+            clap::SubCommand::with_name("first").about("about").arg(
+                clap::Arg::with_name("subcmd-name")
+                    .long("subcmd-long")
+                    .help("subcmd-help"),
+            ),
+        );
         let mut fui = Fui::from(&app);
         fui.set_action("first");
-        fui.set_form_data(
-            serde_json::from_str(r#"{ "subcmd-long": true }"#).unwrap()
-        );
+        fui.set_form_data(serde_json::from_str(r#"{ "subcmd-long": true }"#).unwrap());
 
         let dumped = fui.dump_as_cli();
 
@@ -239,11 +229,12 @@ mod tests {
         let app = App::new("virtua_fighter").arg(
             Arg::with_name("some-switch")
                 .long("arg_long")
-                .help("arg_help")
+                .help("arg_help"),
         );
         let fui: Fui = Fui::from(&app);
 
-        let action: &Action = fui.action_by_name("virtua_fighter")
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
             .expect("expected default action");
 
         let field = &action.form.as_ref().unwrap().get_fields()[0];
@@ -259,10 +250,11 @@ mod tests {
             Arg::with_name("some-switch")
                 .long("arg_long")
                 .help("arg_help")
-                .multiple(true)
+                .multiple(true),
         );
         let fui: Fui = Fui::from(&app);
-        let action: &Action = fui.action_by_name("virtua_fighter")
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
             .expect("expected default action");
 
         let field = &action.form.as_ref().unwrap().get_fields()[0];
@@ -273,12 +265,11 @@ mod tests {
     }
 }
 
-
 #[cfg(test)]
 mod option_args {
-    use Action;
-    use clap::{App, Arg};
     use super::*;
+    use clap::{App, Arg};
+    use Action;
 
     #[test]
     fn dump_as_cli_works_for_single_option() {
@@ -286,12 +277,10 @@ mod option_args {
             Arg::with_name("arg-name")
                 .takes_value(true)
                 .long("long")
-                .help("help")
+                .help("help"),
         );
         let mut fui = Fui::from(&app);
-        fui.set_form_data(
-            serde_json::from_str(r#"{ "long": "some-value" }"#).unwrap()
-        );
+        fui.set_form_data(serde_json::from_str(r#"{ "long": "some-value" }"#).unwrap());
 
         let dumped = fui.dump_as_cli();
 
@@ -305,10 +294,11 @@ mod option_args {
                 .takes_value(true)
                 .long("arg-long")
                 .help("help")
-                .required(true)
+                .required(true),
         );
         let fui: Fui = Fui::from(&app);
-        let action: &Action = fui.action_by_name("virtua_fighter")
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
             .expect("expected default action");
 
         let field = &action.form.as_ref().unwrap().get_fields()[0];
@@ -324,10 +314,11 @@ mod option_args {
                 .long("arg-long")
                 .help("help")
                 .required(true)
-                .multiple(true)
+                .multiple(true),
         );
         let fui: Fui = Fui::from(&app);
-        let action: &Action = fui.action_by_name("virtua_fighter")
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
             .expect("expected default action");
 
         let field = &action.form.as_ref().unwrap().get_fields()[0];

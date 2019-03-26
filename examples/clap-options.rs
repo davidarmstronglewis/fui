@@ -3,8 +3,8 @@
 extern crate clap;
 extern crate fui;
 
-use fui::Fui;
 use clap::{App, Arg};
+use fui::Fui;
 use std::env;
 
 fn main() {
@@ -13,16 +13,15 @@ fn main() {
             Arg::with_name("option")
                 .takes_value(true)
                 .long("option-long")
-                .help("option-help")
+                .help("option-help"),
         )
         .arg(
             Arg::with_name("option-multi")
                 .takes_value(true)
                 .long("option-multi-long")
                 .help("option-multi-help")
-                .multiple(true)
-        )
-        ;
+                .multiple(true),
+        );
 
     let mut _arg_vec: Vec<String> = env::args().collect();
     if _arg_vec.len() <= 1 {

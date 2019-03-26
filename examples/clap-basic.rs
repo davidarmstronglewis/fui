@@ -3,18 +3,16 @@
 extern crate clap;
 extern crate fui;
 
-use fui::Fui;
 use clap::{App, Arg};
+use fui::Fui;
 use std::env;
 
 fn main() {
-    let app = App::new("virtua_fighter")
-        .arg(
-            Arg::with_name("some-switch")
-                .long("arg-long")
-                .help("arg-help")
-        )
-        ;
+    let app = App::new("virtua_fighter").arg(
+        Arg::with_name("some-switch")
+            .long("arg-long")
+            .help("arg-help"),
+    );
 
     let mut _arg_vec: Vec<String> = env::args().collect();
     if _arg_vec.len() <= 1 {
