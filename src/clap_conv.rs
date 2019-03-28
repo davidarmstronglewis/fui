@@ -200,8 +200,11 @@ mod switches {
 
     #[test]
     fn dump_as_cli_works_when_checkbox_false_in_form() {
-        let app = clap::App::new("virtua_fighter")
-            .arg(clap::Arg::with_name("some-switch").long("long").help("arg-help"));
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-switch")
+                .long("long")
+                .help("arg-help"),
+        );
         let mut fui = Fui::from(&app);
         fui.set_form_data(serde_json::from_str(r#"{ "long": false }"#).unwrap());
 
@@ -212,8 +215,11 @@ mod switches {
 
     #[test]
     fn dump_as_cli_works_when_checkbox_true_in_form() {
-        let app = clap::App::new("virtua_fighter")
-            .arg(clap::Arg::with_name("some-switch").long("long").help("arg-help"));
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-switch")
+                .long("long")
+                .help("arg-help"),
+        );
         let mut fui = Fui::from(&app);
         fui.set_form_data(serde_json::from_str(r#"{ "long": true }"#).unwrap());
 
@@ -350,11 +356,8 @@ mod positional_args {
 
     #[test]
     fn dump_as_cli_works_for_single_arg() {
-        let app = clap::App::new("virtua_fighter").arg(
-            clap::Arg::with_name("arg-name")
-                .help("help")
-                .index(1)
-        );
+        let app = clap::App::new("virtua_fighter")
+            .arg(clap::Arg::with_name("arg-name").help("help").index(1));
         let mut fui = Fui::from(&app);
         fui.set_form_data(serde_json::from_str(r#"{ "0": "some-value" }"#).unwrap());
 
@@ -446,4 +449,3 @@ mod subcommands {
         assert_eq!(found, vec!["first", "second"]);
     }
 }
-
