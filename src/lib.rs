@@ -176,20 +176,27 @@ fn value2array(value: &Value) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
     if let Value::Object(map) = value {
         for (key, val) in map {
+            let key_is_digit = key.parse::<u32>().is_ok();
             match val {
                 Value::Bool(true) => {
                     result.push(format!("--{}", key));
                 }
                 Value::Number(n) => {
-                    result.push(format!("--{}", key));
+                    if !key_is_digit {
+                        result.push(format!("--{}", key));
+                    }
                     result.push(format!("{}", n));
                 }
                 Value::String(s) => {
-                    result.push(format!("--{}", key));
+                    if !key_is_digit {
+                        result.push(format!("--{}", key));
+                    }
                     result.push(format!("\"{}\"", s));
                 }
                 Value::Array(vals) => {
-                    result.push(format!("--{}", key));
+                    if !key_is_digit {
+                        result.push(format!("--{}", key));
+                    }
                     for v in vals {
                         if v.is_string() {
                             result.push(format!("{}", v));
@@ -794,6 +801,17 @@ mod value2array_tests {
         let v: Value = serde_json::from_str(r#"{"subcmd": {"arg": "text"}}"#).unwrap();
         let found: Vec<String> = value2array(&v);
         let expected: Vec<String> = vec!["subcmd", "--arg", "\"text\""]
+            .iter()
+            .map(|x| x.to_string())
+            .collect();
+        assert_eq!(found, expected);
+    }
+
+    #[test]
+    fn test_order_is_respected_for_positional_values() {
+        let v: Value = serde_json::from_str(r#"{"2": "b", "1": "a", "3": "c"}"#).unwrap();
+        let found: Vec<String> = value2array(&v);
+        let expected: Vec<String> = vec!["\"a\"", "\"b\"", "\"c\""]
             .iter()
             .map(|x| x.to_string())
             .collect();

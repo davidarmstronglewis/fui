@@ -17,11 +17,45 @@ fn show_warn(msg: &'static str) {
     panic!(msg);
 }
 
+// TODO:: handle default for option & positional
 impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
-        // TODO: flag & option loops are mostly copy & paste so make it DRY
+        // TODO: flag & option & positional loops are mostly copy & paste so make it DRY
+        // using AnyArg can help, see
+        // https://github.com/clap-rs/clap/blob/9d31e63b28eff81ad35239268a38ce3b2d2d635d/src/args/any_arg.rs#L12
+        for (idx, pos) in clap_app.p.positionals.iter() {
+            //println!("POSITIONAL {:?} {:?}", idx, pos.b);
+            if pos.b.blacklist.is_some() {
+                show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
+            }
+            if pos.b.requires.is_some() {
+                show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
+            }
+            // TODO: improve by allowing short + help?
+            // TODO: add attr. shown_field_name and use pos.b.name for it
+            // because now integers are shown as field name
+            let long = format!("{}", idx);
+            let help = pos
+                .b
+                .help
+                .expect(&format!("Arg {:?} must have help", pos.b.name));
+            if pos.b.settings.is_set(ArgSettings::Multiple) {
+                let mut field = Multiselect::new(long, DirItems::new()).help(help);
+                if pos.b.settings.is_set(ArgSettings::Required) {
+                    field = field.validator(Required);
+                }
+                form = form.field(field)
+            } else {
+                let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+                if pos.b.settings.is_set(ArgSettings::Required) {
+                    field = field.validator(Required);
+                }
+                form = form.field(field)
+            }
+        }
         for option in clap_app.p.opts.iter() {
+            //println!("OPTION {:?}", option.b);
             if option.b.blacklist.is_some() {
                 show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
             }
@@ -52,6 +86,7 @@ impl<'a> From<&'a clap::App<'_, '_>> for FormView {
             }
         }
         for flag in clap_app.p.flags.iter() {
+            //println!("FLAG {:?}", flag.b);
             if flag.b.blacklist.is_some() {
                 show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
             }
@@ -106,6 +141,7 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
     }
 }
 
+// TODO:: rename it to basic
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -160,6 +196,7 @@ mod tests {
         assert_eq!(dumped, vec!["virtua_fighter"]);
     }
 
+    //TODO:: mv to switch_args tests
     #[test]
     fn dump_as_cli_works_when_checkbox_false_in_form() {
         let app = App::new("virtua_fighter")
@@ -172,6 +209,7 @@ mod tests {
         assert_eq!(dumped, vec!["virtua_fighter"]);
     }
 
+    //TODO:: mv to switch_args tests
     #[test]
     fn dump_as_cli_works_when_checkbox_true_in_form() {
         let app = App::new("virtua_fighter")
@@ -184,6 +222,7 @@ mod tests {
         assert_eq!(dumped, vec!["virtua_fighter", "--long"]);
     }
 
+    //TODO:: mv to subcommand tests
     #[test]
     fn dump_as_cli_works_when_checkbox_in_subcommand() {
         let app = App::new("virtua_fighter").subcommand(
@@ -202,6 +241,7 @@ mod tests {
         assert_eq!(dumped, vec!["virtua_fighter", "first", "--subcmd-long"]);
     }
 
+    //TODO:: mv to subcommand tests
     #[test]
     fn zero_subcmds_creates_default_command_test() {
         let app = App::new("virtua_fighter");
@@ -212,6 +252,7 @@ mod tests {
         assert_eq!(found, vec!["virtua_fighter"]);
     }
 
+    //TODO:: mv to subcommand tests
     #[test]
     fn n_subcmds_creates_n_command_test() {
         let app = App::new("virtua_fighter")
@@ -224,6 +265,7 @@ mod tests {
         assert_eq!(found, vec!["first", "second"]);
     }
 
+    //TODO:: mv to switch_args tests
     #[test]
     fn basic_switch_is_converted_to_checkbox_test() {
         let app = App::new("virtua_fighter").arg(
@@ -244,6 +286,7 @@ mod tests {
         //TODO: assert checkbox if possible
     }
 
+    //TODO:: mv to switch_args tests
     #[test]
     fn switch_multi_is_converted_to_text() {
         let app = App::new("virtua_fighter").arg(
@@ -272,7 +315,7 @@ mod option_args {
     use Action;
 
     #[test]
-    fn dump_as_cli_works_for_single_option() {
+    fn dump_as_cli_works_for_single_arg() {
         let app = App::new("virtua_fighter").arg(
             Arg::with_name("arg-name")
                 .takes_value(true)
@@ -288,7 +331,7 @@ mod option_args {
     }
 
     #[test]
-    fn field_respects_attribute_required_for_single_option() {
+    fn field_respects_attribute_required_for_single_arg() {
         let app = App::new("virtua_fighter").arg(
             Arg::with_name("some-option")
                 .takes_value(true)
@@ -307,12 +350,90 @@ mod option_args {
     }
 
     #[test]
-    fn field_respects_attribute_required_for_multi_option() {
+    fn field_respects_attribute_required_for_multi_args() {
         let app = App::new("virtua_fighter").arg(
             Arg::with_name("some-option")
                 .takes_value(true)
                 .long("arg-long")
                 .help("help")
+                .required(true)
+                .multiple(true),
+        );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.is_required(), true);
+    }
+}
+
+#[cfg(test)]
+mod positional_args {
+    use super::*;
+    use clap::{App, Arg};
+    use Action;
+
+    #[test]
+    fn name_is_numeric() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("some-switch")
+                .index(1)
+                .help("arg_help"),
+        );
+        let fui: Fui = Fui::from(&app);
+
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.get_label(), "1");
+        assert_eq!(field.get_help(), "arg_help");
+        //TODO: assert autocomplete if possible
+    }
+
+    #[test]
+    fn dump_as_cli_works_for_single_arg() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("arg-name")
+                .help("help")
+                .index(1)
+        );
+        let mut fui = Fui::from(&app);
+        fui.set_form_data(serde_json::from_str(r#"{ "0": "some-value" }"#).unwrap());
+
+        let dumped = fui.dump_as_cli();
+
+        assert_eq!(dumped, vec!["virtua_fighter", "\"some-value\""]);
+    }
+
+    #[test]
+    fn field_respects_attribute_required_for_single_arg() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("arg-name")
+                .help("help")
+                .index(1)
+                .required(true),
+        );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.is_required(), true);
+    }
+
+    #[test]
+    fn field_respects_attribute_required_for_multi_args() {
+        let app = App::new("virtua_fighter").arg(
+            Arg::with_name("arg-name")
+                .help("help")
+                .index(1)
                 .required(true)
                 .multiple(true),
         );
