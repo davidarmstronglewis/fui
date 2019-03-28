@@ -141,16 +141,13 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
     }
 }
 
-// TODO:: rename it to basic
 #[cfg(test)]
-mod tests {
+mod basic {
     use super::*;
-    use clap::{App, Arg, SubCommand};
-    use Action;
 
     #[test]
     fn app_meta_data_test() {
-        let app = App::new("virtua_fighter")
+        let app = clap::App::new("virtua_fighter")
             .about("Does awesome things")
             .author("Akria Yuki")
             .version("1.0");
@@ -165,7 +162,7 @@ mod tests {
 
     #[test]
     fn dump_as_cli_works_when_data_empty() {
-        let app = App::new("virtua_fighter");
+        let app = clap::App::new("virtua_fighter");
         let fui = Fui::from(&app);
 
         let dumped = fui.dump_as_cli();
@@ -175,7 +172,7 @@ mod tests {
 
     #[test]
     fn dump_as_cli_works_when_action_set() {
-        let app = App::new("virtua_fighter").subcommand(SubCommand::with_name("first"));
+        let app = clap::App::new("virtua_fighter").subcommand(clap::SubCommand::with_name("first"));
         let mut fui = Fui::from(&app);
         fui.set_action("first");
 
@@ -187,7 +184,7 @@ mod tests {
     #[test]
     fn dump_as_cli_skips_default_subcommand() {
         let app_name = "virtua_fighter";
-        let app = App::new(app_name);
+        let app = clap::App::new(app_name);
         let mut fui = Fui::from(&app);
         fui.set_action(app_name);
 
@@ -195,12 +192,16 @@ mod tests {
 
         assert_eq!(dumped, vec!["virtua_fighter"]);
     }
+}
 
-    //TODO:: mv to switch_args tests
+mod switches {
+    use super::*;
+    use Action;
+
     #[test]
     fn dump_as_cli_works_when_checkbox_false_in_form() {
-        let app = App::new("virtua_fighter")
-            .arg(Arg::with_name("some-switch").long("long").help("arg-help"));
+        let app = clap::App::new("virtua_fighter")
+            .arg(clap::Arg::with_name("some-switch").long("long").help("arg-help"));
         let mut fui = Fui::from(&app);
         fui.set_form_data(serde_json::from_str(r#"{ "long": false }"#).unwrap());
 
@@ -209,11 +210,10 @@ mod tests {
         assert_eq!(dumped, vec!["virtua_fighter"]);
     }
 
-    //TODO:: mv to switch_args tests
     #[test]
     fn dump_as_cli_works_when_checkbox_true_in_form() {
-        let app = App::new("virtua_fighter")
-            .arg(Arg::with_name("some-switch").long("long").help("arg-help"));
+        let app = clap::App::new("virtua_fighter")
+            .arg(clap::Arg::with_name("some-switch").long("long").help("arg-help"));
         let mut fui = Fui::from(&app);
         fui.set_form_data(serde_json::from_str(r#"{ "long": true }"#).unwrap());
 
@@ -222,54 +222,10 @@ mod tests {
         assert_eq!(dumped, vec!["virtua_fighter", "--long"]);
     }
 
-    //TODO:: mv to subcommand tests
-    #[test]
-    fn dump_as_cli_works_when_checkbox_in_subcommand() {
-        let app = App::new("virtua_fighter").subcommand(
-            clap::SubCommand::with_name("first").about("about").arg(
-                clap::Arg::with_name("subcmd-name")
-                    .long("subcmd-long")
-                    .help("subcmd-help"),
-            ),
-        );
-        let mut fui = Fui::from(&app);
-        fui.set_action("first");
-        fui.set_form_data(serde_json::from_str(r#"{ "subcmd-long": true }"#).unwrap());
-
-        let dumped = fui.dump_as_cli();
-
-        assert_eq!(dumped, vec!["virtua_fighter", "first", "--subcmd-long"]);
-    }
-
-    //TODO:: mv to subcommand tests
-    #[test]
-    fn zero_subcmds_creates_default_command_test() {
-        let app = App::new("virtua_fighter");
-        let fui: Fui = Fui::from(&app);
-
-        let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
-
-        assert_eq!(found, vec!["virtua_fighter"]);
-    }
-
-    //TODO:: mv to subcommand tests
-    #[test]
-    fn n_subcmds_creates_n_command_test() {
-        let app = App::new("virtua_fighter")
-            .subcommand(SubCommand::with_name("first"))
-            .subcommand(SubCommand::with_name("second"));
-        let fui: Fui = Fui::from(&app);
-
-        let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
-
-        assert_eq!(found, vec!["first", "second"]);
-    }
-
-    //TODO:: mv to switch_args tests
     #[test]
     fn basic_switch_is_converted_to_checkbox_test() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-switch")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-switch")
                 .long("arg_long")
                 .help("arg_help"),
         );
@@ -286,11 +242,10 @@ mod tests {
         //TODO: assert checkbox if possible
     }
 
-    //TODO:: mv to switch_args tests
     #[test]
     fn switch_multi_is_converted_to_text() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-switch")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-switch")
                 .long("arg_long")
                 .help("arg_help")
                 .multiple(true),
@@ -311,13 +266,12 @@ mod tests {
 #[cfg(test)]
 mod option_args {
     use super::*;
-    use clap::{App, Arg};
     use Action;
 
     #[test]
     fn dump_as_cli_works_for_single_arg() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("arg-name")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("arg-name")
                 .takes_value(true)
                 .long("long")
                 .help("help"),
@@ -332,8 +286,8 @@ mod option_args {
 
     #[test]
     fn field_respects_attribute_required_for_single_arg() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-option")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-option")
                 .takes_value(true)
                 .long("arg-long")
                 .help("help")
@@ -351,8 +305,8 @@ mod option_args {
 
     #[test]
     fn field_respects_attribute_required_for_multi_args() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-option")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-option")
                 .takes_value(true)
                 .long("arg-long")
                 .help("help")
@@ -373,13 +327,12 @@ mod option_args {
 #[cfg(test)]
 mod positional_args {
     use super::*;
-    use clap::{App, Arg};
     use Action;
 
     #[test]
     fn name_is_numeric() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("some-switch")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("some-switch")
                 .index(1)
                 .help("arg_help"),
         );
@@ -397,8 +350,8 @@ mod positional_args {
 
     #[test]
     fn dump_as_cli_works_for_single_arg() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("arg-name")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("arg-name")
                 .help("help")
                 .index(1)
         );
@@ -412,8 +365,8 @@ mod positional_args {
 
     #[test]
     fn field_respects_attribute_required_for_single_arg() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("arg-name")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("arg-name")
                 .help("help")
                 .index(1)
                 .required(true),
@@ -430,8 +383,8 @@ mod positional_args {
 
     #[test]
     fn field_respects_attribute_required_for_multi_args() {
-        let app = App::new("virtua_fighter").arg(
-            Arg::with_name("arg-name")
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("arg-name")
                 .help("help")
                 .index(1)
                 .required(true)
@@ -447,3 +400,50 @@ mod positional_args {
         assert_eq!(field.is_required(), true);
     }
 }
+
+#[cfg(test)]
+mod subcommands {
+    use super::*;
+    use clap;
+
+    #[test]
+    fn dump_as_cli_works_when_checkbox_in_subcommand() {
+        let app = clap::App::new("virtua_fighter").subcommand(
+            clap::SubCommand::with_name("first").about("about").arg(
+                clap::Arg::with_name("subcmd-name")
+                    .long("subcmd-long")
+                    .help("subcmd-help"),
+            ),
+        );
+        let mut fui = Fui::from(&app);
+        fui.set_action("first");
+        fui.set_form_data(serde_json::from_str(r#"{ "subcmd-long": true }"#).unwrap());
+
+        let dumped = fui.dump_as_cli();
+
+        assert_eq!(dumped, vec!["virtua_fighter", "first", "--subcmd-long"]);
+    }
+
+    #[test]
+    fn zero_subcmds_creates_default_command_test() {
+        let app = clap::App::new("virtua_fighter");
+        let fui: Fui = Fui::from(&app);
+
+        let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
+
+        assert_eq!(found, vec!["virtua_fighter"]);
+    }
+
+    #[test]
+    fn n_subcmds_creates_n_command_test() {
+        let app = clap::App::new("virtua_fighter")
+            .subcommand(clap::SubCommand::with_name("first"))
+            .subcommand(clap::SubCommand::with_name("second"));
+        let fui: Fui = Fui::from(&app);
+
+        let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
+
+        assert_eq!(found, vec!["first", "second"]);
+    }
+}
+
