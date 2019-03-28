@@ -9,11 +9,7 @@ use std::env;
 
 fn main() {
     let app = App::new("virtua_fighter")
-        .arg(
-            Arg::with_name("arg-name")
-                .help("help")
-                .index(1)
-        )
+        .arg(Arg::with_name("arg-name").help("help").index(1))
         .arg(
             Arg::with_name("option-multi")
                 .help("option-multi-help")
