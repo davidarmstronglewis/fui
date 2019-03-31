@@ -1,5 +1,9 @@
 # Changelog
 
+## next
+
+* Add `fui::skip_single_action`
+
 
 ## 0.9.0
 

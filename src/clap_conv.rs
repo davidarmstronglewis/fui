@@ -118,7 +118,8 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
         let mut fui = Fui::new(clap_app.get_name())
             .about(clap_app.p.meta.about.unwrap_or(""))
             .author(clap_app.p.meta.author.unwrap_or(""))
-            .version(clap_app.p.meta.version.unwrap_or(""));
+            .version(clap_app.p.meta.version.unwrap_or(""))
+            .skip_single_action(true);
 
         //println!("{:?}", clap_app.p.flags);
 

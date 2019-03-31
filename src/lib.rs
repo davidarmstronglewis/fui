@@ -235,6 +235,8 @@ pub struct Fui<'attrs, 'action> {
     theme: &'attrs str,
     picked_action: Rc<RefCell<Option<String>>>,
     form_data: Rc<RefCell<Option<Value>>>,
+    /// if true skips action selection in tui, auto choosing the only action
+    skip_single_action: bool,
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions.
@@ -248,6 +250,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             theme: &DEFAULT_THEME,
             picked_action: Rc::new(RefCell::new(None)),
             form_data: Rc::new(RefCell::new(None)),
+            skip_single_action: false,
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`.
@@ -504,14 +507,24 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
         let mut action_name = "";
         while *self.form_data.borrow() == None {
-            c.run();
-            let action_with_desc = match self.picked_action.borrow().clone() {
-                Some(v) => v,
-                None => return None,
+            if self.skip_single_action && self.actions.len() < 2 {
+                // auto choose action - skip action picker
+                let action_with_desc = self.actions.keys().nth(0).unwrap().clone();
+                // to get action name we have to extract it from "name: desc"
+                action_name = self.actions.get(&action_with_desc).unwrap().name;
+                self.top_form_by_action_name(&mut c, action_name);
+                c.run();
+            } else {
+                // let user pick action - show action picker
+                c.run();
+                let action_with_desc = match self.picked_action.borrow().clone() {
+                    Some(v) => v,
+                    None => return None,
+                };
+                // to get action name we have to extract it from "name: desc"
+                action_name = self.actions.get(&action_with_desc).unwrap().name;
+                self.top_form_by_action_name(&mut c, action_name);
             };
-            // to get action name we have to extract it from "name: desc"
-            action_name = self.actions.get(&action_with_desc).unwrap().name;
-            self.top_form_by_action_name(&mut c, action_name);
         }
         *self.picked_action.borrow_mut() = Some(action_name.to_string());
         Some((
@@ -612,6 +625,12 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// [Cursive's themes]: ../cursive/theme/index.html#themes
     pub fn theme(mut self, theme: &'attrs str) -> Self {
         self.theme = theme;
+        self
+    }
+
+    /// Sets value for skip_single_action
+    pub fn skip_single_action(mut self, skip: bool) -> Self {
+        self.skip_single_action = skip;
         self
     }
 }
