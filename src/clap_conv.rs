@@ -119,7 +119,8 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
             .about(clap_app.p.meta.about.unwrap_or(""))
             .author(clap_app.p.meta.author.unwrap_or(""))
             .version(clap_app.p.meta.version.unwrap_or(""))
-            .skip_single_action(true);
+            .skip_single_action(true)
+            .skip_empty_form(true);
 
         //println!("{:?}", clap_app.p.flags);
 
