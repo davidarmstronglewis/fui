@@ -3,6 +3,7 @@
 ## next
 
 * Add `fui::skip_single_action`
+* Add `fui::skip_empty_form`
 
 
 ## 0.9.0

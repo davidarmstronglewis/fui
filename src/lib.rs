@@ -123,6 +123,7 @@ extern crate cursive as _cursive;
 extern crate dirs;
 extern crate glob;
 extern crate regex;
+#[macro_use]
 extern crate serde_json;
 
 // TODO: make it public when ready
@@ -228,6 +229,8 @@ impl DumpAsCli for Value {
 /// Top level building block of `fui` crate.
 pub struct Fui<'attrs, 'action> {
     actions: BTreeMap<String, Action<'action>>,
+    /// stores fields count for each form
+    form_fields_count: BTreeMap<&'action str, u8>,
     name: &'attrs str,
     version: &'attrs str,
     about: &'attrs str,
@@ -237,12 +240,15 @@ pub struct Fui<'attrs, 'action> {
     form_data: Rc<RefCell<Option<Value>>>,
     /// if true skips action selection in tui, auto choosing the only action
     skip_single_action: bool,
+    /// if true form step is skipped when form has no fields
+    skip_empty_form: bool,
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions.
     pub fn new(program_name: &'attrs str) -> Self {
         Fui {
             actions: BTreeMap::new(),
+            form_fields_count: BTreeMap::new(),
             name: program_name,
             version: "",
             about: "",
@@ -251,6 +257,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             picked_action: Rc::new(RefCell::new(None)),
             form_data: Rc::new(RefCell::new(None)),
             skip_single_action: false,
+            skip_empty_form: false,
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`.
@@ -289,6 +296,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 item.cmd_with_desc()
             );
         }
+        // it's used when deciding to skip empty forms
+        // normally you'd get it from a form, but it's so simple so this walkaround
+        let fields_count = action_details.form.as_ref().unwrap().get_fields().len();
+        self.form_fields_count.insert(action_details.name, fields_count as u8);
         self.actions
             .insert(action_details.cmd_with_desc(), action_details);
         self
@@ -497,6 +508,18 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         stack.move_layer(from, LayerPosition::FromFront(0));
     }
 
+    fn has_form_fields(&self, action_name: &str) -> bool {
+        if let Some(v) = self.form_fields_count.get(&action_name) {
+            if *v == 0 as u8 {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        // Error would be better;
+        return false;
+    }
+
     fn input_from_tui(&mut self) -> Option<(String, Value)> {
         // Cursive blocks stdout, unless it's dropped, so
         // deattached cursive here to allow destroying it at the end of this fn
@@ -512,6 +535,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 let action_with_desc = self.actions.keys().nth(0).unwrap().clone();
                 // to get action name we have to extract it from "name: desc"
                 action_name = self.actions.get(&action_with_desc).unwrap().name;
+                if !self.has_form_fields(&action_name) {
+                    *self.form_data.borrow_mut() = Some(json!({}));
+                    break;
+                }
                 self.top_form_by_action_name(&mut c, action_name);
                 c.run();
             } else {
@@ -523,6 +550,10 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
                 };
                 // to get action name we have to extract it from "name: desc"
                 action_name = self.actions.get(&action_with_desc).unwrap().name;
+                if !self.has_form_fields(&action_name) {
+                    *self.form_data.borrow_mut() = Some(json!({}));
+                    break;
+                }
                 self.top_form_by_action_name(&mut c, action_name);
             };
         }
@@ -631,6 +662,12 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Sets value for skip_single_action
     pub fn skip_single_action(mut self, skip: bool) -> Self {
         self.skip_single_action = skip;
+        self
+    }
+
+    /// Sets value for skip_empty_form
+    pub fn skip_empty_form(mut self, skip: bool) -> Self {
+        self.skip_empty_form = skip;
         self
     }
 }
