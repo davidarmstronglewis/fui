@@ -45,7 +45,12 @@ impl FormView {
     }
 
     /// Appends `field` to field list.
-    pub fn field<V: FormField + 'static>(mut self, field: V) -> Self {
+    pub fn field<V: FormField + 'static>(self, field: V) -> Self {
+        self.boxed_field(Box::new(field))
+    }
+
+    /// Appends boxed `field` to field list.
+    pub fn boxed_field(mut self, field: Box<FormField>) -> Self {
         let widget = field.build_widget();
         self.view
             .get_content_mut()
@@ -53,7 +58,7 @@ impl FormView {
             .downcast_mut::<LinearLayout>()
             .unwrap()
             .add_child(widget);
-        self.fields.push(Box::new(field));
+        self.fields.push(field);
         self
     }
 
