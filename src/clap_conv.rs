@@ -5,7 +5,7 @@
 use clap;
 use clap::ArgSettings;
 use feeders::DirItems;
-use fields::{Autocomplete, Checkbox, Multiselect, Text};
+use fields::{Autocomplete, Checkbox, FormField, Multiselect, Text};
 use form::FormView;
 use validators::Required;
 use Fui;
@@ -17,97 +17,109 @@ fn show_warn(msg: &'static str) {
     panic!(msg);
 }
 
+fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
+    let mut field_list = Vec::new();
+    // TODO: flag & option & positional loops are mostly copy & paste so make it DRY
+    // using AnyArg can help, see
+    // https://github.com/clap-rs/clap/blob/9d31e63b28eff81ad35239268a38ce3b2d2d635d/src/args/any_arg.rs#L12
+    for (idx, pos) in clap_app.p.positionals.iter() {
+        //println!("POSITIONAL {:?} {:?}\n", idx, pos.b);
+        if pos.b.blacklist.is_some() {
+            show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
+        }
+        if pos.b.requires.is_some() {
+            show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
+        }
+        // TODO: improve by allowing short + help?
+        // TODO: add attr. shown_field_name and use pos.b.name for it
+        // because now integers are shown as field name
+        let long = format!("{}", idx);
+        let help = pos
+            .b
+            .help
+            .expect(&format!("Arg {:?} must have help", pos.b.name));
+        if pos.b.settings.is_set(ArgSettings::Multiple) {
+            let mut field = Multiselect::new(long, DirItems::new()).help(help);
+            if pos.b.settings.is_set(ArgSettings::Required) {
+                field = field.validator(Required);
+            }
+            field_list.push(Box::new(field) as Box<FormField>);
+        } else {
+            let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+            if pos.b.settings.is_set(ArgSettings::Required) {
+                field = field.validator(Required);
+            }
+            field_list.push(Box::new(field) as Box<FormField>);
+        }
+    }
+    for option in clap_app.p.opts.iter() {
+        //println!("OPTION {:?}\n", option.b);
+        if option.b.blacklist.is_some() {
+            show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
+        }
+        if option.b.requires.is_some() {
+            show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
+        }
+        // TODO: improve by allowing short + help?
+        let long = option
+            .s
+            .long
+            .expect(&format!("Arg {:?} must have long name", option.b.name));
+        let help = option
+            .b
+            .help
+            .expect(&format!("Arg {:?} must have help", option.b.name));
+        if option.b.settings.is_set(ArgSettings::Multiple) {
+            let mut field = Multiselect::new(long, DirItems::new()).help(help);
+            if option.b.settings.is_set(ArgSettings::Required) {
+                field = field.validator(Required);
+            }
+            field_list.push(Box::new(field) as Box<FormField>);
+        } else {
+            let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+            if option.b.settings.is_set(ArgSettings::Required) {
+                field = field.validator(Required);
+            }
+            field_list.push(Box::new(field) as Box<FormField>);
+        }
+    }
+    for flag in clap_app.p.flags.iter() {
+        //println!("FLAG {:?}\n", flag.b);
+        if flag.b.blacklist.is_some() {
+            show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
+        }
+        if flag.b.requires.is_some() {
+            show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
+        }
+        // TODO: improve by allowing short + help?
+        let long = flag
+            .s
+            .long
+            .expect(&format!("Arg {:?} must have long name", flag.b.name));
+        let help = flag
+            .b
+            .help
+            .expect(&format!("Arg {:?} must have help", flag.b.name));
+        if flag.b.settings.is_set(ArgSettings::Multiple) {
+            // TODO: add validator for a positive integer
+            let field = Text::new(long).help(help);
+            field_list.push(Box::new(field) as Box<FormField>);
+        } else {
+            let field = Checkbox::new(long).help(help);
+            field_list.push(Box::new(field) as Box<FormField>);
+        }
+    }
+    field_list
+}
+
 // TODO:: handle default for option & positional
 impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
-        // TODO: flag & option & positional loops are mostly copy & paste so make it DRY
-        // using AnyArg can help, see
-        // https://github.com/clap-rs/clap/blob/9d31e63b28eff81ad35239268a38ce3b2d2d635d/src/args/any_arg.rs#L12
-        for (idx, pos) in clap_app.p.positionals.iter() {
-            //println!("POSITIONAL {:?} {:?}", idx, pos.b);
-            if pos.b.blacklist.is_some() {
-                show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
-            }
-            if pos.b.requires.is_some() {
-                show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
-            }
-            // TODO: improve by allowing short + help?
-            // TODO: add attr. shown_field_name and use pos.b.name for it
-            // because now integers are shown as field name
-            let long = format!("{}", idx);
-            let help = pos
-                .b
-                .help
-                .expect(&format!("Arg {:?} must have help", pos.b.name));
-            if pos.b.settings.is_set(ArgSettings::Multiple) {
-                let mut field = Multiselect::new(long, DirItems::new()).help(help);
-                if pos.b.settings.is_set(ArgSettings::Required) {
-                    field = field.validator(Required);
-                }
-                form = form.field(field)
-            } else {
-                let mut field = Autocomplete::new(long, DirItems::new()).help(help);
-                if pos.b.settings.is_set(ArgSettings::Required) {
-                    field = field.validator(Required);
-                }
-                form = form.field(field)
-            }
-        }
-        for option in clap_app.p.opts.iter() {
-            //println!("OPTION {:?}", option.b);
-            if option.b.blacklist.is_some() {
-                show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
-            }
-            if option.b.requires.is_some() {
-                show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
-            }
-            // TODO: improve by allowing short + help?
-            let long = option
-                .s
-                .long
-                .expect(&format!("Arg {:?} must have long name", option.b.name));
-            let help = option
-                .b
-                .help
-                .expect(&format!("Arg {:?} must have help", option.b.name));
-            if option.b.settings.is_set(ArgSettings::Multiple) {
-                let mut field = Multiselect::new(long, DirItems::new()).help(help);
-                if option.b.settings.is_set(ArgSettings::Required) {
-                    field = field.validator(Required);
-                }
-                form = form.field(field)
-            } else {
-                let mut field = Autocomplete::new(long, DirItems::new()).help(help);
-                if option.b.settings.is_set(ArgSettings::Required) {
-                    field = field.validator(Required);
-                }
-                form = form.field(field)
-            }
-        }
-        for flag in clap_app.p.flags.iter() {
-            //println!("FLAG {:?}", flag.b);
-            if flag.b.blacklist.is_some() {
-                show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
-            }
-            if flag.b.requires.is_some() {
-                show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
-            }
-            // TODO: improve by allowing short + help?
-            let long = flag
-                .s
-                .long
-                .expect(&format!("Arg {:?} must have long name", flag.b.name));
-            let help = flag
-                .b
-                .help
-                .expect(&format!("Arg {:?} must have help", flag.b.name));
-            if flag.b.settings.is_set(ArgSettings::Multiple) {
-                // TODO: add validator for a positive integer
-                form = form.field(Text::new(long).help(help));
-            } else {
-                form = form.field(Checkbox::new(long).help(help));
-            }
+        //TODO::: DRY it
+        let mut fields = clap_app2fields(clap_app);
+        for field in fields.drain(..) {
+            form = form.boxed_field(field);
         }
         form
     }
@@ -129,7 +141,14 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
             fui = fui.action(clap_app.get_name(), "", form, |_| {});
         } else {
             for subcmd in clap_app.p.subcommands.iter() {
-                let form: FormView = FormView::from(subcmd);
+                let mut form: FormView = FormView::from(subcmd);
+
+                //TODO::: DRY it
+                let mut global_fields = clap_app2fields(clap_app);
+                for field in global_fields.drain(..) {
+                    form = form.boxed_field(field);
+                }
+
                 fui = fui.action(
                     subcmd.get_name(),
                     subcmd.p.meta.about.unwrap_or(""),
@@ -409,6 +428,7 @@ mod positional_args {
 #[cfg(test)]
 mod subcommands {
     use super::*;
+    use Action;
     use clap;
 
     #[test]
@@ -449,5 +469,70 @@ mod subcommands {
         let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
 
         assert_eq!(found, vec!["first", "second"]);
+    }
+
+    #[test]
+    fn global_flag_is_propagated_to_subcommand() {
+        let app = clap::App::new("virtua_fighter").arg(
+                clap::Arg::with_name("global-flag-name")
+                    .long("global-flag-long")
+                    .help("global-flag-help")
+                    .global(true),
+            ).subcommand(
+                clap::SubCommand::with_name("first")
+            );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("first")
+            .expect("expected action second exists");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.get_label(), "global-flag-long");
+        assert_eq!(field.get_help(), "global-flag-help");
+    }
+
+    #[test]
+    fn global_positional_is_propagated_to_subcommand() {
+        let app = clap::App::new("virtua_fighter").arg(
+                clap::Arg::with_name("global-positional-name")
+                    .index(1)
+                    .long("global-positional-long")
+                    .help("global-positional-help")
+                    .global(true),
+            ).subcommand(
+                clap::SubCommand::with_name("first")
+            );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("first")
+            .expect("expected action second exists");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.get_label(), "1");
+        assert_eq!(field.get_help(), "global-positional-help");
+    }
+
+    #[test]
+    fn global_option_is_propagated_to_subcommand() {
+        let app = clap::App::new("virtua_fighter").arg(
+                clap::Arg::with_name("global-option-name")
+                    .long("global-option-long")
+                    .help("global-option-help")
+                    .takes_value(true)
+                    .global(true),
+            ).subcommand(
+                clap::SubCommand::with_name("first")
+            );
+        let fui: Fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("first")
+            .expect("expected action second exists");
+
+        let field = &action.form.as_ref().unwrap().get_fields()[0];
+
+        assert_eq!(field.get_label(), "global-option-long");
+        assert_eq!(field.get_help(), "global-option-help");
     }
 }
