@@ -17,6 +17,21 @@ fn show_warn(msg: &'static str) {
     panic!(msg);
 }
 
+/// Splits `value` on `delimeter`
+fn split_values(value: &str, delimeter: char) -> Vec<String> {
+    let new_delimeter = if value.contains("\"") {
+        format!("\"{}", delimeter)
+    } else {
+        delimeter.to_string()
+    };
+    let found = value.split(new_delimeter.as_str())
+        .map(|i| {
+            i.trim_matches('"').to_string()
+        })
+        .collect();
+    found
+}
+
 fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
     let mut field_list = Vec::new();
     // TODO: flag & option & positional loops are mostly copy & paste so make it DRY
@@ -71,15 +86,35 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             .expect(&format!("Arg {:?} must have help", option.b.name));
         if option.b.settings.is_set(ArgSettings::Multiple) {
             let mut field = Multiselect::new(long, DirItems::new()).help(help);
+
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
+
+            if let Some(v) = option.v.default_val {
+                // handle default value here
+                if let Some(s) = v.to_str() {
+                    let delimeter = option.v.val_delim.unwrap_or(' ');
+                    let values = split_values(s, delimeter);
+                    field = field.initial::<String>(values);
+                }
+            }
+
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
             let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
+
+            if let Some(v) = option.v.default_val {
+                // handle default value here
+                if let Some(s) = v.to_str() {
+                    field = field.initial::<String>(s.to_string());
+                }
+            }
+
             field_list.push(Box::new(field) as Box<FormField>);
         }
     }
@@ -349,6 +384,43 @@ mod option_args {
 
         assert_eq!(field.is_required(), true);
     }
+
+    #[test]
+    fn field_uses_default_value_if_present() {
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("option")
+                .takes_value(true)
+                .long("long")
+                .help("help")
+                .default_value("default")
+        );
+        let fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let initial = action.form.as_ref().unwrap().get_field_value("long");
+        assert_eq!(initial, Some("default".to_string()));
+    }
+
+    #[test]
+    fn field_uses_default_value_if_present_and_multiple() {
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("option")
+                .takes_value(true)
+                .long("long")
+                .help("help")
+                .default_value("default")
+                .multiple(true)
+        );
+        let fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let initial = action.form.as_ref().unwrap().get_field_value("long");
+        assert_eq!(initial, Some("default".to_string()));
+    }
 }
 
 #[cfg(test)]
@@ -534,5 +606,24 @@ mod subcommands {
 
         assert_eq!(field.get_label(), "global-option-long");
         assert_eq!(field.get_help(), "global-option-help");
+    }
+}
+
+#[cfg(test)]
+mod split_values {
+    use super::*;
+
+    #[test]
+    fn split_values_works() {
+        assert_eq!(split_values("abc", ' '), vec!["abc"]);
+        assert_eq!(split_values("a b", ' '), vec!["a", "b"]);
+        assert_eq!(split_values("\"a b\"", ' '), vec!["a b"]);
+        assert_eq!(split_values(
+            "\"a b\" \"c d\"", ' '), vec!["a b", "c d"]
+        );
+        // TODO:: fix this case
+        //assert_eq!(
+        //    split_values("\"a b\" c d", ' '), vec!["a b", "c", "d"]
+        //);
     }
 }

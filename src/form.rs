@@ -231,6 +231,29 @@ impl FormView {
     pub fn get_fields(&self) -> &[Box<FormField>] {
         &self.fields
     }
+
+    /// Gets value of a field with label equal to `field_label`
+    ///
+    /// Returns first occurence when a label occures more than once.
+    pub fn get_field_value(&self, field_label: &str) -> Option<String> {
+        let mut value = None;
+        for (idx, form_field) in self.fields.iter().enumerate() {
+            if form_field.get_label() == field_label {
+                let view = self
+                    .view
+                    .get_content()
+                    .as_any()
+                    .downcast_ref::<LinearLayout>()
+                    .unwrap()
+                    .get_child(idx)
+                    .unwrap();
+                let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
+                value = Some(form_field.get_widget_manager().get_value(view_box));
+                break
+            }
+        }
+        value
+    }
 }
 
 impl ViewWrapper for FormView {
