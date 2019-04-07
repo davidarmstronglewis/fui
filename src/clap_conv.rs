@@ -58,9 +58,29 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
+
+            //TODO:: DRY IT
+            if let Some(v) = pos.v.default_val {
+                // handle default value here
+                if let Some(s) = v.to_str() {
+                    let delimeter = pos.v.val_delim.unwrap_or(' ');
+                    let values = split_values(s, delimeter);
+                    field = field.initial::<String>(values);
+                }
+            }
+
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
             let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+
+            //TODO:: DRY IT
+            if let Some(v) = pos.v.default_val {
+                // handle default value here
+                if let Some(s) = v.to_str() {
+                    field = field.initial::<String>(s.to_string());
+                }
+            }
+
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
@@ -91,6 +111,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
                 field = field.validator(Required);
             }
 
+            //TODO:: DRY IT
             if let Some(v) = option.v.default_val {
                 // handle default value here
                 if let Some(s) = v.to_str() {
@@ -108,6 +129,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
                 field = field.validator(Required);
             }
 
+            //TODO:: DRY IT
             if let Some(v) = option.v.default_val {
                 // handle default value here
                 if let Some(s) = v.to_str() {
@@ -151,7 +173,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
 impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
-        //TODO::: DRY it
+        //TODO:: DRY it
         let mut fields = clap_app2fields(clap_app);
         for field in fields.drain(..) {
             form = form.boxed_field(field);
@@ -178,7 +200,7 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
             for subcmd in clap_app.p.subcommands.iter() {
                 let mut form: FormView = FormView::from(subcmd);
 
-                //TODO::: DRY it
+                //TODO:: DRY it
                 let mut global_fields = clap_app2fields(clap_app);
                 for field in global_fields.drain(..) {
                     form = form.boxed_field(field);
@@ -494,6 +516,41 @@ mod positional_args {
         let field = &action.form.as_ref().unwrap().get_fields()[0];
 
         assert_eq!(field.is_required(), true);
+    }
+
+    #[test]
+    fn field_uses_default_value_if_present() {
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("option")
+                .help("help")
+                .index(0)
+                .default_value("default")
+        );
+        let fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let initial = action.form.as_ref().unwrap().get_field_value("0");
+        assert_eq!(initial, Some("default".to_string()));
+    }
+
+    #[test]
+    fn field_uses_default_value_if_present_and_multiple() {
+        let app = clap::App::new("virtua_fighter").arg(
+            clap::Arg::with_name("option")
+                .help("help")
+                .index(0)
+                .default_value("default")
+                .multiple(true)
+        );
+        let fui = Fui::from(&app);
+        let action: &Action = fui
+            .action_by_name("virtua_fighter")
+            .expect("expected default action");
+
+        let initial = action.form.as_ref().unwrap().get_field_value("0");
+        assert_eq!(initial, Some("default".to_string()));
     }
 }
 
