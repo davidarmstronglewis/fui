@@ -249,7 +249,7 @@ impl FormView {
                     .unwrap();
                 let view_box: &ViewBox = (*view).as_any().downcast_ref().unwrap();
                 value = Some(form_field.get_widget_manager().get_value(view_box));
-                break
+                break;
             }
         }
         value

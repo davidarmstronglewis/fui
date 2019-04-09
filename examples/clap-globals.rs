@@ -7,20 +7,23 @@ use fui::Fui;
 use std::env;
 
 fn main() {
-    let app = clap::App::new("program").arg(
+    let app = clap::App::new("program")
+        .arg(
             clap::Arg::with_name("global-arg-name")
                 .long("global-arg-long")
                 .help("global-arg-help"),
-        ).subcommand(
+        )
+        .subcommand(
             clap::SubCommand::with_name("simple-subcmd").about("Does something subcommandish"),
-        ).subcommand(
+        )
+        .subcommand(
             clap::SubCommand::with_name("subcmd-with-arg")
-            .about("Does something subcommandish but with arg")
-            .arg(
-                clap::Arg::with_name("subcmd-arg-name")
-                    .long("subcmd-arg-long")
-                    .help("subcmd-arg-help"),
-            ),
+                .about("Does something subcommandish but with arg")
+                .arg(
+                    clap::Arg::with_name("subcmd-arg-name")
+                        .long("subcmd-arg-long")
+                        .help("subcmd-arg-help"),
+                ),
         );
 
     let mut _arg_vec: Vec<String> = env::args().collect();

@@ -24,10 +24,9 @@ fn split_values(value: &str, delimeter: char) -> Vec<String> {
     } else {
         delimeter.to_string()
     };
-    let found = value.split(new_delimeter.as_str())
-        .map(|i| {
-            i.trim_matches('"').to_string()
-        })
+    let found = value
+        .split(new_delimeter.as_str())
+        .map(|i| i.trim_matches('"').to_string())
         .collect();
     found
 }
@@ -274,8 +273,8 @@ mod basic {
 
 #[cfg(test)]
 mod switches {
-    use Fui;
     use Action;
+    use Fui;
 
     #[test]
     fn dump_as_cli_works_when_checkbox_false_in_form() {
@@ -415,7 +414,7 @@ mod option_args {
                 .takes_value(true)
                 .long("long")
                 .help("help")
-                .default_value("default")
+                .default_value("default"),
         );
         let fui = Fui::from(&app);
         let action: &Action = fui
@@ -434,7 +433,7 @@ mod option_args {
                 .long("long")
                 .help("help")
                 .default_value("default")
-                .multiple(true)
+                .multiple(true),
         );
         let fui = Fui::from(&app);
         let action: &Action = fui
@@ -525,7 +524,7 @@ mod positional_args {
             clap::Arg::with_name("option")
                 .help("help")
                 .index(0)
-                .default_value("default")
+                .default_value("default"),
         );
         let fui = Fui::from(&app);
         let action: &Action = fui
@@ -543,7 +542,7 @@ mod positional_args {
                 .help("help")
                 .index(0)
                 .default_value("default")
-                .multiple(true)
+                .multiple(true),
         );
         let fui = Fui::from(&app);
         let action: &Action = fui
@@ -558,8 +557,8 @@ mod positional_args {
 #[cfg(test)]
 mod subcommands {
     use super::*;
-    use Action;
     use clap;
+    use Action;
 
     #[test]
     fn dump_as_cli_works_when_checkbox_in_subcommand() {
@@ -603,14 +602,14 @@ mod subcommands {
 
     #[test]
     fn global_flag_is_propagated_to_subcommand() {
-        let app = clap::App::new("virtua_fighter").arg(
+        let app = clap::App::new("virtua_fighter")
+            .arg(
                 clap::Arg::with_name("global-flag-name")
                     .long("global-flag-long")
                     .help("global-flag-help")
                     .global(true),
-            ).subcommand(
-                clap::SubCommand::with_name("first")
-            );
+            )
+            .subcommand(clap::SubCommand::with_name("first"));
         let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("first")
@@ -624,15 +623,15 @@ mod subcommands {
 
     #[test]
     fn global_positional_is_propagated_to_subcommand() {
-        let app = clap::App::new("virtua_fighter").arg(
+        let app = clap::App::new("virtua_fighter")
+            .arg(
                 clap::Arg::with_name("global-positional-name")
                     .index(1)
                     .long("global-positional-long")
                     .help("global-positional-help")
                     .global(true),
-            ).subcommand(
-                clap::SubCommand::with_name("first")
-            );
+            )
+            .subcommand(clap::SubCommand::with_name("first"));
         let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("first")
@@ -646,15 +645,15 @@ mod subcommands {
 
     #[test]
     fn global_option_is_propagated_to_subcommand() {
-        let app = clap::App::new("virtua_fighter").arg(
+        let app = clap::App::new("virtua_fighter")
+            .arg(
                 clap::Arg::with_name("global-option-name")
                     .long("global-option-long")
                     .help("global-option-help")
                     .takes_value(true)
                     .global(true),
-            ).subcommand(
-                clap::SubCommand::with_name("first")
-            );
+            )
+            .subcommand(clap::SubCommand::with_name("first"));
         let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("first")
@@ -676,9 +675,7 @@ mod split_values {
         assert_eq!(split_values("abc", ' '), vec!["abc"]);
         assert_eq!(split_values("a b", ' '), vec!["a", "b"]);
         assert_eq!(split_values("\"a b\"", ' '), vec!["a b"]);
-        assert_eq!(split_values(
-            "\"a b\" \"c d\"", ' '), vec!["a b", "c d"]
-        );
+        assert_eq!(split_values("\"a b\" \"c d\"", ' '), vec!["a b", "c d"]);
         // TODO:: fix this case
         //assert_eq!(
         //    split_values("\"a b\" c d", ' '), vec!["a b", "c", "d"]
