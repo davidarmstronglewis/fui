@@ -14,7 +14,7 @@ fn main() {
             Arg::with_name("pos-default")
                 .help("pos-default-help")
                 .index(2)
-                .default_value("default-value")
+                .default_value("default-value"),
         )
         .arg(
             Arg::with_name("pos-multi")
@@ -27,9 +27,8 @@ fn main() {
                 .help("pos-default-multi-help")
                 .index(4)
                 .multiple(true)
-                .default_value("default1 default2")
-        )
-        ;
+                .default_value("default1 default2"),
+        );
 
     let mut _arg_vec: Vec<String> = env::args().collect();
     if _arg_vec.len() <= 1 {

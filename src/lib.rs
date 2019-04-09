@@ -299,7 +299,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         // it's used when deciding to skip empty forms
         // normally you'd get it from a form, but it's so simple so this walkaround
         let fields_count = action_details.form.as_ref().unwrap().get_fields().len();
-        self.form_fields_count.insert(action_details.name, fields_count as u8);
+        self.form_fields_count
+            .insert(action_details.name, fields_count as u8);
         self.actions
             .insert(action_details.cmd_with_desc(), action_details);
         self
