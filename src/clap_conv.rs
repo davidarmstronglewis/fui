@@ -5,8 +5,10 @@
 use clap;
 use clap::ArgSettings;
 use feeders::DirItems;
-use fields::{Autocomplete, Checkbox, FormField, Multiselect, Text};
+use fields::multiselect::MultiselectManager;
+use fields::{Autocomplete, Checkbox, Field, FormField, Multiselect, Text};
 use form::FormView;
+use std::ffi::OsStr;
 use validators::Required;
 use Fui;
 
@@ -29,6 +31,21 @@ fn split_values(value: &str, delimeter: char) -> Vec<String> {
         .map(|i| i.trim_matches('"').to_string())
         .collect();
     found
+}
+
+fn set_default_values(
+    mut field: Field<MultiselectManager, Vec<String>>,
+    default_value: Option<&OsStr>,
+    delimeter: Option<char>,
+) -> Field<MultiselectManager, Vec<String>> {
+    if let Some(v) = default_value {
+        if let Some(s) = v.to_str() {
+            let delimeter = delimeter.unwrap_or(' ');
+            let values = split_values(s, delimeter);
+            field = field.initial::<String>(values);
+        }
+    }
+    field
 }
 
 fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
@@ -57,17 +74,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
-
-            //TODO:: DRY IT
-            if let Some(v) = pos.v.default_val {
-                // handle default value here
-                if let Some(s) = v.to_str() {
-                    let delimeter = pos.v.val_delim.unwrap_or(' ');
-                    let values = split_values(s, delimeter);
-                    field = field.initial::<String>(values);
-                }
-            }
-
+            field = set_default_values(field, pos.v.default_val, pos.v.val_delim);
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
             let mut field = Autocomplete::new(long, DirItems::new()).help(help);
@@ -109,17 +116,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
-
-            //TODO:: DRY IT
-            if let Some(v) = option.v.default_val {
-                // handle default value here
-                if let Some(s) = v.to_str() {
-                    let delimeter = option.v.val_delim.unwrap_or(' ');
-                    let values = split_values(s, delimeter);
-                    field = field.initial::<String>(values);
-                }
-            }
-
+            field = set_default_values(field, option.v.default_val, option.v.val_delim);
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
             let mut field = Autocomplete::new(long, DirItems::new()).help(help);
