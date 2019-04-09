@@ -309,10 +309,6 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         self.actions.values().find(|a| a.name == name)
     }
 
-    fn actions(&self) -> Vec<&Action> {
-        self.actions.values().collect()
-    }
-
     /// Coordinates flow from action picking to handler running.
     // This must be moving, until FormView implements copy or FormViews are added to cursive once
     // then top layer are switched (instead of current inserting/popping)
@@ -345,12 +341,19 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         arg_vec
     }
 
+    #[cfg(test)]
+    fn actions(&self) -> Vec<&Action> {
+        self.actions.values().collect()
+    }
+
+    #[cfg(test)]
     fn set_action(&mut self, name: &str) {
         if let Some(a) = self.action_by_name(name) {
             *self.picked_action.borrow_mut() = Some(a.name.to_string());
         }
     }
 
+    #[cfg(test)]
     fn set_form_data(&mut self, form_data: Value) {
         *self.form_data.borrow_mut() = Some(form_data);
     }
