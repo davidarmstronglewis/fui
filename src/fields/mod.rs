@@ -8,7 +8,7 @@ use validators::{Required, Validator};
 
 mod autocomplete;
 mod checkbox;
-mod multiselect;
+pub(crate) mod multiselect;
 mod text;
 
 pub use self::autocomplete::Autocomplete;
