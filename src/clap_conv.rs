@@ -230,7 +230,7 @@ mod basic {
             .author("Akria Yuki")
             .version("1.0");
 
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
 
         assert_eq!(app.get_name(), fui.get_name());
         assert_eq!(app.p.meta.about, Some(fui.get_about()));
@@ -272,8 +272,9 @@ mod basic {
     }
 }
 
+#[cfg(test)]
 mod switches {
-    use super::*;
+    use Fui;
     use Action;
 
     #[test]
@@ -313,7 +314,7 @@ mod switches {
                 .long("arg_long")
                 .help("arg_help"),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
 
         let action: &Action = fui
             .action_by_name("virtua_fighter")
@@ -334,7 +335,7 @@ mod switches {
                 .help("arg_help")
                 .multiple(true),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("virtua_fighter")
             .expect("expected default action");
@@ -377,7 +378,7 @@ mod option_args {
                 .help("help")
                 .required(true),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("virtua_fighter")
             .expect("expected default action");
@@ -397,7 +398,7 @@ mod option_args {
                 .required(true)
                 .multiple(true),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("virtua_fighter")
             .expect("expected default action");
@@ -457,7 +458,7 @@ mod positional_args {
                 .index(1)
                 .help("arg_help"),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
 
         let action: &Action = fui
             .action_by_name("virtua_fighter")
@@ -489,7 +490,7 @@ mod positional_args {
                 .index(1)
                 .required(true),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("virtua_fighter")
             .expect("expected default action");
@@ -508,7 +509,7 @@ mod positional_args {
                 .required(true)
                 .multiple(true),
         );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("virtua_fighter")
             .expect("expected default action");
@@ -581,7 +582,7 @@ mod subcommands {
     #[test]
     fn zero_subcmds_creates_default_command_test() {
         let app = clap::App::new("virtua_fighter");
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
 
         let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
 
@@ -593,7 +594,7 @@ mod subcommands {
         let app = clap::App::new("virtua_fighter")
             .subcommand(clap::SubCommand::with_name("first"))
             .subcommand(clap::SubCommand::with_name("second"));
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
 
         let found = fui.actions().iter().map(|a| a.name).collect::<Vec<&str>>();
 
@@ -610,7 +611,7 @@ mod subcommands {
             ).subcommand(
                 clap::SubCommand::with_name("first")
             );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("first")
             .expect("expected action second exists");
@@ -632,7 +633,7 @@ mod subcommands {
             ).subcommand(
                 clap::SubCommand::with_name("first")
             );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("first")
             .expect("expected action second exists");
@@ -654,7 +655,7 @@ mod subcommands {
             ).subcommand(
                 clap::SubCommand::with_name("first")
             );
-        let fui: Fui = Fui::from(&app);
+        let fui = Fui::from(&app);
         let action: &Action = fui
             .action_by_name("first")
             .expect("expected action second exists");
