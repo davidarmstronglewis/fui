@@ -168,15 +168,18 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
     field_list
 }
 
-// TODO:: handle default for option & positional
+fn copy_clap_fields_to_form<'a>(clap_app: &'a clap::App, mut form: FormView) -> FormView {
+    let mut fields = clap_app2fields(clap_app);
+    for field in fields.drain(..) {
+        form = form.boxed_field(field);
+    }
+    form
+}
+
 impl<'a> From<&'a clap::App<'_, '_>> for FormView {
     fn from(clap_app: &'a clap::App) -> Self {
         let mut form = FormView::new();
-        //TODO:: DRY it
-        let mut fields = clap_app2fields(clap_app);
-        for field in fields.drain(..) {
-            form = form.boxed_field(field);
-        }
+        form = copy_clap_fields_to_form(clap_app, form);
         form
     }
 }
@@ -198,13 +201,8 @@ impl<'a> From<&'a clap::App<'_, '_>> for Fui<'a, 'a> {
         } else {
             for subcmd in clap_app.p.subcommands.iter() {
                 let mut form: FormView = FormView::from(subcmd);
-
-                //TODO:: DRY it
-                let mut global_fields = clap_app2fields(clap_app);
-                for field in global_fields.drain(..) {
-                    form = form.boxed_field(field);
-                }
-
+                // copy global fields to form
+                form = copy_clap_fields_to_form(clap_app, form);
                 fui = fui.action(
                     subcmd.get_name(),
                     subcmd.p.meta.about.unwrap_or(""),
