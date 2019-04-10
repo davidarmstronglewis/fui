@@ -6,7 +6,7 @@ use serde_json::value::Value;
 use std::rc::Rc;
 use validators::{Required, Validator};
 
-mod autocomplete;
+pub(crate) mod autocomplete;
 mod checkbox;
 pub(crate) mod multiselect;
 mod text;

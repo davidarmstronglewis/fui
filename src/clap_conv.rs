@@ -5,6 +5,7 @@
 use clap;
 use clap::ArgSettings;
 use feeders::DirItems;
+use fields::autocomplete::AutocompleteManager;
 use fields::multiselect::MultiselectManager;
 use fields::{Autocomplete, Checkbox, Field, FormField, Multiselect, Text};
 use form::FormView;
@@ -33,12 +34,26 @@ fn split_values(value: &str, delimeter: char) -> Vec<String> {
     found
 }
 
-fn set_default_values(
+/// Copies `default` value to `field`
+fn copy_default(
+    mut field: Field<AutocompleteManager, String>,
+    default: Option<&OsStr>,
+) -> Field<AutocompleteManager, String> {
+    if let Some(v) = default {
+        if let Some(s) = v.to_str() {
+            field = field.initial::<String>(s.to_string());
+        }
+    }
+    field
+}
+
+/// Copies multi `default` value to `field`
+fn copy_default_multi(
     mut field: Field<MultiselectManager, Vec<String>>,
-    default_value: Option<&OsStr>,
+    default: Option<&OsStr>,
     delimeter: Option<char>,
 ) -> Field<MultiselectManager, Vec<String>> {
-    if let Some(v) = default_value {
+    if let Some(v) = default {
         if let Some(s) = v.to_str() {
             let delimeter = delimeter.unwrap_or(' ');
             let values = split_values(s, delimeter);
@@ -74,19 +89,11 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
-            field = set_default_values(field, pos.v.default_val, pos.v.val_delim);
+            field = copy_default_multi(field, pos.v.default_val, pos.v.val_delim);
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
             let mut field = Autocomplete::new(long, DirItems::new()).help(help);
-
-            //TODO:: DRY IT
-            if let Some(v) = pos.v.default_val {
-                // handle default value here
-                if let Some(s) = v.to_str() {
-                    field = field.initial::<String>(s.to_string());
-                }
-            }
-
+            field = copy_default(field, pos.v.default_val);
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
@@ -116,23 +123,14 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
-            field = set_default_values(field, option.v.default_val, option.v.val_delim);
+            field = copy_default_multi(field, option.v.default_val, option.v.val_delim);
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
             let mut field = Autocomplete::new(long, DirItems::new()).help(help);
-
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
-
-            //TODO:: DRY IT
-            if let Some(v) = option.v.default_val {
-                // handle default value here
-                if let Some(s) = v.to_str() {
-                    field = field.initial::<String>(s.to_string());
-                }
-            }
-
+            field = copy_default(field, option.v.default_val);
             field_list.push(Box::new(field) as Box<FormField>);
         }
     }
