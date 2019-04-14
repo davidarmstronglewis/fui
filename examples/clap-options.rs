@@ -13,29 +13,18 @@ fn main() {
             Arg::with_name("option")
                 .takes_value(true)
                 .long("option-long")
-                .help("option-help"),
-        )
-        .arg(
-            Arg::with_name("option-default")
-                .takes_value(true)
-                .long("option-default-long")
-                .help("option-default-help")
-                .default_value("default-value"),
+                .help("option-help")
+                .default_value("b")
+                .possible_values(&["a", "b", "c"]),
         )
         .arg(
             Arg::with_name("option-multi")
                 .takes_value(true)
                 .long("option-multi-long")
                 .help("option-multi-help")
+                .default_value("a c")
+                .possible_values(&["a", "b", "c"])
                 .multiple(true),
-        )
-        .arg(
-            Arg::with_name("option-default-multi")
-                .takes_value(true)
-                .long("option-default-multi-long")
-                .help("option-default-multi-help")
-                .multiple(true)
-                .default_value("default1 default2"),
         );
 
     let mut _arg_vec: Vec<String> = env::args().collect();

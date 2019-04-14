@@ -9,25 +9,20 @@ use std::env;
 
 fn main() {
     let app = App::new("virtua_fighter")
-        .arg(Arg::with_name("pos").help("help").index(1))
         .arg(
-            Arg::with_name("pos-default")
-                .help("pos-default-help")
-                .index(2)
-                .default_value("default-value"),
+            Arg::with_name("pos")
+                .index(1)
+                .help("help")
+                .default_value("a")
+                .possible_values(&["a", "b", "c"]),
         )
         .arg(
             Arg::with_name("pos-multi")
+                .index(2)
                 .help("pos-multi-help")
-                .index(3)
+                .default_value("a c")
+                .possible_values(&["a", "b", "c"])
                 .multiple(true),
-        )
-        .arg(
-            Arg::with_name("pos-default-multi")
-                .help("pos-default-multi-help")
-                .index(4)
-                .multiple(true)
-                .default_value("default1 default2"),
         );
 
     let mut _arg_vec: Vec<String> = env::args().collect();
