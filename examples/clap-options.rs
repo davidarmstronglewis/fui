@@ -14,16 +14,16 @@ fn main() {
                 .takes_value(true)
                 .long("option-long")
                 .help("option-help")
-                .default_value("b")
-                .possible_values(&["a", "b", "c"]),
+                .default_value("a")
+                .possible_values(&["a", "a a", "a a a"]),
         )
         .arg(
             Arg::with_name("option-multi")
                 .takes_value(true)
                 .long("option-multi-long")
                 .help("option-multi-help")
-                .default_value("a c")
-                .possible_values(&["a", "b", "c"])
+                .default_value("b")
+                .possible_values(&["b", "b b", "b b b"])
                 .multiple(true),
         );
 

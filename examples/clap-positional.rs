@@ -14,14 +14,14 @@ fn main() {
                 .index(1)
                 .help("help")
                 .default_value("a")
-                .possible_values(&["a", "b", "c"]),
+                .possible_values(&["a", "a a", "a a a"]),
         )
         .arg(
             Arg::with_name("pos-multi")
                 .index(2)
                 .help("pos-multi-help")
-                .default_value("a c")
-                .possible_values(&["a", "b", "c"])
+                .default_value("b")
+                .possible_values(&["b", "b b", "b b b"])
                 .multiple(true),
         );
 
