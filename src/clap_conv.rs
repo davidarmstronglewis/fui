@@ -381,11 +381,11 @@ mod option_args {
                 .help("help"),
         );
         let mut fui = Fui::from(&app);
-        fui.set_form_data(serde_json::from_str(r#"{ "long": "some-value" }"#).unwrap());
+        fui.set_form_data(serde_json::from_str(r#"{ "long": "some value" }"#).unwrap());
 
         let dumped = fui.dump_as_cli();
 
-        assert_eq!(dumped, vec!["virtua_fighter", "--long", "\"some-value\""]);
+        assert_eq!(dumped, vec!["virtua_fighter", "--long", "some value"]);
     }
 
     #[test]
@@ -494,11 +494,11 @@ mod positional_args {
         let app = clap::App::new("virtua_fighter")
             .arg(clap::Arg::with_name("arg-name").help("help").index(1));
         let mut fui = Fui::from(&app);
-        fui.set_form_data(serde_json::from_str(r#"{ "0": "some-value" }"#).unwrap());
+        fui.set_form_data(serde_json::from_str(r#"{ "0": "some value" }"#).unwrap());
 
         let dumped = fui.dump_as_cli();
 
-        assert_eq!(dumped, vec!["virtua_fighter", "\"some-value\""]);
+        assert_eq!(dumped, vec!["virtua_fighter", "some value"]);
     }
 
     #[test]

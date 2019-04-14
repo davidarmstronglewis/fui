@@ -192,7 +192,7 @@ fn value2array(value: &Value) -> Vec<String> {
                     if !key_is_digit {
                         result.push(format!("--{}", key));
                     }
-                    result.push(format!("\"{}\"", s));
+                    result.push(format!("{}", s));
                 }
                 Value::Array(vals) => {
                     if !key_is_digit {
@@ -200,7 +200,7 @@ fn value2array(value: &Value) -> Vec<String> {
                     }
                     for v in vals {
                         if v.is_string() {
-                            result.push(format!("{}", v));
+                            result.push(v.to_string().trim_matches('"').to_string());
                         }
                     }
                 }
@@ -222,7 +222,17 @@ trait DumpAsCli {
 
 impl DumpAsCli for Value {
     fn dump_as_cli(&self) -> String {
-        return value2array(&self).join(" ");
+        return value2array(&self)
+            .iter()
+            .map(|a| {
+                if a.contains(" ") {
+                    format!("\"{}\"", a)
+                } else {
+                    format!("{}", a)
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(" ");
     }
 }
 
@@ -777,13 +787,19 @@ mod dump_as_cli {
     #[test]
     fn test_value_is_converted_to_cmd_ok_when_is_string() {
         let v: Value = serde_json::from_str(r#"{ "arg": "abc" }"#).unwrap();
-        assert_eq!(v.dump_as_cli(), r#"--arg "abc""#);
+        assert_eq!(v.dump_as_cli(), r#"--arg abc"#);
+    }
+
+    #[test]
+    fn test_value_string_includes_quotes_when_include_space() {
+        let v: Value = serde_json::from_str(r#"{ "arg": "a b" }"#).unwrap();
+        assert_eq!(v.dump_as_cli(), r#"--arg "a b""#);
     }
 
     #[test]
     fn test_value_is_converted_to_cmd_ok_when_is_array() {
-        let v: Value = serde_json::from_str(r#"{ "arg": ["a", "b", "c"] }"#).unwrap();
-        assert_eq!(v.dump_as_cli(), r#"--arg "a" "b" "c""#);
+        let v: Value = serde_json::from_str(r#"{ "arg": ["a", "b c"] }"#).unwrap();
+        assert_eq!(v.dump_as_cli(), r#"--arg a "b c""#);
     }
 
     #[test]
@@ -817,7 +833,10 @@ mod value2array_tests {
     fn test_value_object_with_bool_true_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": true}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg".to_string()];
+        let expected: Vec<String> = vec!["--arg"]
+            .iter()
+            .map(|x| x.to_string())
+            .collect();
         assert_eq!(found, expected);
     }
 
@@ -825,7 +844,10 @@ mod value2array_tests {
     fn test_value_object_with_numerical_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": 5}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg".to_string(), "5".to_string()];
+        let expected: Vec<String> = vec!["--arg", "5"]
+            .iter()
+            .map(|x| x.to_string())
+            .collect();
         assert_eq!(found, expected);
     }
 
@@ -833,7 +855,10 @@ mod value2array_tests {
     fn test_value_object_with_string_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": "text"}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg".to_string(), "\"text\"".to_string()];
+        let expected: Vec<String> = vec!["--arg", "text"]
+            .iter()
+            .map(|x| x.to_string())
+            .collect();
         assert_eq!(found, expected);
     }
 
@@ -841,7 +866,7 @@ mod value2array_tests {
     fn test_value_object_with_array_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": ["a", "b", "c"]}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg", "\"a\"", "\"b\"", "\"c\""]
+        let expected: Vec<String> = vec!["--arg", "a", "b", "c"]
             .iter()
             .map(|x| x.to_string())
             .collect();
@@ -860,7 +885,7 @@ mod value2array_tests {
     fn test_value_object_with_text_in_object_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"subcmd": {"arg": "text"}}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["subcmd", "--arg", "\"text\""]
+        let expected: Vec<String> = vec!["subcmd", "--arg", "text"]
             .iter()
             .map(|x| x.to_string())
             .collect();
@@ -871,7 +896,7 @@ mod value2array_tests {
     fn test_order_is_respected_for_positional_values() {
         let v: Value = serde_json::from_str(r#"{"2": "b", "1": "a", "3": "c"}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["\"a\"", "\"b\"", "\"c\""]
+        let expected: Vec<String> = vec!["a", "b", "c"]
             .iter()
             .map(|x| x.to_string())
             .collect();
