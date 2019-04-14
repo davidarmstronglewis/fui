@@ -20,7 +20,7 @@ fn show_warn(msg: &'static str) {
     panic!(msg);
 }
 
-/// Splits `value` on `delimeter`
+/// Splits `value` on `delimeter`.
 fn split_values(value: &str, delimeter: char) -> Vec<String> {
     let new_delimeter = if value.contains("\"") {
         format!("\"{}", delimeter)
@@ -34,7 +34,7 @@ fn split_values(value: &str, delimeter: char) -> Vec<String> {
     found
 }
 
-/// Copies `default` value to `field`
+/// Copies `default` value to `field`.
 fn copy_default(
     mut field: Field<AutocompleteManager, String>,
     default: Option<&OsStr>,
@@ -47,7 +47,7 @@ fn copy_default(
     field
 }
 
-/// Copies multi `default` value to `field`
+/// Copies multi `default` value to `field`.
 fn copy_default_multi(
     mut field: Field<MultiselectManager, Vec<String>>,
     default: Option<&OsStr>,
@@ -61,6 +61,34 @@ fn copy_default_multi(
         }
     }
     field
+}
+
+/// Gets field depends on `values`.
+fn field_with_vals<V: Into<String>>(
+    values: &Option<Vec<&str>>,
+    name: V,
+    help: &str,
+) -> Field<AutocompleteManager, String> {
+    if let Some(ref vals) = values {
+        let options = vals.iter().map(|x| x.to_string()).collect::<Vec<String>>();
+        Autocomplete::new(name.into(), options).help(help)
+    } else {
+        Autocomplete::new(name, DirItems::new()).help(help)
+    }
+}
+
+/// Gets multi field depends on `values`.
+fn field_multi_with_vals<V: Into<String>>(
+    values: &Option<Vec<&str>>,
+    name: V,
+    help: &str,
+) -> Field<MultiselectManager, Vec<String>> {
+    if let Some(ref vals) = values {
+        let options = vals.iter().map(|x| x.to_string()).collect::<Vec<String>>();
+        Multiselect::new(name.into(), options).help(help)
+    } else {
+        Multiselect::new(name, DirItems::new()).help(help)
+    }
 }
 
 fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
@@ -85,14 +113,14 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             .help
             .expect(&format!("Arg {:?} must have help", pos.b.name));
         if pos.b.settings.is_set(ArgSettings::Multiple) {
-            let mut field = Multiselect::new(long, DirItems::new()).help(help);
+            let mut field = field_multi_with_vals(&pos.v.possible_vals, long, help);
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
             field = copy_default_multi(field, pos.v.default_val, pos.v.val_delim);
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
-            let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+            let mut field = field_with_vals(&pos.v.possible_vals, long, help);
             field = copy_default(field, pos.v.default_val);
             if pos.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
@@ -118,15 +146,14 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
             .help
             .expect(&format!("Arg {:?} must have help", option.b.name));
         if option.b.settings.is_set(ArgSettings::Multiple) {
-            let mut field = Multiselect::new(long, DirItems::new()).help(help);
-
+            let mut field = field_multi_with_vals(&option.v.possible_vals, long, help);
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
             field = copy_default_multi(field, option.v.default_val, option.v.val_delim);
             field_list.push(Box::new(field) as Box<FormField>);
         } else {
-            let mut field = Autocomplete::new(long, DirItems::new()).help(help);
+            let mut field = field_with_vals(&option.v.possible_vals, long, help);
             if option.b.settings.is_set(ArgSettings::Required) {
                 field = field.validator(Required);
             }
@@ -545,6 +572,7 @@ mod positional_args {
         let initial = action.form.as_ref().unwrap().get_field_value("0");
         assert_eq!(initial, Some("default".to_string()));
     }
+
 }
 
 #[cfg(test)]
