@@ -98,8 +98,8 @@ impl FormField for Field<MultiselectManager, Vec<String>> {
 
     fn build_widget(&self) -> ViewBox {
         let initial = self.initial.join(VALUE_SEP);
-        self.widget_manager
-            .build_widget(&self.label, &self.help, &initial)
+        let view = self.widget_manager.build_value_view(&initial);
+        fields::label_with_help_layout(view, &self.label, &self.help)
     }
 
     fn clap_arg(&self) -> clap::Arg {
