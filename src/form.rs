@@ -192,7 +192,6 @@ impl FormView {
                 .unwrap();
             let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
             field
-                .get_widget_manager()
                 .set_error(viewbox, error.unwrap_or(&"".to_string()));
         }
     }

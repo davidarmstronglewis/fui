@@ -31,9 +31,6 @@ impl fields::WidgetManager for CheckboxManager {
         let value = checkbox.is_checked();
         format!("{}", value)
     }
-    fn set_error(&self, _view: &mut views::ViewBox, _error: &str) {
-        // no operation, checkbox is always valid
-    }
     fn build_value_view(&self, value: &str) -> views::ViewBox {
         let value = FromStr::from_str(value).unwrap();
         let mut checkbox = views::Checkbox::new();
