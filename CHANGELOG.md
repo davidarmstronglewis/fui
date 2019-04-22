@@ -5,6 +5,7 @@
 * Add `fui::skip_single_action`
 * Add `fui::skip_empty_form`
 * Add `fui::Field::FormField::set_error` (deprecated `fui::Field::WidgetManager::set_error`)
+* Deprecate `fui::fields::WidgetManager::build_widget` (use `fui::fields::FormField::build_widget`)
 
 
 ## 0.9.0

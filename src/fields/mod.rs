@@ -19,6 +19,8 @@ pub use self::text::Text;
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
     /// Builds container `view` with placeholders for `help`, `value`, `error`.
+    #[deprecated(since="1.0.0", note="Errors should be shown on `Field`. Please use `Field.set_error`")]
+    // TODO:: rm it
     fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox;
     /// Gets `value` from widget.
     fn get_value(&self, view: &views::ViewBox) -> String;

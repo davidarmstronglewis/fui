@@ -39,8 +39,8 @@ impl fields::FormField for fields::Field<TextManager, String> {
         &self.widget_manager
     }
     fn build_widget(&self) -> views::ViewBox {
-        self.widget_manager
-            .build_widget(&self.label, &self.help, &self.initial)
+        let view = self.widget_manager.build_value_view(&self.initial);
+        fields::label_with_help_layout(view, &self.label, &self.help)
     }
 
     fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
