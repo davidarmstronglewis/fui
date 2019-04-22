@@ -23,6 +23,8 @@ pub trait WidgetManager {
     /// Gets `value` from widget.
     fn get_value(&self, view: &views::ViewBox) -> String;
     /// Sets `error` on widget.
+    #[deprecated(since="1.0.0", note="Errors should be shown on `Field`. Please use `Field.set_error`")]
+    // TODO:: rm it
     fn set_error(&self, viewbox: &mut views::ViewBox, error: &str) {
         let layout: &mut views::LinearLayout = (**viewbox).as_any_mut().downcast_mut().unwrap();
         let child: &mut View = (*layout).get_child_mut(2).unwrap();
@@ -102,6 +104,13 @@ pub trait FormField {
     fn clap_args2str(&self, args: &clap::ArgMatches) -> String;
     /// Checks if Field is required
     fn is_required(&self) -> bool;
+    /// Sets `error` on widget.
+    fn set_error(&self, viewbox: &mut views::ViewBox, error: &str) {
+        let layout: &mut views::LinearLayout = (**viewbox).as_any_mut().downcast_mut().unwrap();
+        let child: &mut View = (*layout).get_child_mut(2).unwrap();
+        let text: &mut views::TextView = (*child).as_any_mut().downcast_mut().unwrap();
+        text.set_content(error);
+    }
 }
 
 fn format_annotation(label: &str, help: &str) -> String {
