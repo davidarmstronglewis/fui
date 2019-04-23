@@ -48,11 +48,6 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
     fn get_widget_manager(&self) -> &WidgetManager {
         &self.widget_manager
     }
-    fn build_widget(&self) -> ViewBox {
-        let view = self.widget_manager.build_value_view(&self.initial);
-        fields::label_with_help_layout(view, &self.label, &self.help)
-    }
-
     fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
         let mut errors = FieldErrors::new();
         for v in &self.validators {
@@ -75,6 +70,10 @@ impl fields::FormField for fields::Field<AutocompleteManager, String> {
     /// Gets help of the field
     fn get_help(&self) -> &str {
         self.help.as_ref()
+    }
+
+    fn get_initial(&self) -> String {
+        format!("{}", &self.initial)
     }
 
     fn clap_arg(&self) -> clap::Arg {
