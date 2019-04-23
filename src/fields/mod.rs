@@ -86,13 +86,18 @@ pub type FieldErrors = Vec<String>;
 /// Covers communication from `Form` to `Field`.
 pub trait FormField {
     /// Builds `widget` representing this `field`.
-    fn build_widget(&self) -> views::ViewBox;
+    fn build_widget(&self) -> views::ViewBox {
+        let view = self.get_widget_manager().build_value_view(&self.get_initial());
+        label_with_help_layout(view, self.get_label(), &self.get_help())
+    }
     /// Validates `data`.
     fn validate(&self, data: &str) -> Result<Value, FieldErrors>;
     /// Gets `field`'s label.
     fn get_label(&self) -> &str;
     /// Gets `field`'s help
     fn get_help(&self) -> &str;
+    /// Gets `initial` value
+    fn get_initial(&self) -> String;
     /// Gets manager which controlls `widget`.
     fn get_widget_manager(&self) -> &WidgetManager;
     /// Builds [clap::Arg] needed by automatically generated [clap::App].

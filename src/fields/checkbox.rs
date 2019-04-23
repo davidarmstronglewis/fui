@@ -43,11 +43,7 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
     fn get_widget_manager(&self) -> &WidgetManager {
         &self.widget_manager
     }
-    fn build_widget(&self) -> views::ViewBox {
-        let initial = format!("{}", self.initial);
-        let view = self.widget_manager.build_value_view(&initial);
-        fields::label_with_help_layout(view, &self.label, &self.help)
-    }
+
     fn get_label(&self) -> &str {
         &self.label
     }
@@ -55,6 +51,10 @@ impl fields::FormField for fields::Field<CheckboxManager, bool> {
     /// Gets help of the field
     fn get_help(&self) -> &str {
         self.help.as_ref()
+    }
+
+    fn get_initial(&self) -> String {
+        format!("{}", &self.initial)
     }
 
     fn validate(&self, data: &str) -> Result<Value, FieldErrors> {
