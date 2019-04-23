@@ -191,8 +191,7 @@ impl FormView {
                 .get_child_mut(idx)
                 .unwrap();
             let viewbox: &mut ViewBox = view.as_any_mut().downcast_mut().unwrap();
-            field
-                .set_error(viewbox, error.unwrap_or(&"".to_string()));
+            field.set_error(viewbox, error.unwrap_or(&"".to_string()));
         }
     }
 

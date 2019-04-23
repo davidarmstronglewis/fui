@@ -833,10 +833,7 @@ mod value2array_tests {
     fn test_value_object_with_bool_true_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": true}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect();
+        let expected: Vec<String> = vec!["--arg"].iter().map(|x| x.to_string()).collect();
         assert_eq!(found, expected);
     }
 
@@ -844,10 +841,7 @@ mod value2array_tests {
     fn test_value_object_with_numerical_is_converted_to_arg() {
         let v: Value = serde_json::from_str(r#"{"arg": 5}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["--arg", "5"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect();
+        let expected: Vec<String> = vec!["--arg", "5"].iter().map(|x| x.to_string()).collect();
         assert_eq!(found, expected);
     }
 
@@ -896,10 +890,7 @@ mod value2array_tests {
     fn test_order_is_respected_for_positional_values() {
         let v: Value = serde_json::from_str(r#"{"2": "b", "1": "a", "3": "c"}"#).unwrap();
         let found: Vec<String> = value2array(&v);
-        let expected: Vec<String> = vec!["a", "b", "c"]
-            .iter()
-            .map(|x| x.to_string())
-            .collect();
+        let expected: Vec<String> = vec!["a", "b", "c"].iter().map(|x| x.to_string()).collect();
         assert_eq!(found, expected);
     }
 }

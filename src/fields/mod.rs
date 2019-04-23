@@ -19,13 +19,19 @@ pub use self::text::Text;
 /// Covers communication from `Field` to `Widget`.
 pub trait WidgetManager {
     /// Builds container `view` with placeholders for `help`, `value`, `error`.
-    #[deprecated(since="1.0.0", note="Errors should be shown on `Field`. Please use `Field.set_error`")]
+    #[deprecated(
+        since = "1.0.0",
+        note = "Errors should be shown on `Field`. Please use `Field.set_error`"
+    )]
     // TODO:: rm it
     fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox;
     /// Gets `value` from widget.
     fn get_value(&self, view: &views::ViewBox) -> String;
     /// Sets `error` on widget.
-    #[deprecated(since="1.0.0", note="Errors should be shown on `Field`. Please use `Field.set_error`")]
+    #[deprecated(
+        since = "1.0.0",
+        note = "Errors should be shown on `Field`. Please use `Field.set_error`"
+    )]
     // TODO:: rm it
     fn set_error(&self, viewbox: &mut views::ViewBox, error: &str) {
         let layout: &mut views::LinearLayout = (**viewbox).as_any_mut().downcast_mut().unwrap();
@@ -87,7 +93,9 @@ pub type FieldErrors = Vec<String>;
 pub trait FormField {
     /// Builds `widget` representing this `field`.
     fn build_widget(&self) -> views::ViewBox {
-        let view = self.get_widget_manager().build_value_view(&self.get_initial());
+        let view = self
+            .get_widget_manager()
+            .build_value_view(&self.get_initial());
         label_with_help_layout(view, self.get_label(), &self.get_help())
     }
     /// Validates `data`.
