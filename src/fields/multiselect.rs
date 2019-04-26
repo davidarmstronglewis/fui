@@ -59,7 +59,7 @@ impl MultiselectManager {
         MultiselectManager {
             // it should be an option of Rc :)
             feeder: Rc::new(DummyFeeder),
-            view_factory: Some(factory)
+            view_factory: Some(factory),
         }
     }
     fn get_view(&self) -> views::Multiselect {
