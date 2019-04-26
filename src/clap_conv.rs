@@ -7,10 +7,12 @@ use clap::ArgSettings;
 use feeders::DirItems;
 use fields::autocomplete::AutocompleteManager;
 use fields::multiselect::MultiselectManager;
-use fields::{Autocomplete, Checkbox, Field, FormField, Multiselect, Text};
+use fields::{Autocomplete, Checkbox, Field, FormField, Text};
 use form::FormView;
 use std::ffi::OsStr;
 use validators::Required;
+use std::rc::Rc;
+use views;
 use Fui;
 
 fn show_warn(msg: &'static str) {
@@ -83,12 +85,21 @@ fn field_multi_with_vals<V: Into<String>>(
     name: V,
     help: &str,
 ) -> Field<MultiselectManager, Vec<String>> {
-    if let Some(ref vals) = values {
+    let mngr = if let Some(ref vals) = values {
         let options = vals.iter().map(|x| x.to_string()).collect::<Vec<String>>();
-        Multiselect::new(name.into(), options).help(help)
+        MultiselectManager::with_factory_view(
+            Rc::new(move || {
+                views::Multiselect::new(options.clone()).select_anything().redundant_selection()
+            })
+        )
     } else {
-        Multiselect::new(name, DirItems::new()).help(help)
-    }
+        MultiselectManager::with_factory_view(
+            Rc::new(move || {
+                views::Multiselect::new(DirItems::new()).select_anything().redundant_selection()
+            })
+        )
+    };
+    Field::new(name, mngr, Vec::new()).help(help)
 }
 
 fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
