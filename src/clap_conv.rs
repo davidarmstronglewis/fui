@@ -10,8 +10,8 @@ use fields::multiselect::MultiselectManager;
 use fields::{Autocomplete, Checkbox, Field, FormField, Text};
 use form::FormView;
 use std::ffi::OsStr;
-use validators::Required;
 use std::rc::Rc;
+use validators::Required;
 use views;
 use Fui;
 
@@ -87,17 +87,17 @@ fn field_multi_with_vals<V: Into<String>>(
 ) -> Field<MultiselectManager, Vec<String>> {
     let mngr = if let Some(ref vals) = values {
         let options = vals.iter().map(|x| x.to_string()).collect::<Vec<String>>();
-        MultiselectManager::with_factory_view(
-            Rc::new(move || {
-                views::Multiselect::new(options.clone()).select_anything().redundant_selection()
-            })
-        )
+        MultiselectManager::with_factory_view(Rc::new(move || {
+            views::Multiselect::new(options.clone())
+                .select_anything()
+                .redundant_selection()
+        }))
     } else {
-        MultiselectManager::with_factory_view(
-            Rc::new(move || {
-                views::Multiselect::new(DirItems::new()).select_anything().redundant_selection()
-            })
-        )
+        MultiselectManager::with_factory_view(Rc::new(move || {
+            views::Multiselect::new(DirItems::new())
+                .select_anything()
+                .redundant_selection()
+        }))
     };
     Field::new(name, mngr, Vec::new()).help(help)
 }
