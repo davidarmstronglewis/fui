@@ -20,6 +20,15 @@ pub trait Feeder: 'static {
     fn query(&self, text: &str, position: usize, items_count: usize) -> Vec<String>;
 }
 
+/// Dummy feeder which does nothing
+#[derive(Clone, Debug)]
+pub struct DummyFeeder;
+impl Feeder for DummyFeeder {
+    fn query(&self, _: &str, _: usize, _: usize) -> Vec<String> {
+        Vec::new()
+    }
+}
+
 #[derive(Clone, Debug)]
 enum DirItemType {
     Dir,

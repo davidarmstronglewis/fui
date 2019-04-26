@@ -5,7 +5,7 @@ use clap;
 use cursive::views::ViewBox;
 use serde_json::value::Value;
 
-use feeders::Feeder;
+use feeders::{DummyFeeder, Feeder};
 use fields;
 use fields::{label_with_help_layout, Field, FieldErrors, FormField, WidgetManager};
 use views;
@@ -21,9 +21,7 @@ impl Multiselect {
         label: IS,
         feeder: F,
     ) -> Field<MultiselectManager, Vec<String>> {
-        let mngr = MultiselectManager {
-            feeder: Rc::new(feeder),
-        };
+        let mngr = MultiselectManager::with_feeder(feeder);
         Field::new(label, mngr, Vec::new())
     }
 }
@@ -31,11 +29,52 @@ impl Multiselect {
 #[derive(Clone)]
 pub struct MultiselectManager {
     feeder: Rc<Feeder>,
+    view_factory: Option<Rc<Fn() -> views::Multiselect>>,
+}
+
+impl MultiselectManager {
+    /// Creates an instance with a customized [Feeder].
+    ///
+    /// If you want to control creation of [views::Multiselect]
+    /// use [with_factory_view]
+    ///
+    /// [Feeder]: ../../feeders/index.html
+    /// [views::Multiselect]: ../../views/struct.Multiselect.html
+    /// [with_factory_view]: ../multiselect/struct.MultiselectManager.html#method.with_factory_view
+    pub fn with_feeder<T: Feeder>(feeder: T) -> Self {
+        MultiselectManager {
+            feeder: Rc::new(feeder),
+            view_factory: None,
+        }
+    }
+    /// Creates an instance with customized [views::Multiselect].
+    ///
+    /// If you want to specify only a [Feeder] (and use a default [views::Multiselect])
+    /// use [with_feeder]
+    ///
+    /// [Feeder]: ../../feeders/index.html
+    /// [views::Multiselect]: ../../views/struct.Multiselect.html
+    /// [with_feeder]: ../multiselect/struct.MultiselectManager.html#method.with_feeder
+    pub fn with_factory_view(factory: Rc<Fn() -> views::Multiselect>) -> Self {
+        MultiselectManager {
+            // it should be an option of Rc :)
+            feeder: Rc::new(DummyFeeder),
+            view_factory: Some(factory)
+        }
+    }
+    fn get_view(&self) -> views::Multiselect {
+        let view = if let Some(ref fun) = self.view_factory {
+            fun()
+        } else {
+            views::Multiselect::new(Rc::clone(&self.feeder))
+        };
+        view
+    }
 }
 
 impl WidgetManager for MultiselectManager {
     fn build_value_view(&self, initial: &str) -> ViewBox {
-        let mut widget = views::Multiselect::new(Rc::clone(&self.feeder));
+        let mut widget = self.get_view();
         if initial.trim() != "" {
             let items = initial
                 .split(VALUE_SEP)
