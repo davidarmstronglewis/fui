@@ -15,11 +15,12 @@ use validators::Required;
 use views;
 use Fui;
 
-fn show_warn(msg: &'static str) {
+fn show_warn(msg: &str) {
     // TODO: find a better way for warning users
     // crate log requires to use env var to make messages visible
     // so we need something better
-    panic!(msg);
+    // btw: eprintln doesn't work, perhaps it's related to cursive lib
+    println!("WARNING! {}", msg);
 }
 
 /// Splits `value` on `delimeter`.
@@ -102,6 +103,28 @@ fn field_multi_with_vals<V: Into<String>>(
     Field::new(name, mngr, Vec::new()).help(help)
 }
 
+/// Prints info about missing features
+macro_rules! warn_incompat {
+    ($arg:expr) => (
+        if let Some(ref list) = $arg.blacklist {
+            show_warn(
+                &format!(
+                    "fui doesn't support arg conflicts (`clap::Arg::conflicts_with`) yet. Arg {:?} conflicts_with: {:?}",
+                    &$arg.name, list
+                )
+            );
+        }
+        if let Some(ref list) = $arg.requires {
+            show_warn(
+                &format!(
+                    "fui doesn't support arg requirements (`clap::Arg::requires`) yet. Arg {:?} requires: {:?}",
+                    &$arg.name, list.iter().map(|p| p.1).collect::<Vec<&str>>()
+                )
+            );
+        }
+    )
+}
+
 fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
     let mut field_list = Vec::new();
     // TODO: flag & option & positional loops are mostly copy & paste so make it DRY
@@ -109,12 +132,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
     // https://github.com/clap-rs/clap/blob/9d31e63b28eff81ad35239268a38ce3b2d2d635d/src/args/any_arg.rs#L12
     for (idx, pos) in clap_app.p.positionals.iter() {
         //println!("POSITIONAL {:?} {:?}\n", idx, pos.b);
-        if pos.b.blacklist.is_some() {
-            show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
-        }
-        if pos.b.requires.is_some() {
-            show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
-        }
+        warn_incompat!(pos.b);
         // TODO: improve by allowing short + help?
         // TODO: add attr. shown_field_name and use pos.b.name for it
         // because now integers are shown as field name
@@ -141,12 +159,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
     }
     for option in clap_app.p.opts.iter() {
         //println!("OPTION {:?}\n", option.b);
-        if option.b.blacklist.is_some() {
-            show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
-        }
-        if option.b.requires.is_some() {
-            show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
-        }
+        warn_incompat!(option.b);
         // TODO: improve by allowing short + help?
         let long = option
             .s
@@ -174,12 +187,7 @@ fn clap_app2fields(clap_app: &clap::App) -> Vec<Box<FormField>> {
     }
     for flag in clap_app.p.flags.iter() {
         //println!("FLAG {:?}\n", flag.b);
-        if flag.b.blacklist.is_some() {
-            show_warn("Args dependency (via `clap::Arg::conflicts_with`) is not supported yet");
-        }
-        if flag.b.requires.is_some() {
-            show_warn("Args dependency (via `clap::Arg::requires`) is not supported yet");
-        }
+        warn_incompat!(flag.b);
         // TODO: improve by allowing short + help?
         let long = flag
             .s
