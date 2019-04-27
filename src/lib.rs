@@ -333,9 +333,11 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             self.input_from_tui()
         };
         // run handler
-        if let Some((action, data)) = input_data {
-            let hdlr = self.actions.get(&action).unwrap().handler.clone();
-            hdlr(data);
+        if let Some((action_name, data)) = input_data {
+            if let Some(action) = self.action_by_name(&action_name) {
+                let hdlr = action.handler.clone();
+                hdlr(data);
+            }
         }
     }
 
