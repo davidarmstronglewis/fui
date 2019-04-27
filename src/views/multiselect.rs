@@ -42,11 +42,11 @@ impl Multiselect {
                         //TODO: allow customization?
                         .full_width(),
                 )
-                .on_pre_event_inner(Event::CtrlChar('p'), |s| {
+                .on_pre_event_inner(Event::CtrlChar('p'), |s, _| {
                     s.get_inner_mut().select_up(1);
                     Some(EventResult::Consumed(None))
                 })
-                .on_pre_event_inner(Event::CtrlChar('n'), |s| {
+                .on_pre_event_inner(Event::CtrlChar('n'), |s, _| {
                     s.get_inner_mut().select_down(1);
                     Some(EventResult::Consumed(None))
                 }),
