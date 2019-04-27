@@ -145,7 +145,8 @@ use clipboard::ClipboardContext;
 use clipboard::ClipboardProvider;
 use cursive::event::Event;
 use cursive::traits::{Boxable, Identifiable};
-use cursive::views::{Dialog, LayerPosition, OnEventView};
+use cursive::view::Scrollable;
+use cursive::views::{Dialog, LayerPosition, OnEventView, ScrollView};
 use cursive::Cursive;
 use form::FormView;
 use std::cell::RefCell;
@@ -449,7 +450,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     fn add_form(&self, c: &mut Cursive, form: FormView, form_id: &str) {
         // `with_id` must be before `OnEventView`
-        let form = form.with_id(form_id).full_width();
+        let form = form.with_id(form_id).full_width().scrollable();
         let prog_name = self.name.to_owned();
         let form_id = form_id.to_owned();
         let form = OnEventView::new(form).on_event(Event::CtrlChar('k'), move |c| {
