@@ -16,21 +16,27 @@ pub use self::checkbox::Checkbox;
 pub use self::multiselect::Multiselect;
 pub use self::text::Text;
 
-/// Covers communication from `Field` to `Widget`.
+/// Covers communication from [Field] to [View].
+///
+/// This [View] is responsible for storing [Field]'s value.
+///
+/// [Field]: ../fields/index.html
+/// [View]: ../views/index.html
 pub trait WidgetManager {
-    /// Builds container `view` with placeholders for `help`, `value`, `error`.
-    #[deprecated(
-        since = "1.0.0",
-        note = "Errors should be shown on `Field`. Please use `Field.set_error`"
-    )]
-    // TODO:: rm it
-    fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox;
-    /// Gets `value` from widget.
+    /// Builds a value view.
+    fn build_value_view(&self, value: &str) -> views::ViewBox;
+    /// Gets view's value.
     fn get_value(&self, view: &views::ViewBox) -> String;
     /// Sets `error` on widget.
+    ///
+    /// # Note:
+    /// WidgetManager doesn't control `error` anymore.
+    /// It's been transferred to [FormField]
+    ///
+    /// [FormField]: ./trait.FormField.html
     #[deprecated(
         since = "1.0.0",
-        note = "Errors should be shown on `Field`. Please use `Field.set_error`"
+        note = "Errors should be transferred to `Field`. Use `Field.set_error`"
     )]
     // TODO:: rm it
     fn set_error(&self, viewbox: &mut views::ViewBox, error: &str) {
@@ -39,8 +45,19 @@ pub trait WidgetManager {
         let text: &mut views::TextView = (*child).as_any_mut().downcast_mut().unwrap();
         text.set_content(error);
     }
-    /// Builds a `value` view
-    fn build_value_view(&self, value: &str) -> views::ViewBox;
+    /// Builds container `view` with placeholders for `help`, `value`, `error`.
+    ///
+    /// # Note:
+    /// WidgetManager doesn't control `help` or `error` anymore.
+    /// It's been transferred to [FormField]
+    ///
+    /// [FormField]: ./trait.FormField.html
+    #[deprecated(
+        since = "1.0.0",
+        note = "Values like `help` or `label` should be stored on `FormField`. Details in documentation of `WidgetManager.build_widget`"
+    )]
+    // TODO:: rm it
+    fn build_widget(&self, label: &str, help: &str, initial: &str) -> views::ViewBox;
 }
 
 /// Building block for `Form`s which stores `data` and `Widget`.
