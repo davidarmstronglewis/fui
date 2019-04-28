@@ -146,7 +146,7 @@ use clipboard::ClipboardProvider;
 use cursive::event::Event;
 use cursive::traits::{Boxable, Identifiable};
 use cursive::view::Scrollable;
-use cursive::views::{Dialog, LayerPosition, OnEventView, ScrollView};
+use cursive::views::{Dialog, LayerPosition, OnEventView};
 use cursive::Cursive;
 use form::FormView;
 use std::cell::RefCell;

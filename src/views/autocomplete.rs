@@ -1,8 +1,11 @@
 use std::rc::Rc;
 
 use cursive::event::{Callback, Event, EventResult, Key};
+use cursive::traits::Boxable;
 use cursive::traits::View;
+use cursive::view::SizeConstraint;
 use cursive::view::ViewWrapper;
+use cursive::views::BoxView;
 use cursive::views::{EditView, LinearLayout, SelectView};
 use cursive::Cursive;
 use cursive::With;
@@ -16,7 +19,7 @@ pub type OnSubmit = Option<Rc<Fn(&mut Cursive, Rc<String>)>>;
 
 /// Single selection view with suggestions.
 pub struct Autocomplete {
-    view: LinearLayout,
+    view: BoxView<LinearLayout>,
 
     feeder: Rc<Feeder>,
     shown_count: u8,
@@ -33,18 +36,13 @@ impl Autocomplete {
     pub fn new<T: Feeder>(feeder: T) -> Autocomplete {
         let shown_count = 5;
 
-        let select = SelectView::<String>::new()
-                .with_all_str(feeder.query("", 0, shown_count).into_iter())
-                //TODO: make fixed height for select equal to shown_count
-                // use cursive::traits::Boxable;
-                //.fixed_height(shown_count)
-                // * using fixed_height converts SelectView to BoxView
-                // * each shown_count update should update size of select (which'd be BoxView)
-                ;
+        let select =
+            SelectView::<String>::new().with_all_str(feeder.query("", 0, shown_count).into_iter());
 
         let layout = LinearLayout::vertical()
             .child(EditView::new())
-            .child(select);
+            .child(select)
+            .fixed_height(shown_count + 1);
 
         let ac = Autocomplete {
             view: layout,
@@ -104,8 +102,18 @@ impl Autocomplete {
         is_value_from_select(select, to_check)
     }
 
+    /// Controls how many suggested items should be shown.
+    pub fn shown_count(mut self, shown_count: u8) -> Self {
+        self.shown_count = shown_count;
+        self.view
+            .set_height(SizeConstraint::AtLeast(self.shown_count as usize + 1));
+        self.refresh_listing();
+        self
+    }
+
     fn get_edit_view(&self) -> &EditView {
         self.view
+            .get_inner()
             .get_child(0)
             .unwrap()
             .as_any()
@@ -115,6 +123,7 @@ impl Autocomplete {
 
     fn get_edit_view_mut(&mut self) -> &mut EditView {
         self.view
+            .get_inner_mut()
             .get_child_mut(0)
             .unwrap()
             .as_any_mut()
@@ -124,6 +133,7 @@ impl Autocomplete {
 
     fn get_select_view(&self) -> &SelectView {
         self.view
+            .get_inner()
             .get_child(1)
             .unwrap()
             .as_any()
@@ -133,6 +143,7 @@ impl Autocomplete {
 
     fn get_select_view_mut(&mut self) -> &mut SelectView {
         self.view
+            .get_inner_mut()
             .get_child_mut(1)
             .unwrap()
             .as_any_mut()
@@ -231,11 +242,11 @@ impl Autocomplete {
     }
 
     fn is_edit_focused(&self) -> bool {
-        self.view.get_focus_index() == 0
+        self.view.get_inner().get_focus_index() == 0
     }
 
     fn is_select_focused(&self) -> bool {
-        self.view.get_focus_index() == 1
+        self.view.get_inner().get_focus_index() == 1
     }
 
     fn focus_edit(&mut self) {
@@ -254,7 +265,7 @@ impl Autocomplete {
 }
 
 impl ViewWrapper for Autocomplete {
-    wrap_impl!(self.view: LinearLayout);
+    wrap_impl!(self.view: BoxView<LinearLayout>);
 
     fn wrap_on_event(&mut self, event: Event) -> EventResult {
         match event {
