@@ -36,11 +36,11 @@ impl MultiselectManager {
     /// Creates an instance with a customized [Feeder].
     ///
     /// If you want to control creation of [views::Multiselect]
-    /// use [with_factory_view]
+    /// use [with_factory_view].
     ///
     /// [Feeder]: ../../feeders/index.html
     /// [views::Multiselect]: ../../views/struct.Multiselect.html
-    /// [with_factory_view]: ../multiselect/struct.MultiselectManager.html#method.with_factory_view
+    /// [with_factory_view]: struct.MultiselectManager.html#method.with_factory_view
     pub fn with_feeder<T: Feeder>(feeder: T) -> Self {
         MultiselectManager {
             feeder: Rc::new(feeder),
@@ -50,11 +50,11 @@ impl MultiselectManager {
     /// Creates an instance with customized [views::Multiselect].
     ///
     /// If you want to specify only a [Feeder] (and use a default [views::Multiselect])
-    /// use [with_feeder]
+    /// use [with_feeder].
     ///
     /// [Feeder]: ../../feeders/index.html
     /// [views::Multiselect]: ../../views/struct.Multiselect.html
-    /// [with_feeder]: ../multiselect/struct.MultiselectManager.html#method.with_feeder
+    /// [with_feeder]: struct.MultiselectManager.html#method.with_feeder
     pub fn with_factory_view(factory: Rc<Fn() -> views::Multiselect>) -> Self {
         MultiselectManager {
             // it should be an option of Rc :)
@@ -62,6 +62,7 @@ impl MultiselectManager {
             view_factory: Some(factory),
         }
     }
+
     fn get_view(&self) -> views::Multiselect {
         let view = if let Some(ref fun) = self.view_factory {
             fun()

@@ -4,7 +4,7 @@ use clap;
 use cursive::views::ViewBox;
 use serde_json::value::Value;
 
-use feeders::Feeder;
+use feeders::{DummyFeeder, Feeder};
 use fields;
 use fields::{FieldErrors, WidgetManager};
 use views;
@@ -18,12 +18,55 @@ impl Autocomplete {
         label: IS,
         feeder: F,
     ) -> fields::Field<AutocompleteManager, String> {
-        fields::Field::new(label, AutocompleteManager(Rc::new(feeder)), "".to_string())
+        fields::Field::new(label, AutocompleteManager::with_feeder(feeder), "".to_string())
     }
 }
 
 #[derive(Clone)]
-pub struct AutocompleteManager(Rc<Feeder>);
+pub struct AutocompleteManager {
+    feeder: Rc<Feeder>,
+    view_factory: Option<Rc<Fn() -> views::Autocomplete>>,
+}
+
+impl AutocompleteManager {
+    /// Creates an instance with a customized [Feeder].
+    ///
+    /// If you want to control creation of [views::Autocomplete]
+    /// use [with_factory_view].
+    ///
+    /// [Feeder]: ../../feeders/index.html
+    /// [views::Autocomplete]: ../../views/struct.Autocomplete.html
+    /// [with_factory_view]: struct.AutocompleteManager.html#method.with_factory_view
+    pub fn with_feeder<T: Feeder>(feeder: T) -> Self {
+        AutocompleteManager {
+            feeder: Rc::new(feeder),
+            view_factory: None,
+        }
+    }
+    /// Creates an instance with customized [views::Autocomplete].
+    ///
+    /// If you want to specify only a [Feeder] (and use a default [views::Autocomplete])
+    /// use [with_feeder].
+    ///
+    /// [Feeder]: ../../feeders/index.html
+    /// [views::Autocomplete]: ../../views/struct.Autocomplete.html
+    /// [with_feeder]: struct.AutocompleteManager.html#method.with_feeder
+    pub fn with_factory_view(factory: Rc<Fn() -> views::Autocomplete>) -> Self {
+        AutocompleteManager {
+            feeder: Rc::new(DummyFeeder),
+            view_factory: Some(factory),
+        }
+    }
+
+    fn get_view(&self) -> views::Autocomplete {
+        let view = if let Some(ref fun) = self.view_factory {
+            fun()
+        } else {
+            views::Autocomplete::new(Rc::clone(&self.feeder))
+        };
+        view
+    }
+}
 
 impl WidgetManager for AutocompleteManager {
     fn build_widget(&self, label: &str, help: &str, initial: &str) -> ViewBox {
@@ -37,9 +80,8 @@ impl WidgetManager for AutocompleteManager {
         value
     }
     fn build_value_view(&self, value: &str) -> ViewBox {
-        let view = ViewBox::new(Box::new(
-            views::Autocomplete::new(Rc::clone(&self.0)).value(value),
-        ));
+        let widget = self.get_view();
+        let view = ViewBox::new(Box::new(widget.value(value)));
         view
     }
 }

@@ -148,6 +148,7 @@ use cursive::traits::{Boxable, Identifiable};
 use cursive::view::Scrollable;
 use cursive::views::{Dialog, LayerPosition, OnEventView};
 use cursive::Cursive;
+use fields::autocomplete::AutocompleteManager;
 use form::FormView;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -155,6 +156,7 @@ use std::env;
 use std::ffi::OsString;
 use std::rc::Rc;
 use validators::OneOf;
+use views::Autocomplete;
 
 const DEFAULT_THEME: &'static str = "
 [colors]
@@ -495,11 +497,15 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             .keys()
             .map(|x| x.to_owned())
             .collect::<Vec<String>>();
+        let feeder = actions.clone();
+        let mngr = AutocompleteManager::with_factory_view(Rc::new(move || {
+            Autocomplete::new(feeder.clone()).shown_count(12)
+        }));
         c.add_layer(
             FormView::new()
                 .title(&self.header())
                 .field(
-                    fields::Autocomplete::new("action", actions.clone())
+                    fields::Field::new("action", mngr, "".to_string())
                         .help("Pick action")
                         .validator(OneOf(actions)),
                 )
