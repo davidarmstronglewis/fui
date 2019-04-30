@@ -162,6 +162,7 @@ const DEFAULT_THEME: &'static str = "
 [colors]
     highlight_inactive = \"light black\"
 ";
+const COMMAND_PICKER_ID: &'static str = "fui-command-picker";
 
 struct Action<'action> {
     name: &'action str,
@@ -255,6 +256,8 @@ pub struct Fui<'attrs, 'action> {
     skip_single_action: bool,
     /// if true form step is skipped when form has no fields
     skip_empty_form: bool,
+    /// Holds active step in wizard
+    active_step: Rc<RefCell<u8>>,
 }
 impl<'attrs, 'action> Fui<'attrs, 'action> {
     /// Creates a new `Fui` with empty actions.
@@ -271,6 +274,7 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
             form_data: Rc::new(RefCell::new(None)),
             skip_single_action: false,
             skip_empty_form: false,
+            active_step: Rc::new(RefCell::new(1)),
         }
     }
     /// Defines action by providing `name`, `help`, `form`, `hdlr`.
@@ -441,12 +445,16 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
     fn set_form_events(&self, form: &mut FormView) {
         // set form events
         let form_data = Rc::clone(&self.form_data);
+        let step_submit = Rc::clone(&self.active_step);
+        let step_cancel = Rc::clone(&self.active_step);
         form.set_on_submit(move |c: &mut Cursive, data: Value| {
             *form_data.borrow_mut() = Some(data);
+            *step_submit.borrow_mut() += 1;
             c.quit();
         });
         form.set_on_cancel(move |c: &mut Cursive| {
-            c.screen_mut().move_to_front(LayerPosition::FromFront(1))
+            *step_cancel.borrow_mut() -= 1;
+            c.quit();
         });
     }
 
@@ -490,7 +498,8 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
 
     fn add_cmd_picker(&mut self, c: &mut Cursive) {
         let cmd_submit = Rc::clone(&self.picked_action);
-        let cmd_cancel = Rc::clone(&self.picked_action);
+        let step_submit = Rc::clone(&self.active_step);
+        let step_cancel = Rc::clone(&self.active_step);
         // TODO: rm cloning for it
         let actions = self
             .actions
@@ -501,33 +510,34 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         let mngr = AutocompleteManager::with_factory_view(Rc::new(move || {
             Autocomplete::new(feeder.clone()).shown_count(12)
         }));
-        c.add_layer(
-            FormView::new()
-                .title(&self.header())
-                .field(
-                    fields::Field::new("action", mngr, "".to_string())
-                        .help("Pick action")
-                        .validator(OneOf(actions)),
-                )
-                .on_submit(move |c, data| {
-                    let value = data.get("action").unwrap().clone();
-                    // here we return name+desc of Action, we can't return only name
-                    // because Action has shorter lifetime then this callback (which is static)
-                    // so thanks to lifetime, they saved me a bug :)
-                    *cmd_submit.borrow_mut() = Some(value.as_str().unwrap().to_string());
-                    c.quit();
-                })
-                .on_cancel(move |c| {
-                    *cmd_cancel.borrow_mut() = None;
-                    c.quit()
-                })
-                .full_screen(),
-        );
+        let form = FormView::new()
+            .title(&self.header())
+            .field(
+                fields::Field::new("action", mngr, "".to_string())
+                    .help("Pick action")
+                    .validator(OneOf(actions)),
+            )
+            .on_submit(move |c, data| {
+                let value = data.get("action").unwrap().clone();
+                // here we return name+desc of Action, we can't return only name
+                // because Action has shorter lifetime then this callback (which is static)
+                // so thanks to lifetime, they saved me a bug :)
+                *cmd_submit.borrow_mut() = Some(value.as_str().unwrap().to_string());
+                *step_submit.borrow_mut() += 1;
+                c.quit();
+            })
+            .on_cancel(move |c| {
+                *step_cancel.borrow_mut() -= 1;
+                c.quit();
+            })
+            .with_id(COMMAND_PICKER_ID)
+            .full_screen();
+        c.add_layer(form)
     }
 
-    fn top_form_by_action_name(&self, cursive: &mut Cursive, action_name: &str) {
+    fn top_layer_by_name(&self, cursive: &mut Cursive, layer_name: &str) {
         let stack = cursive.screen_mut();
-        let from = stack.find_layer_from_id(action_name).unwrap();
+        let from = stack.find_layer_from_id(layer_name).unwrap();
         stack.move_layer(from, LayerPosition::FromFront(0));
     }
 
@@ -547,40 +557,51 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         // Cursive blocks stdout, unless it's dropped, so
         // deattached cursive here to allow destroying it at the end of this fn
         let mut c = Cursive::default();
-        c.load_toml(self.theme).expect("Can't load theme");
         self.add_forms(&mut c);
         self.add_cmd_picker(&mut c);
-
-        let mut action_name = "";
-        while *self.form_data.borrow() == None {
-            if self.skip_single_action && self.actions.len() < 2 {
-                // auto choose action - skip action picker
-                let action_with_desc = self.actions.keys().nth(0).unwrap().clone();
-                // to get action name we have to extract it from "name: desc"
-                action_name = self.actions.get(&action_with_desc).unwrap().name;
-                if !self.has_form_fields(&action_name) {
-                    *self.form_data.borrow_mut() = Some(json!({}));
-                    break;
-                }
-                self.top_form_by_action_name(&mut c, action_name);
-                c.run();
-            } else {
-                // let user pick action - show action picker
-                c.run();
-                let action_with_desc = match self.picked_action.borrow().clone() {
-                    Some(v) => v,
-                    None => return None,
-                };
-                // to get action name we have to extract it from "name: desc"
-                action_name = self.actions.get(&action_with_desc).unwrap().name;
-                if !self.has_form_fields(&action_name) {
-                    *self.form_data.borrow_mut() = Some(json!({}));
-                    break;
-                }
-                self.top_form_by_action_name(&mut c, action_name);
-            };
+        loop {
+            let current_step =  *self.active_step.borrow();
+            match current_step {
+                0 => ::std::process::exit(0),
+                1 => {
+                    // show action picker
+                    if self.skip_single_action && self.actions.len() < 2 {
+                        // skip action picker by auto pick only item
+                        let action_with_desc = self.actions.keys().nth(0).unwrap().clone();
+                        *self.picked_action.borrow_mut() = Some(action_with_desc);
+                        *self.active_step.borrow_mut() = 2;
+                        continue;
+                    }
+                    self.top_layer_by_name(&mut c, COMMAND_PICKER_ID);
+                },
+                2 => {
+                    // show form
+                    let action_with_desc = match self.picked_action.borrow().clone() {
+                        Some(v) => v,
+                        None => {
+                            *self.active_step.borrow_mut() = 1;
+                            continue;
+                        },
+                    };
+                    // to get action name we have to extract it from "name: desc"
+                    let action_name = self.actions.get(&action_with_desc).unwrap().name;
+                    *self.picked_action.borrow_mut() = Some(action_name.to_string());
+                    if !self.has_form_fields(&action_name) {
+                        *self.form_data.borrow_mut() = Some(json!({}));
+                        *self.active_step.borrow_mut() = 3;
+                        continue;
+                    }
+                    self.top_layer_by_name(&mut c, action_name);
+                },
+                3 => break,
+                _ => unimplemented!(),
+            }
+            c.run();
+            if current_step == *self.active_step.borrow() {
+                // step didn't change? => ctrl-c pressed
+                *self.active_step.borrow_mut() = 0;
+            }
         }
-        *self.picked_action.borrow_mut() = Some(action_name.to_string());
         Some((
             self.picked_action.borrow().clone().unwrap(),
             self.form_data.borrow().clone().unwrap(),
