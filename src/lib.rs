@@ -193,10 +193,12 @@ fn value2array(value: &Value) -> Vec<String> {
                     result.push(format!("{}", n));
                 }
                 Value::String(s) => {
-                    if !key_is_digit {
-                        result.push(format!("--{}", key));
+                    if  val != "" {
+                        if !key_is_digit {
+                            result.push(format!("--{}", key));
+                        }
+                        result.push(format!("{}", s));
                     }
-                    result.push(format!("{}", s));
                 }
                 Value::Array(vals) => {
                     if !key_is_digit {
@@ -883,6 +885,14 @@ mod value2array_tests {
             .iter()
             .map(|x| x.to_string())
             .collect();
+        assert_eq!(found, expected);
+    }
+
+    #[test]
+    fn test_value_object_with_empty_string_is_skipped() {
+        let v: Value = serde_json::from_str(r#"{"arg": ""}"#).unwrap();
+        let found: Vec<String> = value2array(&v);
+        let expected: Vec<String> = Vec::new();
         assert_eq!(found, expected);
     }
 
