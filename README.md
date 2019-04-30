@@ -9,8 +9,6 @@
 
 Add CLI & form interface to your program.
 
-**Note: Use it at own risk!!**
-
 ## Basic example
 
 ### Cargo.toml
@@ -81,28 +79,10 @@ This will make the program automatically working in 2 modes:
         help       Prints this message or the help of the given subcommand(s)
     ```
 
-    or
-
-    ```bash
-    $ ./app_basic action1 -h
-    app_basic-action1 
-    help for action1
-
-    USAGE:
-        app_basic action1 [OPTIONS]
-
-    FLAGS:
-        -h, --help       Prints help information
-        -V, --version    Prints version information
-
-    OPTIONS:
-            --action1-data <action1-data>    help for action1 data
-    ```
-
 2. Ready for getting user input from easy and discoverable TUI interface, like image below:
 
 
-### More examples
+## More examples
 
 [Here](https://github.com/xliiv/fui/tree/master/examples)
 
@@ -123,36 +103,14 @@ This will make the program automatically working in 2 modes:
 </a>
 
 
-## TODO:
+## TODO
+* find a solution for long help messages
+* ctrl+enter submits ([#151](https://github.com/gyscos/Cursive/issues/151))
+* handle unwraps
 
-* empty forms are skipped and executed
-* .validator(OneOf || Regex::new("v\d+\.\d+\.\d+")).unwrap()
-    * or something similiar
-* add option for prose help in widget?
-* add option for prose help in cmd-picker?
-    * "path" in "rustup toolchain link -h"
-    * perhaps adding new cmd is walkaround, like "link-help" which displays prose
-* reusing fields in form by cloning is stupid
-* command picker show only 5 items Oo
-* expose view's options (eg. submit_anything) on Autocomplete & Multiselect
-* reusing fields in each form, like "verbose for each form"
-* allow disabling copying (ctrl+k)
-
-
-* support user's history!
-    * make fill-error-correct flow pleasent
-* support for piping!
-* create wrapper FileField
-* create wrapper DirField
-* ctrl+enter submits ([#151](https://github.com/gyscos/Cursive/issues/151))?
-* checkbox: automatic toggle on char
-* add Field.data & form on_submit returns it?
-* optimalizations
-    * feeders use iterators
-    * thread
-* more tests
-* error handling & unwraps
-* magic stuff:
-    * ~~add magic which renders form for clap (or structopt) if args missing~~
-        * `clap` should distinguish data types: file, dir, other
-    * add magic which works with current programs like: ls, grep, etc.
+## Ideas
+* `.validator(OneOf || Regex::new("v\d+\.\d+\.\d+")).unwrap()`?
+* support user's history?
+* checkboxes: automatic toggle on char(+alt)?
+* replace `views::Autocomplete` & `views::Multiselect` with a new implementation of
+  `Autocomplete`
