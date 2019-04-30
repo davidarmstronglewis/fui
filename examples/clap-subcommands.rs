@@ -1,4 +1,4 @@
-// EXPERIMENTAL - no guarantee of finishing it
+// Shows conversion from `clap` including `subcommands` to `fui`
 
 extern crate clap;
 extern crate fui;
@@ -7,7 +7,7 @@ use fui::Fui;
 use std::env;
 
 fn main() {
-    let app = clap::App::new("program")
+    let app = clap::App::new("some-app")
         .subcommand(
             clap::SubCommand::with_name("simple-subcmd").about("Does something subcommandish"),
         )

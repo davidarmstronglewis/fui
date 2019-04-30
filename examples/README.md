@@ -5,7 +5,7 @@ various aspects of the library.
 
 To run an example, use `cargo run --example EXAMPLE_NAME`.
 
-## App examples
+## App
 
 These examples shows the most common cases for the library.
 Which is creating a action-form interface for a CLI program.
@@ -21,7 +21,7 @@ Paritally copied interfaces of real world programs: `ln` and `tar`
 * [`app_tar_like`](app_tar_like.rs) parital copy of `tar`
 
 
-## Form example
+## Form
 
 `Form` is container for `Fields`. `Form` also includes two events:
 
@@ -32,7 +32,7 @@ These examples show more details about `Form` and available `Fields`.
 
 * [`form`](form.rs) shows `Form` with available `Fields`
 
-## Field examples
+## Field
 
 `Fields` stores user input. `Fields` are building blocks for `Forms`.
 These examples show more details about `Fields`.
@@ -43,7 +43,7 @@ These examples show more details about `Fields`.
 * [`field_multiselect`](field_multiselect.rs) covers multiple input which require assistance, like paths, selections, etc.
 
 
-## View examples
+## View
 
 `Views` handle user interaction. `Views` are building blocks for `Fields`.
 These examples show more details about `Views`.
@@ -54,8 +54,18 @@ These examples show more details about `Views`.
 More `Views` are already defined in `fui` dependency crate [Cursive](http://docs.rs/cursive)
 
 
+## Clap
 
-## Misc examples
+These examples show more details about converting [`clap`](https://crates.io/crates/clap) to `fui`.
+
+* [`clap-flags`](clap-flags.rs)
+* [`clap-options`](clap-options.rs)
+* [`clap-positional`](clap-positional.rs)
+* [`clap-subcommands`](clap-subcommands.rs)
+* [`clap-globals`](clap-globals.rs)
+
+
+## Misc.
 
 * [`feeders`](feeders.rs) building block for `Fields` with completition, like `Autocomplete` and `Multiselect`
 

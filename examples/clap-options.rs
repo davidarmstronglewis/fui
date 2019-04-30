@@ -1,4 +1,4 @@
-// EXPERIMENTAL - no guarantee of finishing it
+// Shows conversion from `clap` including `option arguments` to `fui`
 
 extern crate clap;
 extern crate fui;
@@ -8,7 +8,7 @@ use fui::Fui;
 use std::env;
 
 fn main() {
-    let app = App::new("virtua_fighter")
+    let app = App::new("some-app")
         .arg(
             Arg::with_name("option")
                 .takes_value(true)

@@ -9,15 +9,51 @@
 
 Add CLI & form interface to your program.
 
+
 ## Basic example
 
-### Cargo.toml
+### cargo.toml
+
 ```toml
 [dependencies]
 fui = "0.9"
 ```
 
-### main.rs
+#### Using with [`clap`](https://crates.io/crates/clap) (experimental)
+
+```rust
+extern crate clap;
+extern crate fui;
+
+use clap::{App, Arg};
+use fui::Fui;
+use std::env;
+
+// regular clap code
+let app = App::new("some-app").arg(
+    Arg::with_name("some-switch")
+        .long("arg-long")
+        .help("arg-help"),
+);
+
+
+// extra fui code
+let mut _arg_vec: Vec<String> = env::args().collect();
+if _arg_vec.len() <= 1 {
+    _arg_vec = Fui::from(&app).get_cli_input();
+}
+
+
+// regular clap code
+let matches = app.get_matches_from(_arg_vec);
+```
+
+<a href="https://github.com/xliiv/fui/blob/master/examples/clap-flags.rs">
+<img src="https://raw.githubusercontent.com/xliiv/fui/master/doc/clap-flags-example.gif" alt="clap to fui flags example", width="100%" />
+</a>
+
+#### Using without [`clap`](https://crates.io/crates/clap)
+
 ```rust
 // Example showing imagined CLI app. with two actions
 
@@ -103,10 +139,32 @@ This will make the program automatically working in 2 modes:
 </a>
 
 
+## Clap support
+
+### Implemented features
+* switch arguments
+* positional arguments
+* option arguments
+* global arguments
+* subcommands (single level)
+
+### To be implemented
+* [conflicts_with](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.conflicts_with)
+* [requires](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.requires)
+* [validators](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.validator)
+* [min](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.min_values)/[max](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.max_values)/[exact](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.number_of_values) number of values for
+    * positional args
+    * options args
+* [groups](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.group)
+* [conditional defaults](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.default_value_if)
+* [custom delimeter](https://docs.rs/clap/2.33.0/clap/struct.Arg.html#method.use_delimiter)
+
+
 ## TODO
 * find a solution for long help messages
 * ctrl+enter submits ([#151](https://github.com/gyscos/Cursive/issues/151))
 * handle unwraps
+
 
 ## Ideas
 * `.validator(OneOf || Regex::new("v\d+\.\d+\.\d+")).unwrap()`?

@@ -1,4 +1,4 @@
-// EXPERIMENTAL - no guarantee of finishing it
+// Shows conversion from `clap` including `global arguments` to `fui`
 
 extern crate clap;
 extern crate fui;
@@ -7,7 +7,7 @@ use fui::Fui;
 use std::env;
 
 fn main() {
-    let app = clap::App::new("program")
+    let app = clap::App::new("some-app")
         .arg(
             clap::Arg::with_name("global-arg-name")
                 .long("global-arg-long")
