@@ -48,9 +48,7 @@ if _arg_vec.len() <= 1 {
 let matches = app.get_matches_from(_arg_vec);
 ```
 
-<a href="https://github.com/xliiv/fui/blob/master/examples/clap-flags.rs">
-<img src="https://raw.githubusercontent.com/xliiv/fui/master/doc/clap-flags-example.gif" alt="clap to fui flags example", width="100%" />
-</a>
+[![asciicast](https://asciinema.org/a/cp0CEXiEIbSLFZBAoXqLnk2tR.svg)](https://asciinema.org/a/cp0CEXiEIbSLFZBAoXqLnk2tR)
 
 #### Using without [`clap`](https://crates.io/crates/clap)
 
