@@ -1,12 +1,16 @@
 # Changelog
 
-## next
+## 1.0.0
 
-* Add `fui::skip_single_action`
-* Add `fui::skip_empty_form`
-* Add `fui::Field::FormField::set_error` (deprecated `fui::Field::WidgetManager::set_error`)
-* Deprecate `fui::fields::WidgetManager::build_widget` (use `fui::fields::FormField::build_widget`)
+Added partial support for creating `Fui` from `clap::App`.
+For more details see
+* [Support overview](https://github.com/xliiv/fui#clap-support)
+* [Basic example](https://github.com/xliiv/fui#using-with-clap-experimental)
+* [Examples](https://github.com/xliiv/fui/tree/master/examples#clap)
 
+### Detailed change list
+
+https://github.com/xliiv/fui/compare/v0.9.0...v1.0.0
 
 ## 0.9.0
 
