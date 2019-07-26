@@ -283,15 +283,15 @@ impl<'attrs, 'action> Fui<'attrs, 'action> {
         let mut sub_cmds: Vec<clap::App> = Vec::new();
         for action in self.actions.values() {
             let args = action.form.as_ref().unwrap().fields2clap_args();
-            let sub_cmd = clap::SubCommand::with_name(action.name.as_ref())
-                .about(action.help.as_ref())
+            let sub_cmd = clap::SubCommand::with_name(action.name)
+                .about(action.help)
                 .args(args.as_slice());
             sub_cmds.push(sub_cmd);
         }
-        clap::App::new(self.name.as_ref())
-            .version(self.version.as_ref())
-            .about(self.about.as_ref())
-            .author(self.author.as_ref())
+        clap::App::new(self.name)
+            .version(self.version)
+            .about(self.about)
+            .author(self.author)
             .subcommands(sub_cmds)
     }
 
